@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNSPECIFIED
+}
+
+enum ScreeningStatus {
+  UPLOADED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model User {
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  role         UserRole       @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  children     ChildProfile[]
+  uploads      VideoUpload[]
+  chatMessages ChatMessage[]
+}
+
+model ChildProfile {
+  id          String       @id @default(uuid())
+  userId      String
+  fullName    String
+  dateOfBirth DateTime
+  gender      Gender       @default(UNSPECIFIED)
+  note        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploads     VideoUpload[]
+
+  @@index([userId])
+}
+
+model VideoUpload {
+  id               String          @id @default(uuid())
+  userId           String
+  childId          String
+  originalFilename String
+  storedFilename   String
+  filePath         String
+  mimeType         String
+  fileSize         Int
+  durationSeconds  Int?
+  status           ScreeningStatus @default(UPLOADED)
+  createdAt        DateTime        @default(now())
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child  ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  result ScreeningResult?
+
+  @@index([userId])
+  @@index([childId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ScreeningResult {
+  id                     String    @id @default(uuid())
+  videoId                String    @unique
+  riskLevel              RiskLevel
+  confidenceScore        Float
+  eyeContactScore        Float
+  motorPatternScore      Float
+  responseBehaviorScore  Float
+  repetitiveBehaviorScore Float
+  recommendation         String
+  rawAiResponse          Json
+  createdAt              DateTime  @default(now())
+
+  video VideoUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([riskLevel])
+  @@index([createdAt])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  role      ChatRole
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Article {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  category  String
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@index([createdAt])
+}
