@@ -1,0 +1,18 @@
+{
+  "subject_id": "510b1462-6292-45f4-b5ab-b342bd72d43b",
+  "created_at": "2026-05-22T21:03:04.191662",
+  "prediction": {
+    "file": "510b1462-6292-45f4-b5ab-b342bd72d43b",
+    "T_in": 88,
+    "J": 18,
+    "p_typical": 0.9636856317520142,
+    "p_asd": 0.036314334720373154,
+    "logit_typical": 1.4514206647872925,
+    "logit_asd": -1.827131986618042,
+    "pred_argmax": 0,
+    "label_threshold": 0,
+    "threshold": 0.5,
+    "temperature": 1.0,
+    "label_name": "Typical"
+  }
+}

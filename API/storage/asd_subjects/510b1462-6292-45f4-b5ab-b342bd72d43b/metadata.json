@@ -1,0 +1,9 @@
+{
+  "subject_id": "510b1462-6292-45f4-b5ab-b342bd72d43b",
+  "filename": "video1.avi",
+  "created_at": "2026-05-22T21:03:04.191671",
+  "keypoint_format": "OpenPose BODY_25",
+  "num_frames": 88,
+  "status": "predicted",
+  "has_prediction": true
+}

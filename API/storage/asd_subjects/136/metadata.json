@@ -1,0 +1,9 @@
+{
+  "subject_id": "136",
+  "filename": "6.mp4",
+  "created_at": "2026-05-22T20:21:58.792847",
+  "keypoint_format": "OpenPose BODY_25",
+  "num_frames": 67,
+  "status": "extracted",
+  "has_prediction": false
+}
