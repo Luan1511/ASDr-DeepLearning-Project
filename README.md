@@ -4,6 +4,12 @@ ASDr là demo full‑stack chạy local: upload video của trẻ, “AI mock”
 
 > Lưu ý: Kết quả chỉ mang tính tham khảo, không thay thế chẩn đoán y khoa.
 
+# Visual
+<img width="1541" height="922" alt="image" src="https://github.com/user-attachments/assets/4203348b-721e-428f-85d4-1b6acc2fafea" />
+
+# Kiến trúc tổng quát
+<img width="1837" height="1007" alt="image" src="https://github.com/user-attachments/assets/d1827df1-0864-4847-a991-ad28f03b5b33" />
+
 ## Yêu cầu
 
 - Node.js `20.12.x` (đúng với cấu hình hiện tại)
