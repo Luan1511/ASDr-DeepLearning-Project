@@ -7,6 +7,64 @@ import { generateMockAiResult, toRiskEnum } from './aiMock'
 
 const inFlight = new Map<string, NodeJS.Timeout>()
 
+/**
+ * Calls the Llama API to generate a personalized recommendation based on prediction output.
+ * Falls back to a static recommendation if the LLM is unavailable.
+ */
+async function callLlmForRecommendation(opts: {
+  childName: string
+  childAge: number | null
+  riskLevel: RiskLevel
+  pAsd: number
+  pTypical: number
+  modelName?: string
+}): Promise<string> {
+  const { childName, childAge, riskLevel, pAsd, pTypical, modelName = 'asd_lora_2' } = opts
+
+  const pAsdPct = (pAsd * 100).toFixed(1)
+  const pTypicalPct = (pTypical * 100).toFixed(1)
+  const ageText = childAge ? `${childAge} tuổi` : 'không rõ tuổi'
+  const riskText = riskLevel === RiskLevel.HIGH ? 'Nguy cơ cao ASD' : riskLevel === RiskLevel.MEDIUM ? 'Nguy cơ trung bình' : 'Phát triển điển hình'
+
+  const question = `Kết quả sàng lọc ASD cho bé ${childName} (${ageText}):
+- Nhãn dự đoán: ${riskText}
+- Xác suất ASD: ${pAsdPct}%
+- Xác suất Điển hình: ${pTypicalPct}%
+
+Dựa trên các chỉ số trên, hãy đưa ra lời khuyên cụ thể, thực tế và đầy đủ cho phụ huynh. Nếu nguy cơ cao, hãy hướng dẫn các bước tiếp theo cần làm. Trả lời bằng tiếng Việt, không quá 3 đoạn.`
+
+  try {
+    const url = new URL(`/chat/${modelName}`, env.CHAT_API_BASE_URL).toString()
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question,
+        context: '',
+        max_new_tokens: 512,
+        temperature: 0.5,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`LLM API responded with status ${response.status}`)
+    }
+
+    const data = (await response.json()) as any
+    if (data?.answer) {
+      return data.answer
+    }
+    throw new Error('No answer in LLM response')
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('LLM recommendation generation failed, using static fallback:', err)
+    if (riskLevel === RiskLevel.HIGH) {
+      return 'Kết quả cho thấy có khả năng cao trẻ mang dấu hiệu ASD. Xin vui lòng tham khảo ý kiến chuyên gia y tế sớm nhất có thể.'
+    }
+    return 'Kết quả hiện tại cho thấy trẻ có xu hướng phát triển điển hình. Dù vậy, kết quả chỉ mang tính tham khảo và không thay thế chẩn đoán y khoa.'
+  }
+}
+
 export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
   if (inFlight.has(videoId)) return
 
@@ -23,7 +81,10 @@ export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
         return
       }
 
-      const video = await prisma.videoUpload.findUnique({ where: { id: videoId } })
+      const video = await prisma.videoUpload.findUnique({
+        where: { id: videoId },
+        include: { child: true },
+      })
       if (!video) {
         throw new Error(`Video upload not found: ${videoId}`)
       }
@@ -56,7 +117,7 @@ export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
         }
 
         const resultJson = (await response.json()) as any
-        
+
         if (resultJson && typeof resultJson === 'object' && ('detail' in resultJson || 'error' in resultJson)) {
           const detailMsg = typeof resultJson.detail === 'string' ? resultJson.detail : JSON.stringify(resultJson.detail || resultJson.error)
           throw new Error(`API returned error details:\n${detailMsg}`)
@@ -74,14 +135,24 @@ export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
       const mock = generateMockAiResult()
       let riskLevel: RiskLevel = toRiskEnum(mock.risk_level)
       let confidenceScore = mock.confidence_score
+      let pAsd = confidenceScore
+      let pTypical = 1 - confidenceScore
 
       // If we have real prediction from API, override the mock values
       if (apiPrediction) {
-        // Handle various possible prediction structures
-        if (typeof apiPrediction.p_asd === 'number') confidenceScore = apiPrediction.p_asd
-        else if (typeof apiPrediction.confidence === 'number') confidenceScore = apiPrediction.confidence
-        else if (typeof apiPrediction.asd_confidence === 'number') confidenceScore = apiPrediction.asd_confidence
-        else if (typeof apiPrediction.probability === 'number') confidenceScore = apiPrediction.probability
+        if (typeof apiPrediction.p_asd === 'number') {
+          pAsd = apiPrediction.p_asd
+          pTypical = typeof apiPrediction.p_typical === 'number' ? apiPrediction.p_typical : 1 - pAsd
+          confidenceScore = pAsd
+        } else if (typeof apiPrediction.confidence === 'number') {
+          confidenceScore = apiPrediction.confidence
+          pAsd = confidenceScore
+          pTypical = 1 - pAsd
+        } else if (typeof apiPrediction.probability === 'number') {
+          confidenceScore = apiPrediction.probability
+          pAsd = confidenceScore
+          pTypical = 1 - pAsd
+        }
 
         const label = apiPrediction.label_name || apiPrediction.label
 
@@ -100,6 +171,23 @@ export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
         }
       }
 
+      // Compute child age in years (rounded)
+      let childAge: number | null = null
+      if (video.child?.dateOfBirth) {
+        const msAge = Date.now() - new Date(video.child.dateOfBirth).getTime()
+        childAge = Math.floor(msAge / (1000 * 60 * 60 * 24 * 365.25))
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`Calling LLM for recommendation for video ${videoId}...`)
+      const recommendation = await callLlmForRecommendation({
+        childName: video.child?.name ?? 'Bé',
+        childAge,
+        riskLevel,
+        pAsd,
+        pTypical,
+      })
+
       await prisma.screeningResult.create({
         data: {
           videoId,
@@ -110,9 +198,7 @@ export async function enqueueMockProcessing(videoId: string, delayMs = 2000) {
           motorPatternScore: mock.behavioral_scores.motor_pattern,
           responseBehaviorScore: mock.behavioral_scores.response_behavior,
           repetitiveBehaviorScore: mock.behavioral_scores.repetitive_behavior,
-          recommendation: riskLevel === 'HIGH' 
-            ? 'Kết quả cho thấy có khả năng cao trẻ mang dấu hiệu ASD. Xin vui lòng tham khảo ý kiến chuyên gia y tế.' 
-            : 'Kết quả hiện tại cho thấy trẻ có xu hướng phát triển điển hình. Dù vậy, kết quả chỉ mang tính tham khảo.',
+          recommendation,
           rawAiResponse: {
             provider: env.BYPASS_EXTRACT_API ? 'mock' : 'openpose-api',
             generatedAt: new Date().toISOString(),
