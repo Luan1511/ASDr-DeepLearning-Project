@@ -8,9 +8,11 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   MAX_UPLOAD_MB: z.coerce.number().int().positive().default(200),
-  EXTRACT_API_URL: z.string().url().default('https://858a-113-160-235-186.ngrok-free.app/extract'),
-  BYPASS_EXTRACT_API: z.preprocess((val) => val === 'true' || val === '1' || val === true, z.boolean()).default(false),
-  CHAT_API_BASE_URL: z.string().url().default('https://7289-113-160-235-186.ngrok-free.app'),
+  EXTRACT_API_URL: z.string().url().default('http://localhost:8000/pipeline/asd'),
+  BYPASS_EXTRACT_API: z
+    .preprocess((val) => val === 'true' || val === '1' || val === true, z.boolean())
+    .default(false),
+  CHAT_API_BASE_URL: z.string().url().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

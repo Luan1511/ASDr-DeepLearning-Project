@@ -7,7 +7,7 @@ import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
-import { enqueueMockProcessing } from '../services/screeningProcessor'
+import { enqueueScreeningProcessing } from '../services/screeningProcessor'
 import { RiskLevel, ScreeningStatus } from '@prisma/client'
 
 export const screeningsRouter = Router()
@@ -159,7 +159,7 @@ screeningsRouter.post(
       return res.json({ status: screening.status, result })
     }
 
-    await enqueueMockProcessing(id)
+    await enqueueScreeningProcessing(id)
     return res.status(202).json({ status: ScreeningStatus.PROCESSING })
   }),
 )
