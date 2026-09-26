@@ -1,35 +1,123 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Theme colors updated */
+
 @layer base {
   html,
-  body {
+  body,
+  #root {
     height: 100%;
   }
 
   body {
-    @apply bg-[#F4F6FB] text-slate-900;
-    font-family: 'Inter', sans-serif;
+    @apply bg-white text-duo-ink antialiased;
+    font-family: 'Nunito', ui-rounded, system-ui, sans-serif;
   }
 }
 
-@layer utilities {
-  .gradient-primary {
-    background: linear-gradient(135deg, #6C63FF 0%, #4FC3F7 100%);
+@layer components {
+  /* Duo Green Deep Palette overrides */
+  .bg-duo-green {
+    background-color: #166534 !important;
   }
-  .gradient-hero {
-    background: linear-gradient(135deg, #EEF2FF 0%, #E0F2FE 100%);
+  .text-duo-green {
+    color: #166534 !important;
   }
-  .gradient-ai {
-    background: linear-gradient(135deg, #6C63FF 0%, #00BCD4 100%);
+  .text-duo-green-dark {
+    color: #14532D !important;
   }
-  .gradient-knowledge {
-    background: linear-gradient(135deg, #00BCD4 0%, #26C6DA 100%);
+  .bg-duo-green-dark {
+    background-color: #14532D !important;
   }
-  .shadow-card {
-    box-shadow: 0 2px 16px 0 rgba(108, 99, 255, 0.07), 0 1px 4px 0 rgba(0,0,0,0.04);
+  .bg-duo-green-soft {
+    background-color: #DCFCE7 !important;
+  }
+  .border-duo-green {
+    border-color: #166534 !important;
+  }
+  .shadow-brand {
+    box-shadow: 0 3px 0 #14532D, 0 6px 16px rgba(22, 101, 52, 0.30) !important;
+  }
+  .shadow-ring-green {
+    box-shadow: 0 0 0 2px rgba(22, 101, 52, 0.35), 0 4px 14px rgba(22, 101, 52, 0.18) !important;
+  }
+
+  .btn-duo {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-white transition-all disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: #166534 !important;
+    box-shadow: 0 4px 0 #14532D, 0 6px 14px rgba(22, 101, 52, 0.28);
+  }
+  .btn-duo:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+  .btn-duo:active:not(:disabled) {
+    @apply translate-y-[4px];
+    box-shadow: none;
+  }
+
+  .btn-duo-blue {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-duo-blue px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-white transition-all disabled:cursor-not-allowed disabled:opacity-50;
+    box-shadow: 0 4px 0 #1899D6, 0 6px 14px rgba(28, 176, 246, 0.25);
+  }
+  .btn-duo-blue:hover:not(:disabled) {
+    filter: brightness(1.04);
+  }
+  .btn-duo-blue:active:not(:disabled) {
+    @apply translate-y-[4px];
+    box-shadow: none;
+  }
+
+  .btn-duo-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-duo-blue transition-all disabled:cursor-not-allowed disabled:opacity-50;
+    box-shadow: 0 2px 0 rgba(60, 60, 60, 0.08), 0 3px 10px rgba(60, 60, 60, 0.08);
+  }
+  .btn-duo-ghost:hover:not(:disabled) {
+    @apply bg-duo-mist;
+    box-shadow: 0 2px 0 rgba(60, 60, 60, 0.10), 0 6px 16px rgba(60, 60, 60, 0.12);
+  }
+  .btn-duo-ghost:active:not(:disabled) {
+    @apply translate-y-[2px];
+    box-shadow: none;
+  }
+
+  .card-duo {
+    @apply rounded-2xl bg-white transition-shadow;
+    box-shadow: 0 1px 2px rgba(60, 60, 60, 0.05), 0 4px 12px rgba(60, 60, 60, 0.06);
+  }
+
+  /* Card có thể bấm/hover: nhấc nhẹ lên thay vì đổi màu border */
+  .card-duo-interactive {
+    @apply rounded-2xl bg-white transition-all hover:-translate-y-0.5;
+    box-shadow: 0 1px 2px rgba(60, 60, 60, 0.05), 0 4px 12px rgba(60, 60, 60, 0.06);
+  }
+  .card-duo-interactive:hover {
+    box-shadow: 0 2px 6px rgba(60, 60, 60, 0.06), 0 12px 28px rgba(60, 60, 60, 0.10);
+  }
+
+  /* Khối lồng trong card (form phụ, panel kết quả) */
+  .panel-duo {
+    @apply rounded-2xl bg-white;
+    box-shadow: 0 1px 2px rgba(60, 60, 60, 0.04), 0 2px 8px rgba(60, 60, 60, 0.05);
+  }
+
+  /* Đường phân cách nhẹ trong card, thay cho border-2 */
+  .divider-duo {
+    @apply border-b border-duo-line/60;
+  }
+
+  .input-duo {
+    @apply w-full rounded-2xl bg-white px-4 py-3 text-sm font-bold text-duo-ink outline-none transition-shadow;
+    box-shadow: inset 0 0 0 1.5px #E5E5E5;
+  }
+  .input-duo:focus {
+    box-shadow: inset 0 0 0 2px #1CB0F6, 0 0 0 4px rgba(28, 176, 246, 0.15);
+  }
+
+  .link-duo {
+    @apply font-extrabold text-duo-blue hover:underline;
   }
 }

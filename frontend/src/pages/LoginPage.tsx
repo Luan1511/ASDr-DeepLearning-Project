@@ -25,44 +25,49 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto max-w-md">
-        <div className="mb-6 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-indigo-600 text-white">A</div>
-          <h1 className="mt-4 text-2xl font-semibold text-slate-900">Đăng nhập ASDr</h1>
-          <p className="mt-1 text-sm text-slate-600">Hệ thống hỗ trợ sàng lọc tham khảo, không thay thế chẩn đoán y khoa.</p>
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-10">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-duo-green text-2xl font-black text-white shadow-brand">
+            A
+          </div>
+          <h1 className="mt-5 text-3xl font-black text-duo-ink">Đăng nhập</h1>
+          <p className="mt-2 text-sm font-semibold text-duo-mute">ASDr hỗ trợ sàng lọc tham khảo, không thay thế chẩn đoán.</p>
         </div>
 
-        <form onSubmit={onSubmit} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <label className="block text-sm font-medium text-slate-700">Email</label>
-          <input
-            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-200"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-          />
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-duo-mute">Email</label>
+            <input
+              className="input-duo"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="email"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-duo-mute">Mật khẩu</label>
+            <input
+              className="input-duo"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+            />
+          </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-700">Mật khẩu</label>
-          <input
-            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-200"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-          />
+          {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{error}</div>}
 
-          {error && <div className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
-
-          <button
-            disabled={loading}
-            className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
+          <button disabled={loading} className="btn-duo w-full">
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
 
-          <div className="mt-4 text-center text-sm text-slate-600">
-            Chưa có tài khoản? <Link className="text-indigo-700 hover:underline" to="/register">Đăng ký</Link>
+          <div className="text-center text-sm font-semibold text-duo-mute">
+            Chưa có tài khoản?{' '}
+            <Link className="link-duo" to="/register">
+              Đăng ký
+            </Link>
           </div>
         </form>
       </div>

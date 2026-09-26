@@ -16,6 +16,8 @@ type ApiPrediction = {
 }
 
 type ApiResult = {
+  subject_id?: string
+  num_frames?: number
   risk_level?: 'low' | 'medium' | 'high'
   confidence_score?: number
   behavioral_scores?: {
@@ -98,25 +100,36 @@ async function callPredictionApi(videoId: string) {
     throw new Error(`Video file does not exist at path: ${fullPath}`)
   }
 
-  const fileBuffer = fs.readFileSync(fullPath)
-  const blob = new Blob([fileBuffer], { type: video.mimeType })
+  // File-backed Blob keeps large recordings on disk.  The previous Buffer
+  // allocated the entire video in the Node.js heap before forwarding it.
+  const blob = await fs.openAsBlob(fullPath, { type: video.mimeType })
   const formData = new FormData()
   formData.append('video', blob, video.originalFilename)
 
   const apiUrl = withDefaultPredictionPath(env.EXTRACT_API_URL)
-  
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), env.EXTRACT_API_TIMEOUT_MS)
+
   let response
   try {
     response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'ngrok-skip-browser-warning': 'true',
         'User-Agent': 'ASD-Backend/1.0',
       },
       body: formData,
+      signal: controller.signal,
     })
   } catch (error) {
-    throw new Error(`Prediction API connection failed: ${error instanceof Error ? error.message : String(error)}`)
+    const message = error instanceof Error ? error.message : String(error)
+    const cause = error instanceof Error && 'cause' in error ? error.cause : undefined
+    const causeMessage = cause instanceof Error ? cause.message : cause ? String(cause) : ''
+    const reason = error instanceof Error && error.name === 'AbortError'
+      ? `timed out after ${Math.round(env.EXTRACT_API_TIMEOUT_MS / 1000)} seconds`
+      : causeMessage ? `${message} (${causeMessage})` : message
+    throw new Error(`Prediction API connection failed: ${reason}`)
+  } finally {
+    clearTimeout(timeout)
   }
 
   const text = await response.text()
@@ -184,6 +197,8 @@ async function createApiResult(videoId: string) {
       rawAiResponse: {
         provider: 'extract-api',
         apiUrl,
+        subjectId: json.subject_id,
+        numFrames: json.num_frames,
         generated_at: new Date().toISOString(),
         response: json,
       },
@@ -196,7 +211,7 @@ export async function enqueueScreeningProcessing(videoId: string, delayMs = 500)
 
   await prisma.videoUpload.update({
     where: { id: videoId },
-    data: { status: ScreeningStatus.PROCESSING },
+    data: { status: ScreeningStatus.PROCESSING, errorMessage: null },
   })
 
   const handle = setTimeout(async () => {
@@ -218,9 +233,10 @@ export async function enqueueScreeningProcessing(videoId: string, delayMs = 500)
         data: { status: ScreeningStatus.COMPLETED },
       })
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e)
       await prisma.videoUpload.update({
         where: { id: videoId },
-        data: { status: ScreeningStatus.FAILED },
+        data: { status: ScreeningStatus.FAILED, errorMessage },
       })
       // eslint-disable-next-line no-console
       console.error(`Screening processing failed for video ${videoId}:`, e)

@@ -1,0 +1,12 @@
+
+> backend@1.0.0 predev
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+Prisma schema loaded from prisma\schema.prisma
+Error: 
+EPERM: operation not permitted, rename 'E:\JupyterWorkspace\NCKH\Main\backend\node_modules\.prisma\client\query_engine-windows.dll.node.tmp41864' -> 'E:\JupyterWorkspace\NCKH\Main\backend\node_modules\.prisma\client\query_engine-windows.dll.node'
+
+

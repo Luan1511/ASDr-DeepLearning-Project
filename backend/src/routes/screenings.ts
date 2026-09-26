@@ -12,6 +12,15 @@ import { RiskLevel, ScreeningStatus } from '@prisma/client'
 
 export const screeningsRouter = Router()
 
+// Report request status without writing video content or names to the log.
+screeningsRouter.use((req, res, next) => {
+  res.on('finish', () => {
+    // eslint-disable-next-line no-console
+    console.log(`[screenings] ${req.method} ${req.originalUrl} -> ${res.statusCode}`)
+  })
+  next()
+})
+
 screeningsRouter.use(requireAuth)
 
 const uploadStorage = multer.diskStorage({
@@ -132,6 +141,7 @@ screeningsRouter.post(
 screeningsRouter.get(
   '/:id',
   asyncHandler(async (req, res) => {
+    res.set('Cache-Control', 'no-store')
     const userId = req.user!.id
     const id = z.string().uuid().parse(req.params.id)
 

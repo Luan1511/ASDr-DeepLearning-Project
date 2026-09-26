@@ -4,12 +4,12 @@ function Bar({ label, value }: { label: string; value: number }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100)
   return (
     <div>
-      <div className="flex items-center justify-between text-xs text-slate-600">
+      <div className="flex items-center justify-between text-xs font-bold text-duo-mute">
         <span>{label}</span>
         <span className="tabular-nums">{pct}%</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-slate-100">
-        <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${pct}%` }} />
+      <div className="mt-2 h-3 rounded-full bg-duo-mist">
+        <div className="h-3 rounded-full bg-duo-green" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

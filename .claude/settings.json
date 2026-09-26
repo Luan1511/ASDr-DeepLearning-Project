@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(wmic process *)",
+      "Bash(curl -s -X POST http://localhost:8000/pipeline/asd -o /dev/null -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:4000/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:4000/screenings)",
+      "Bash(taskkill //F //IM node.exe)"
+    ]
+  }
+}

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Video, Upload } from 'lucide-react'
 
 export function UploadDropzone({
   disabled,
@@ -14,13 +15,13 @@ export function UploadDropzone({
 
   return (
     <div
-      className={
-        [
-          'rounded-2xl border border-dashed p-6 text-center transition',
-          dragging ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-slate-50',
-          disabled ? 'opacity-60' : 'hover:border-indigo-300',
-        ].join(' ')
-      }
+      className={[
+        'rounded-2xl border-2 border-dashed p-8 text-center transition-all',
+        dragging
+          ? 'border-duo-green bg-duo-green-soft shadow-ring-green'
+          : 'border-duo-line bg-duo-mist shadow-card-inner',
+        disabled ? 'opacity-50' : '',
+      ].join(' ')}
       onDragEnter={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -44,17 +45,20 @@ export function UploadDropzone({
         if (f) onFileSelected(f)
       }}
     >
-      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">☁️</div>
-      <div className="mt-3 text-sm font-semibold text-slate-900">Kéo và thả video vào đây</div>
-      <div className="mt-1 text-xs text-slate-500">hoặc</div>
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-green-soft text-duo-green-dark shadow-sm">
+        <Video className="h-7 w-7 stroke-[2.2]" />
+      </div>
+      <div className="mt-3 text-base font-extrabold text-duo-ink">Kéo video vào đây</div>
+      <div className="mt-1 text-sm font-semibold text-duo-mute">hoặc</div>
 
       <button
         type="button"
         disabled={disabled}
-        className="mt-3 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="btn-duo mt-4 gap-2"
         onClick={() => inputRef.current?.click()}
       >
-        Chọn tệp video
+        <Upload className="h-4 w-4 stroke-[2.5]" />
+        <span>Chọn tệp</span>
       </button>
 
       <input
@@ -69,7 +73,7 @@ export function UploadDropzone({
         }}
       />
 
-      {helperText && <div className="mt-3 text-xs text-slate-500">{helperText}</div>}
+      {helperText && <div className="mt-3 text-xs font-bold text-duo-mute">{helperText}</div>}
     </div>
   )
 }

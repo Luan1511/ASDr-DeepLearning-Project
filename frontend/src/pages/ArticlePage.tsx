@@ -20,22 +20,19 @@ export function ArticlePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <Link to="/knowledge" className="text-sm font-semibold text-indigo-700">
-            ← Quay lại Knowledge Base
-          </Link>
-        </div>
-
+      <div className="mx-auto max-w-2xl space-y-4">
+        <Link to="/knowledge" className="link-duo text-sm">
+          ← Quay lại
+        </Link>
         <Card title={article?.title ?? 'Bài viết'}>
-          {error && <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
-          {!error && !article && <div className="text-sm text-slate-500">Đang tải...</div>}
+          {error && <div className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-bold text-duo-red">{error}</div>}
+          {!error && !article && <div className="text-sm font-semibold text-duo-mute">Đang tải...</div>}
           {article && (
             <>
-              <div className="text-xs text-slate-500">
-                {article.category} • {new Date(article.createdAt).toLocaleDateString()}
+              <div className="text-xs font-bold uppercase tracking-wide text-duo-mute">
+                {article.category} • {new Date(article.createdAt).toLocaleDateString('vi-VN')}
               </div>
-              <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{article.content}</div>
+              <div className="mt-4 whitespace-pre-wrap text-sm font-semibold leading-relaxed text-duo-ink">{article.content}</div>
             </>
           )}
         </Card>

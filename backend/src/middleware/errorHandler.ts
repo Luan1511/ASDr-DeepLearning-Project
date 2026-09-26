@@ -3,6 +3,9 @@ import { ZodError } from 'zod'
 import { MulterError } from 'multer'
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+  // eslint-disable-next-line no-console
+  console.error('Request failed:', err)
+
   if (err instanceof ZodError) {
     return res.status(400).json({
       error: 'VALIDATION_ERROR',

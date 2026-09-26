@@ -44,174 +44,93 @@ export function HistoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const selected = useMemo(
-    () => (screenings ?? []).find((s) => s.id === selectedId) ?? null,
-    [screenings, selectedId],
-  )
+  const selected = useMemo(() => (screenings ?? []).find((s) => s.id === selectedId) ?? null, [screenings, selectedId])
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_400px]">
-        {/* ---- List panel ---- */}
-        <div className="rounded-3xl bg-white shadow-card ring-1 ring-slate-100 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h1 className="text-base font-bold text-slate-800">Lịch sử kết quả</h1>
-            <button
-              className="text-xs font-semibold text-[#6C63FF] hover:underline"
-              onClick={load}
-            >
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
+        <div className="card-duo overflow-hidden">
+          <div className="divider-duo flex items-center justify-between px-5 py-4">
+            <h1 className="text-sm font-extrabold uppercase tracking-wide text-duo-ink">Lịch sử</h1>
+            <button className="link-duo text-xs" onClick={load}>
               {loading ? 'Đang tải...' : 'Tải lại'}
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="px-5 pt-4 pb-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-600">Mức nguy cơ</label>
-              <select
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-indigo-100"
-                value={risk}
-                onChange={(e) => setRisk(e.target.value as any)}
-              >
-                <option value="ALL">Tất cả</option>
-                <option value="LOW">Nguy cơ thấp</option>
-                <option value="MEDIUM">Nguy cơ trung bình</option>
-                <option value="HIGH">Nguy cơ cao</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-600">Từ ngày</label>
-              <input
-                type="date"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-indigo-100"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-600">Đến ngày</label>
-              <input
-                type="date"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-indigo-100"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-3 px-5 pt-4 md:grid-cols-3">
+            <select className="input-duo" value={risk} onChange={(e) => setRisk(e.target.value as any)}>
+              <option value="ALL">Tất cả</option>
+              <option value="LOW">Thấp</option>
+              <option value="MEDIUM">Trung bình</option>
+              <option value="HIGH">Cao</option>
+            </select>
+            <input className="input-duo" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input className="input-duo" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
-          <div className="px-5 pb-4">
-            <button
-              type="button"
-              onClick={load}
-              className="rounded-xl px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #6C63FF, #4FC3F7)' }}
-            >
-              Áp dụng lọc
+          <div className="px-5 py-3">
+            <button type="button" onClick={load} className="btn-duo">
+              Lọc
             </button>
           </div>
 
-          {error && (
-            <div className="mx-5 mb-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
-          )}
+          {error && <div className="mx-5 mb-4 rounded-2xl bg-red-50 px-3 py-2 text-sm font-bold text-duo-red">{error}</div>}
 
-          {/* Result list */}
-          <div className="px-3 pb-4 space-y-1.5">
+          <div className="space-y-2 px-3 pb-4">
             {(screenings ?? []).map((s) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setSelectedId(s.id)}
                 className={[
-                  'w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition',
-                  selectedId === s.id
-                    ? 'ring-2 ring-[#6C63FF] bg-indigo-50'
-                    : 'hover:bg-slate-50 ring-1 ring-transparent',
+                  'flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all',
+                  selectedId === s.id ? 'bg-duo-green-soft shadow-ring-green' : 'hover:bg-duo-mist',
                 ].join(' ')}
               >
-                <div
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white font-bold text-sm"
-                  style={{ background: 'linear-gradient(135deg, #6C63FF, #4FC3F7)' }}
-                >
+                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-duo-blue text-sm font-black text-white">
                   {s.child.fullName.charAt(0)}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-slate-800 truncate">{s.child.fullName}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-extrabold text-duo-ink">{s.child.fullName}</div>
+                  <div className="mt-0.5 text-xs font-bold text-duo-mute">
                     {new Date(s.createdAt).toLocaleDateString('vi-VN')} • {s.status}
                   </div>
                 </div>
-                {s.result ? (
-                  <RiskPill risk={s.result.riskLevel} />
-                ) : (
-                  <span className="text-xs text-slate-400">Chưa có kết quả</span>
-                )}
+                {s.result ? <RiskPill risk={s.result.riskLevel} /> : <span className="text-xs font-bold text-duo-mute">—</span>}
               </button>
             ))}
 
             {screenings && screenings.length === 0 && (
-              <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-400 text-center ring-1 ring-slate-100">
-                Không có dữ liệu.
-              </div>
+              <div className="rounded-2xl bg-duo-mist px-4 py-8 text-center text-sm font-semibold text-duo-mute">Không có dữ liệu.</div>
             )}
           </div>
         </div>
 
-        {/* ---- Detail panel ---- */}
-        <div className="rounded-3xl bg-white shadow-card ring-1 ring-slate-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-800">Chi tiết kết quả</h2>
+        <div className="card-duo overflow-hidden">
+          <div className="divider-duo px-5 py-4">
+            <h2 className="text-sm font-extrabold uppercase tracking-wide text-duo-ink">Chi tiết</h2>
           </div>
           <div className="p-5">
             {!selected && (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                <div className="text-4xl mb-3">📋</div>
-                <div className="text-sm">Chọn một kết quả để xem chi tiết.</div>
-              </div>
+              <div className="py-12 text-center text-sm font-semibold text-duo-mute">Chọn một kết quả để xem.</div>
             )}
-
             {selected && (
               <div className="space-y-5">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-white font-bold"
-                    style={{ background: 'linear-gradient(135deg, #6C63FF, #4FC3F7)' }}
-                  >
-                    {selected.child.fullName.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-bold text-slate-800">{selected.child.fullName}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      {new Date(selected.createdAt).toLocaleString('vi-VN')}
-                    </div>
-                  </div>
-                  {selected.result && <RiskPill risk={selected.result.riskLevel} />}
+                <div>
+                  <div className="text-sm font-extrabold text-duo-ink">{selected.child.fullName}</div>
+                  <div className="mt-0.5 text-xs font-bold text-duo-mute">{new Date(selected.createdAt).toLocaleString('vi-VN')}</div>
                 </div>
-
                 {selected.result ? (
                   <>
-                    {/* Confidence Gauge — ASD vs Typical only */}
-                    <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-                      <div className="text-sm font-bold text-slate-700 mb-3">Kết quả phân tích AI</div>
-                      <ConfidenceGauge
-                        confidenceScore={selected.result.confidenceScore}
-                        riskLevel={selected.result.riskLevel}
-                      />
+                    <RiskPill risk={selected.result.riskLevel} />
+                    <ConfidenceGauge confidenceScore={selected.result.confidenceScore} riskLevel={selected.result.riskLevel} />
+                    <div className="rounded-2xl bg-duo-mist px-4 py-3 text-sm font-semibold leading-relaxed text-duo-ink">
+                      {selected.result.recommendation}
                     </div>
-
-                    {/* Recommendation */}
-                    <div>
-                      <div className="text-sm font-bold text-slate-700 mb-2">Khuyến nghị tham khảo</div>
-                      <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600 ring-1 ring-slate-100">
-                        {selected.result.recommendation}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-700 ring-1 ring-amber-100">
-                      ⚠️ Lưu ý: Kết quả chỉ mang tính tham khảo, không thay thế chẩn đoán y khoa.
-                    </div>
+                    <div className="text-xs font-bold text-duo-mute">Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa.</div>
                   </>
                 ) : (
-                  <div className="rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
-                    Trạng thái: <strong>{selected.status}</strong>. Vui lòng chờ xử lý hoàn tất.
+                  <div className="rounded-2xl bg-duo-mist px-4 py-3 text-sm font-semibold text-duo-ink">
+                    Trạng thái: <strong>{selected.status}</strong>
                   </div>
                 )}
               </div>

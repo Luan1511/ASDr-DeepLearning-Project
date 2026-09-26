@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import uuid
@@ -15,12 +16,13 @@ from services.stgcn_service import STGCNPredictor
 # CONFIG
 # =========================
 
-OPENPOSE_BIN = Path("/workspace/openpose/build/examples/openpose/openpose.bin")
+OPENPOSE_BIN = Path("/workspace/openpose/build_gtx1650_nocudnn/examples/openpose/openpose.bin")
 OPENPOSE_MODEL_DIR = Path("/workspace/openpose/models")
 
 SUBJECT_ROOT = Path("storage/asd_subjects")
 
 STGCN_CHECKPOINT = Path("ASD_Model/finetuned_best_model.pth")
+OPENPOSE_TIMEOUT_SECONDS = int(os.getenv("OPENPOSE_TIMEOUT_SECONDS", "3600"))
 
 ALLOWED_VIDEO_EXTENSIONS = (".mp4", ".avi", ".mov", ".mkv")
 
@@ -195,7 +197,7 @@ def run_openpose_on_video(input_path: Path, output_dir: Path) -> list[dict]:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        timeout=600,
+        timeout=OPENPOSE_TIMEOUT_SECONDS,
     )
 
     if result.returncode != 0:
@@ -322,7 +324,7 @@ def root():
 # =========================
 
 @app.post("/subjects/extract")
-async def extract_subject(
+def extract_subject(
     video: UploadFile = File(...),
     subject_id: Optional[str] = Query(default=None),
 ):
@@ -396,7 +398,7 @@ def predict_subject(
 
 
 @app.post("/pipeline/asd")
-async def pipeline_asd(
+def pipeline_asd(
     video: UploadFile = File(...),
     subject_id: Optional[str] = Query(default=None),
     threshold: float = Query(default=0.5, ge=0.0, le=1.0),
@@ -575,4 +577,3 @@ def delete_subject(subject_id: str):
         "subject_id": subject_id,
         "deleted": True,
     }
-

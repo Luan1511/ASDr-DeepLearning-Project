@@ -42,6 +42,7 @@ export type VideoScreening = {
   fileSize: number
   durationSeconds?: number | null
   status: ScreeningStatus
+  errorMessage?: string | null
   createdAt: string
   child: ChildProfile
   result?: ScreeningResult | null

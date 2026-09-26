@@ -7,6 +7,9 @@ import { apiRouter } from './routes'
 
 export function createApp() {
   const app = express()
+  // API polling represents changing job state.  Disable ETags so a browser
+  // never turns a successful polling response into HTTP 304 (Axios rejects it).
+  app.disable('etag')
 
   app.use(
     cors({
@@ -22,6 +25,10 @@ export function createApp() {
 
   app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
+  app.use('/api', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    next()
+  })
   app.use('/api', apiRouter)
 
   app.use(errorHandler)

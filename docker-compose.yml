@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: asdr-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: asdr
+    ports:
+      - "5433:5432"
+    volumes:
+      - asdr_db_data:/var/lib/postgresql/data
+    networks:
+      - asdr-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: asdr-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:123456@db:5432/asdr
+      JWT_SECRET: asdr-super-secret-jwt-key-2025
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+      MAX_UPLOAD_MB: 200
+      # The OpenPose container runs separately on the Windows host. `localhost`
+      # here would point to this backend container, not to the host.
+      EXTRACT_API_URL: http://host.docker.internal:8000/pipeline/asd
+      EXTRACT_API_TIMEOUT_MS: 600000
+      CHAT_API_BASE_URL: https://7289-113-160-235-186.ngrok-free.app
+      BYPASS_EXTRACT_API: "false"
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - asdr-network
+    volumes:
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/screenings || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: asdr-frontend
+    environment:
+      VITE_API_BASE_URL: http://backend:4000
+    ports:
+      - "3000:5173"
+    depends_on:
+      - backend
+    networks:
+      - asdr-network
+
+  # Python ML API (OpenPose + ST-GCN)
+  ml-api:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    container_name: asdr-ml-api
+    environment:
+      PORT: 8001
+      OPENPOSE_TIMEOUT_SECONDS: 3600
+    ports:
+      - "8001:8001"
+    networks:
+      - asdr-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./API/storage:/app/storage
+      - ./API/ASD_Model:/app/ASD_Model
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/docs || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  asdr_db_data:
+
+networks:
+  asdr-network:
+    driver: bridge
