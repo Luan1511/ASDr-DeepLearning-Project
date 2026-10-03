@@ -9,6 +9,7 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   MAX_UPLOAD_MB: z.coerce.number().int().positive().default(1024),
   EXTRACT_API_URL: z.string().url().default('http://localhost:8000/pipeline/asd'),
+  OPENPOSE_SERVER_URL: z.string().url().optional(),
   EXTRACT_API_TIMEOUT_MS: z.coerce.number().int().positive().default(60 * 60 * 1000),
   BYPASS_EXTRACT_API: z
     .preprocess((val) => val === 'true' || val === '1' || val === true, z.boolean())
@@ -27,6 +28,7 @@ export const env: Env = envSchema.parse({
   CORS_ORIGIN: process.env.CORS_ORIGIN,
   MAX_UPLOAD_MB: process.env.MAX_UPLOAD_MB,
   EXTRACT_API_URL: process.env.EXTRACT_API_URL,
+  OPENPOSE_SERVER_URL: process.env.OPENPOSE_SERVER_URL,
   EXTRACT_API_TIMEOUT_MS: process.env.EXTRACT_API_TIMEOUT_MS,
   BYPASS_EXTRACT_API: process.env.BYPASS_EXTRACT_API,
   CHAT_API_BASE_URL: process.env.CHAT_API_BASE_URL,

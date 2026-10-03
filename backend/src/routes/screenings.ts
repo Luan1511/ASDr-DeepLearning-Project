@@ -8,6 +8,7 @@ import { env } from '../lib/env'
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { enqueueScreeningProcessing } from '../services/screeningProcessor'
+import { openposeService } from '../services/openposeService'
 import { RiskLevel, ScreeningStatus } from '@prisma/client'
 
 export const screeningsRouter = Router()
@@ -171,5 +172,69 @@ screeningsRouter.post(
 
     await enqueueScreeningProcessing(id)
     return res.status(202).json({ status: ScreeningStatus.PROCESSING })
+  }),
+)
+
+screeningsRouter.get(
+  '/:id/keypoints',
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id
+    const id = z.string().uuid().parse(req.params.id)
+
+    const screening = await prisma.videoUpload.findFirst({
+      where: { id, userId },
+      include: { result: true },
+    })
+
+    if (!screening) return res.status(404).json({ error: 'NOT_FOUND' })
+
+    const subjectId = (screening.result?.rawAiResponse as any)?.subjectId || id
+
+    try {
+      const keypoints = await openposeService.getSubjectKeypoints(subjectId)
+      return res.json(keypoints)
+    } catch (err: any) {
+      return res.status(404).json({
+        error: 'KEYPOINTS_NOT_FOUND',
+        detail: err.message || 'Keypoints not available on OpenPose server',
+      })
+    }
+  }),
+)
+
+screeningsRouter.get(
+  '/:id/prediction',
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id
+    const id = z.string().uuid().parse(req.params.id)
+
+    const screening = await prisma.videoUpload.findFirst({
+      where: { id, userId },
+      include: { result: true },
+    })
+
+    if (!screening) return res.status(404).json({ error: 'NOT_FOUND' })
+
+    if (screening.result?.rawAiResponse) {
+      const raw = screening.result.rawAiResponse as any
+      if (raw.response?.prediction || raw.prediction) {
+        return res.json({
+          subject_id: raw.subjectId || id,
+          prediction: raw.response?.prediction || raw.prediction,
+          screening_result: screening.result,
+        })
+      }
+    }
+
+    const subjectId = (screening.result?.rawAiResponse as any)?.subjectId || id
+    try {
+      const prediction = await openposeService.getSubjectPrediction(subjectId)
+      return res.json(prediction)
+    } catch (err: any) {
+      return res.status(404).json({
+        error: 'PREDICTION_NOT_FOUND',
+        detail: err.message || 'Prediction not available on OpenPose server',
+      })
+    }
   }),
 )

@@ -5,6 +5,12 @@ import { env } from '../lib/env'
 import { prisma } from '../lib/prisma'
 import { generateMockAiResult, toRiskEnum } from './aiMock'
 
+import {
+  OpenPosePipelineResponse,
+  getOpenPoseBaseUrl,
+  openposeService,
+} from './openposeService'
+
 const inFlight = new Map<string, NodeJS.Timeout>()
 
 type ApiPrediction = {
@@ -28,18 +34,12 @@ type ApiResult = {
   }
   recommendation?: string
   prediction?: ApiPrediction
+  saved?: any
+  keypoint_format?: string
 }
 
 function clamp01(n: number) {
   return Math.max(0, Math.min(1, n))
-}
-
-function withDefaultPredictionPath(rawUrl: string) {
-  const url = new URL(rawUrl)
-  if (!url.pathname || url.pathname === '/') {
-    url.pathname = '/pipeline/asd'
-  }
-  return url.toString()
 }
 
 function riskFromAsdProbability(pAsd: number, threshold = 0.5): RiskLevel {
@@ -59,8 +59,13 @@ function recommendationFor(riskLevel: RiskLevel, pAsd: number) {
   return `Mô hình ghi nhận xác suất ASD thấp, khoảng ${percent}%. Kết quả chỉ mang tính tham khảo; gia đình vẫn nên tiếp tục theo dõi sự phát triển của trẻ.`
 }
 
-function normalizeApiResult(result: ApiResult) {
-  if (result.risk_level && result.confidence_score !== undefined && result.behavioral_scores) {
+function normalizeApiResult(result: ApiResult | OpenPosePipelineResponse) {
+  if (
+    'risk_level' in result &&
+    result.risk_level &&
+    result.confidence_score !== undefined &&
+    result.behavioral_scores
+  ) {
     const riskLevel = toRiskEnum(result.risk_level)
     return {
       riskLevel,
@@ -69,7 +74,8 @@ function normalizeApiResult(result: ApiResult) {
       motorPatternScore: clamp01(result.behavioral_scores.motor_pattern ?? 0),
       responseBehaviorScore: clamp01(result.behavioral_scores.response_behavior ?? 0),
       repetitiveBehaviorScore: clamp01(result.behavioral_scores.repetitive_behavior ?? 0),
-      recommendation: result.recommendation ?? recommendationFor(riskLevel, 1 - result.confidence_score),
+      recommendation:
+        result.recommendation ?? recommendationFor(riskLevel, 1 - result.confidence_score),
     }
   }
 
@@ -87,7 +93,7 @@ function normalizeApiResult(result: ApiResult) {
     motorPatternScore: pTypical,
     responseBehaviorScore: pTypical,
     repetitiveBehaviorScore: pAsd,
-    recommendation: result.recommendation ?? recommendationFor(riskLevel, pAsd),
+    recommendation: ('recommendation' in result ? result.recommendation : undefined) ?? recommendationFor(riskLevel, pAsd),
   }
 }
 
@@ -100,63 +106,18 @@ async function callPredictionApi(videoId: string) {
     throw new Error(`Video file does not exist at path: ${fullPath}`)
   }
 
-  // File-backed Blob keeps large recordings on disk.  The previous Buffer
-  // allocated the entire video in the Node.js heap before forwarding it.
-  const blob = await fs.openAsBlob(fullPath, { type: video.mimeType })
-  const formData = new FormData()
-  formData.append('video', blob, video.originalFilename)
-
-  const apiUrl = withDefaultPredictionPath(env.EXTRACT_API_URL)
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), env.EXTRACT_API_TIMEOUT_MS)
-
-  let response
-  try {
-    response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'User-Agent': 'ASD-Backend/1.0',
-      },
-      body: formData,
-      signal: controller.signal,
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    const cause = error instanceof Error && 'cause' in error ? error.cause : undefined
-    const causeMessage = cause instanceof Error ? cause.message : cause ? String(cause) : ''
-    const reason = error instanceof Error && error.name === 'AbortError'
-      ? `timed out after ${Math.round(env.EXTRACT_API_TIMEOUT_MS / 1000)} seconds`
-      : causeMessage ? `${message} (${causeMessage})` : message
-    throw new Error(`Prediction API connection failed: ${reason}`)
-  } finally {
-    clearTimeout(timeout)
-  }
-
-  const text = await response.text()
-  
-  // Check HTTP status first before parsing JSON
-  if (!response.ok) {
-    const isHtml = text.includes('<!DOCTYPE') || text.includes('<html')
-    if (isHtml) {
-      throw new Error(`Prediction API returned HTML page (status ${response.status}). Check if ngrok tunnel is active and API is running at ${apiUrl}`)
-    }
-    throw new Error(`Prediction API failed: ${response.status} ${response.statusText} - ${text.slice(0, 1000)}`)
-  }
-
-  // Now try to parse JSON
-  let json: ApiResult
-  try {
-    json = text ? JSON.parse(text) : {}
-  } catch {
-    throw new Error(`Prediction API returned non-JSON response: ${text.slice(0, 500)}`)
-  }
-
-  if (json && typeof json === 'object' && ('detail' in json || 'error' in json)) {
-    throw new Error(`Prediction API returned error: ${JSON.stringify(json)}`)
-  }
+  const json = await openposeService.runPipelineAsd({
+    filePath: fullPath,
+    originalFilename: video.originalFilename,
+    mimeType: video.mimeType,
+    subjectId: video.id,
+    threshold: 0.5,
+    temperature: 1.0,
+    returnKeypoints: false,
+  })
 
   return {
-    apiUrl,
+    apiUrl: `${getOpenPoseBaseUrl()}/pipeline/asd`,
     json,
   }
 }
@@ -195,10 +156,12 @@ async function createApiResult(videoId: string) {
       repetitiveBehaviorScore: normalized.repetitiveBehaviorScore,
       recommendation: normalized.recommendation,
       rawAiResponse: {
-        provider: 'extract-api',
+        provider: 'openpose-stgcn',
         apiUrl,
-        subjectId: json.subject_id,
+        subjectId: json.subject_id || videoId,
         numFrames: json.num_frames,
+        keypointFormat: json.keypoint_format,
+        saved: json.saved,
         generated_at: new Date().toISOString(),
         response: json,
       },
