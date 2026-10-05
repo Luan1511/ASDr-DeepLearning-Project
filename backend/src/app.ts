@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import path from 'path'
 import { env } from './lib/env'
 import { errorHandler } from './middleware/errorHandler'
 import { apiRouter, pipelineRouter, subjectsRouter } from './routes'
@@ -10,6 +9,7 @@ export function createApp() {
   // API polling represents changing job state. Disable ETags so a browser
   // never turns a successful polling response into HTTP 304 (Axios rejects it).
   app.disable('etag')
+  app.disable('x-powered-by')
 
   app.use(
     cors({
@@ -20,12 +20,13 @@ export function createApp() {
 
   app.use(express.json({ limit: '2mb' }))
 
-  // Static uploads (local storage)
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+  // Children's raw videos are never served statically (the former public
+  // /uploads route exposed them to anyone who knew the file name).
 
   app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
-  // Direct OpenPose & Subject routes (without /api prefix) matching Python server directly
+  // Direct OpenPose & Subject routes (without /api prefix) matching the Python
+  // server's paths. Admin-only, same as their /api counterparts.
   app.use('/pipeline', pipelineRouter)
   app.use('/subjects', subjectsRouter)
 

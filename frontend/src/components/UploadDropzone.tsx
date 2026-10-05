@@ -1,14 +1,18 @@
 import { useRef, useState } from 'react'
 import { Video, Upload } from 'lucide-react'
 
+const DEFAULT_ACCEPT = 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,.mp4,.mov,.avi,.mkv'
+
 export function UploadDropzone({
   disabled,
   onFileSelected,
   helperText,
+  accept = DEFAULT_ACCEPT,
 }: {
   disabled?: boolean
   onFileSelected: (file: File) => void
   helperText?: string
+  accept?: string
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -64,7 +68,7 @@ export function UploadDropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi"
+        accept={accept}
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0]

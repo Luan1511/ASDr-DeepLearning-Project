@@ -12,26 +12,9 @@ export function AIAssistantCard() {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [models, setModels] = useState<string[]>([])
-  const [selectedModel, setSelectedModel] = useState<string>('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const disclaimer = useMemo(() => 'Trợ lý chỉ giải thích kiến thức, không chẩn đoán.', [])
-
-  useEffect(() => {
-    async function fetchModels() {
-      try {
-        const res = await api.get('/chat/models')
-        if (res.data && res.data.models) {
-          setModels(res.data.models)
-          if (res.data.models.length > 0) setSelectedModel(res.data.models[0])
-        }
-      } catch {
-        // ignore
-      }
-    }
-    fetchModels()
-  }, [])
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -44,7 +27,7 @@ export function AIAssistantCard() {
     setInput('')
     setLoading(true)
     try {
-      const res = await api.post('/chat', { message: trimmed, modelName: selectedModel })
+      const res = await api.post('/chat', { message: trimmed })
       setMessages((m) => [...m, { role: 'assistant', content: res.data.reply }])
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: 'Xin lỗi, hiện chưa thể trả lời. Thử lại sau nhé.' }])
@@ -62,19 +45,6 @@ export function AIAssistantCard() {
           </div>
           <div className="text-sm font-extrabold uppercase tracking-wide text-duo-ink">Trợ lý AI</div>
         </div>
-        {models.length > 0 && (
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="rounded-xl bg-white px-2 py-1 text-xs font-bold text-duo-ink shadow-chip outline-none transition-shadow focus:shadow-input-focus"
-          >
-            {models.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        )}
       </div>
 
       <div className="space-y-3 p-4">

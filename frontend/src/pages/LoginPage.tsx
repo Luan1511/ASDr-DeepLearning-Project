@@ -5,8 +5,8 @@ import { useAuth } from '../state/auth'
 export function LoginPage() {
   const { login } = useAuth()
   const nav = useNavigate()
-  const [email, setEmail] = useState('user@asdr.local')
-  const [password, setPassword] = useState('user123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

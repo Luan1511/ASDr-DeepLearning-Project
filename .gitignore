@@ -11,6 +11,7 @@ backend/dist/
 !.env.example
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -19,8 +20,26 @@ pnpm-debug.log*
 # Prisma
 backend/prisma/dev.db
 
-# Uploads (local)
+# Children's videos and derived data — never commit (privacy)
 backend/uploads/
+API/storage/
+
+# ML artefacts (keep them in versioned storage outside git)
+API/ASD_Model/
+API/Llama/
+*.pth
+*.ckpt
+*.safetensors
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Debug dumps
+backend/response.json
+
+# Personal tool settings
+.claude/settings.local.json
 
 # OS/editor
 .DS_Store

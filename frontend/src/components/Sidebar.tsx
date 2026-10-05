@@ -35,7 +35,13 @@ export function Sidebar() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const navItems: NavItem[] =
-    user?.role === 'ADMIN' ? [...items, { to: '/admin', label: 'Admin', icon: Shield }] : items
+    user?.role === 'ADMIN'
+      ? [
+          ...items,
+          { to: '/admin', label: 'Admin', icon: Shield },
+          { to: '/admin/skeleton', label: 'Skeleton', icon: Video },
+        ]
+      : items
 
   return (
     <aside className="flex h-full flex-col px-4 py-6">

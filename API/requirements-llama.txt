@@ -1,0 +1,8 @@
+# Llama chat server (server_llama.py) on top of requirements.txt. Needs a GPU.
+# Minimum versions for Llama-3.2 (rope "llama3") + 4-bit QLoRA adapters;
+# pin to the exact versions used on the GPU server once confirmed.
+-r requirements.txt
+transformers>=4.43
+peft>=0.11
+accelerate>=0.30
+bitsandbytes>=0.43

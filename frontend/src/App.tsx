@@ -12,6 +12,7 @@ import { ArticlePage } from './pages/ArticlePage'
 import { GuidePage } from './pages/GuidePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { AdminPage } from './pages/AdminPage'
+import { AdminSkeletonPage } from './pages/AdminSkeletonPage'
 
 export default function App() {
   return (
@@ -104,6 +105,15 @@ export default function App() {
         element={
           <AdminRoute>
             <AdminPage />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/skeleton"
+        element={
+          <AdminRoute>
+            <AdminSkeletonPage />
           </AdminRoute>
         }
       />

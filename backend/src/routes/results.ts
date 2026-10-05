@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
+import { serializeResult, serializeScreening } from '../lib/serializers'
 
 export const resultsRouter = Router()
 
@@ -29,6 +30,7 @@ resultsRouter.get(
       return res.status(404).json({ error: 'NOT_FOUND' })
     }
 
-    return res.json({ result })
+    const { video, ...row } = result
+    return res.json({ result: { ...serializeResult(row), video: serializeScreening(video) } })
   }),
 )

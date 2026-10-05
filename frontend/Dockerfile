@@ -7,6 +7,10 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Vite inlines env vars at BUILD time. "/api" = same origin, proxied by nginx.
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Runtime stage

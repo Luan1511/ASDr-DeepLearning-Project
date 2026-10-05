@@ -4,6 +4,8 @@ import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { Gender } from '@prisma/client'
+import { CONSENT_SCOPES, CONSENT_VERSION, REQUIRED_CONSENT_SCOPES } from '../lib/consent'
+import { findActiveConsent, getCurrentConsentStatement } from '../services/consentService'
 
 export const childrenRouter = Router()
 
@@ -65,5 +67,88 @@ childrenRouter.post(
     })
 
     return res.status(201).json({ child })
+  }),
+)
+
+async function findOwnedChild(childId: string, userId: string) {
+  return prisma.childProfile.findFirst({ where: { id: childId, userId } })
+}
+
+// ---------------------------------------------------------------------------
+// Guardian consent
+// ---------------------------------------------------------------------------
+
+childrenRouter.get(
+  '/:id/consent',
+  asyncHandler(async (req, res) => {
+    const childId = z.string().uuid().parse(req.params.id)
+    const child = await findOwnedChild(childId, req.user!.id)
+    if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
+
+    const consent = await findActiveConsent(childId)
+    return res.json({
+      currentVersion: CONSENT_VERSION,
+      consent: consent
+        ? { id: consent.id, version: consent.version, scopes: consent.scopes, grantedAt: consent.grantedAt }
+        : null,
+    })
+  }),
+)
+
+const grantConsentSchema = z.object({
+  accepted: z.literal(true),
+  version: z.string().min(1),
+  scopes: z.array(z.enum(CONSENT_SCOPES)).min(1),
+})
+
+childrenRouter.post(
+  '/:id/consent',
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id
+    const childId = z.string().uuid().parse(req.params.id)
+    const input = grantConsentSchema.parse(req.body)
+
+    const child = await findOwnedChild(childId, userId)
+    if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
+
+    if (input.version !== CONSENT_VERSION) {
+      return res.status(409).json({ error: 'CONSENT_VERSION_OUTDATED', currentVersion: CONSENT_VERSION })
+    }
+    const scopes = Array.from(new Set(input.scopes))
+    if (!REQUIRED_CONSENT_SCOPES.every((s) => scopes.includes(s))) {
+      return res.status(400).json({ error: 'CONSENT_SCOPE_REQUIRED', required: REQUIRED_CONSENT_SCOPES })
+    }
+
+    // Snapshot exactly what was shown so the record stays auditable even if
+    // the wording changes later.
+    const statement = await getCurrentConsentStatement()
+    const consent = await prisma.$transaction(async (tx) => {
+      await tx.consentRecord.updateMany({
+        where: { childId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      })
+      return tx.consentRecord.create({
+        data: { userId, childId, version: CONSENT_VERSION, scopes, statement },
+      })
+    })
+
+    return res.status(201).json({
+      consent: { id: consent.id, version: consent.version, scopes: consent.scopes, grantedAt: consent.grantedAt },
+    })
+  }),
+)
+
+childrenRouter.delete(
+  '/:id/consent',
+  asyncHandler(async (req, res) => {
+    const childId = z.string().uuid().parse(req.params.id)
+    const child = await findOwnedChild(childId, req.user!.id)
+    if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
+
+    const result = await prisma.consentRecord.updateMany({
+      where: { childId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
+    return res.json({ revoked: result.count })
   }),
 )

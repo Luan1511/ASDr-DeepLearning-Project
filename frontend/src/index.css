@@ -71,6 +71,19 @@
     box-shadow: none;
   }
 
+  .btn-duo-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-duo-mist px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-duo-ink transition-all disabled:cursor-not-allowed disabled:opacity-50;
+    box-shadow: 0 2px 0 rgba(60, 60, 60, 0.08), 0 3px 10px rgba(60, 60, 60, 0.08);
+  }
+  .btn-duo-secondary:hover:not(:disabled) {
+    @apply bg-duo-mist;
+    box-shadow: 0 2px 0 rgba(60, 60, 60, 0.10), 0 6px 16px rgba(60, 60, 60, 0.12);
+  }
+  .btn-duo-secondary:active:not(:disabled) {
+    @apply translate-y-[2px];
+    box-shadow: none;
+  }
+
   .btn-duo-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-duo-blue transition-all disabled:cursor-not-allowed disabled:opacity-50;
     box-shadow: 0 2px 0 rgba(60, 60, 60, 0.08), 0 3px 10px rgba(60, 60, 60, 0.08);

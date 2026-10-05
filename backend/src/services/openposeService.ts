@@ -1,17 +1,36 @@
 import fs from 'fs'
 import path from 'path'
 import { env } from '../lib/env'
+import { Semaphore } from '../lib/semaphore'
 
 export function getOpenPoseBaseUrl(): string {
-  const raw =
-    env.OPENPOSE_SERVER_URL ||
-    env.EXTRACT_API_URL ||
-    'https://obstinate-doubling-directly.ngrok-free.dev'
-  try {
-    const parsed = new URL(raw)
-    return parsed.origin
-  } catch {
-    return 'https://obstinate-doubling-directly.ngrok-free.dev'
+  // EXTRACT_API_URL may be a full endpoint (…/pipeline/asd); only the origin is used.
+  return new URL(env.OPENPOSE_SERVER_URL || env.EXTRACT_API_URL).origin
+}
+
+export type OpenPoseErrorKind = 'timeout' | 'network' | 'html' | 'http' | 'invalid_json'
+
+/**
+ * Error raised for any failed call to the ML server. `message` keeps the full
+ * technical detail for logs and admins; never show it verbatim to parents
+ * (it can contain upstream URLs or OpenPose stderr).
+ */
+export class OpenPoseApiError extends Error {
+  constructor(
+    message: string,
+    readonly kind: OpenPoseErrorKind,
+    readonly status?: number,
+    readonly detail?: string,
+  ) {
+    super(message)
+    this.name = 'OpenPoseApiError'
+  }
+
+  /** Transient failures worth retrying: tunnel/network problems and 5xx. */
+  get retryable(): boolean {
+    if (this.kind !== 'http') return true
+    const status = this.status ?? 0
+    return status >= 500 || status === 408 || status === 429
   }
 }
 
@@ -28,6 +47,23 @@ export type OpenPosePrediction = {
   threshold?: number
   temperature?: number
   label_name?: string
+  // Present on ML servers that load ASD_Model/calibration.json.
+  high_risk_threshold?: number
+  calibrated?: boolean
+  model?: {
+    checkpoint?: string
+    sha256?: string
+    num_joints?: number
+  }
+}
+
+/** Probed by the ML server with OpenCV (newer servers only). */
+export type OpenPoseVideoInfo = {
+  fps?: number | null
+  width?: number | null
+  height?: number | null
+  frame_count?: number | null
+  duration_sec?: number | null
 }
 
 export type OpenPoseSubjectMetadata = {
@@ -38,6 +74,22 @@ export type OpenPoseSubjectMetadata = {
   num_frames: number
   status: string
   has_prediction: boolean
+  prediction_updated_at?: string
+  video?: OpenPoseVideoInfo
+  video_retention?: string
+}
+
+export type OpenPoseKeypointFrame = {
+  frame_index: number
+  people: Array<{
+    person_id: number
+    body25: Array<{
+      id: number
+      x: number
+      y: number
+      confidence: number
+    }>
+  }>
 }
 
 export type OpenPosePipelineResponse = {
@@ -46,6 +98,7 @@ export type OpenPosePipelineResponse = {
   num_frames: number
   keypoint_format: string
   prediction: OpenPosePrediction
+  video?: OpenPoseVideoInfo
   saved?: {
     subject_dir?: string
     input_video?: string
@@ -54,7 +107,7 @@ export type OpenPosePipelineResponse = {
     prediction_path?: string
     metadata_path?: string
   }
-  frames?: any[]
+  frames?: OpenPoseKeypointFrame[]
 }
 
 export type OpenPoseExtractResponse = {
@@ -62,6 +115,7 @@ export type OpenPoseExtractResponse = {
   filename: string
   num_frames: number
   keypoint_format: string
+  video?: OpenPoseVideoInfo
   saved?: {
     subject_dir?: string
     input_video?: string
@@ -84,18 +138,8 @@ export type OpenPoseKeypointsResponse = {
   subject_id: string
   keypoint_format: string
   num_frames: number
-  frames: Array<{
-    frame_index: number
-    people: Array<{
-      person_id: number
-      body25: Array<{
-        id: number
-        x: number
-        y: number
-        confidence: number
-      }>
-    }>
-  }>
+  video?: OpenPoseVideoInfo
+  frames: OpenPoseKeypointFrame[]
 }
 
 export type OpenPoseSubjectPredictionResponse = {
@@ -103,6 +147,18 @@ export type OpenPoseSubjectPredictionResponse = {
   created_at: string
   prediction: OpenPosePrediction
 }
+
+export type OpenPoseHealth = {
+  status: string
+  version?: string
+  model_loaded?: boolean
+  calibrated?: boolean
+  video_retention?: string
+  auth_required?: boolean
+}
+
+// OpenPose saturates the GPU; queue heavy calls instead of running them in parallel.
+const heavyCallGate = new Semaphore(env.ML_MAX_CONCURRENCY)
 
 async function requestOpenPose<T = any>(
   endpoint: string,
@@ -128,50 +184,72 @@ async function requestOpenPose<T = any>(
       headers: {
         'ngrok-skip-browser-warning': 'true',
         'User-Agent': 'ASD-Backend/1.0',
+        ...(env.OPENPOSE_API_KEY ? { 'X-API-Key': env.OPENPOSE_API_KEY } : {}),
         ...options.headers,
       },
       body: options.body,
       signal: controller.signal,
     })
   } catch (error: any) {
+    clearTimeout(timeout)
     if (error?.name === 'AbortError') {
-      throw new Error(
+      throw new OpenPoseApiError(
         `OpenPose API timed out after ${Math.round(timeoutMs / 1000)} seconds: ${targetUrl}`,
+        'timeout',
       )
     }
     const message = error instanceof Error ? error.message : String(error)
     const cause = error instanceof Error && 'cause' in error ? (error as any).cause : undefined
     const causeMessage = cause instanceof Error ? cause.message : cause ? String(cause) : ''
-    throw new Error(
+    throw new OpenPoseApiError(
       `OpenPose API connection failed: ${causeMessage ? `${message} (${causeMessage})` : message}`,
+      'network',
+    )
+  }
+
+  let text: string
+  try {
+    text = await response.text()
+  } catch (error: any) {
+    throw new OpenPoseApiError(
+      error?.name === 'AbortError'
+        ? `OpenPose API timed out after ${Math.round(timeoutMs / 1000)} seconds: ${targetUrl}`
+        : `OpenPose API connection failed while reading the response: ${error?.message ?? error}`,
+      error?.name === 'AbortError' ? 'timeout' : 'network',
     )
   } finally {
     clearTimeout(timeout)
   }
 
-  const text = await response.text()
-
   if (!response.ok) {
     const isHtml = text.includes('<!DOCTYPE') || text.includes('<html')
     if (isHtml) {
-      throw new Error(
+      throw new OpenPoseApiError(
         `OpenPose API returned HTML page (status ${response.status}). Check if ngrok tunnel is active and API is running at ${baseUrl}`,
+        'html',
+        response.status,
       )
     }
     let errorDetail = text
     try {
       const parsed = JSON.parse(text)
-      errorDetail = parsed.detail || parsed.message || parsed.error || JSON.stringify(parsed)
+      const detail = parsed.detail ?? parsed.message ?? parsed.error
+      errorDetail = typeof detail === 'string' ? detail : JSON.stringify(detail ?? parsed)
     } catch {
       // ignore
     }
-    throw new Error(`OpenPose API failed: ${response.status} ${response.statusText} - ${errorDetail}`)
+    throw new OpenPoseApiError(
+      `OpenPose API failed: ${response.status} ${response.statusText} - ${errorDetail}`,
+      'http',
+      response.status,
+      errorDetail,
+    )
   }
 
   try {
     return (text ? JSON.parse(text) : {}) as T
   } catch {
-    throw new Error(`OpenPose API returned invalid JSON: ${text.slice(0, 500)}`)
+    throw new OpenPoseApiError(`OpenPose API returned invalid JSON: ${text.slice(0, 500)}`, 'invalid_json')
   }
 }
 
@@ -196,12 +274,28 @@ async function prepareVideoBlob(input: {
   throw new Error('Either filePath or buffer must be provided')
 }
 
+function subjectPath(subjectId: string, suffix = '') {
+  return `/subjects/${encodeURIComponent(subjectId)}${suffix}`
+}
+
 export class OpenPoseService {
   /**
    * Health / Root
    */
   async checkHealth(): Promise<{ message: string; routes: string[] }> {
-    return requestOpenPose('/')
+    return requestOpenPose('/', { timeoutMs: 15_000 })
+  }
+
+  /**
+   * GET /health — only on updated ML servers; null when the server predates it.
+   */
+  async getHealth(): Promise<OpenPoseHealth | null> {
+    try {
+      return await requestOpenPose<OpenPoseHealth>('/health', { timeoutMs: 15_000 })
+    } catch (error) {
+      if (error instanceof OpenPoseApiError && error.status === 404) return null
+      throw error
+    }
   }
 
   /**
@@ -233,10 +327,12 @@ export class OpenPoseService {
     if (params.returnKeypoints) searchParams.append('return_keypoints', 'true')
 
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : ''
-    return requestOpenPose<OpenPosePipelineResponse>(`/pipeline/asd${qs}`, {
-      method: 'POST',
-      body: formData,
-    })
+    return heavyCallGate.run(() =>
+      requestOpenPose<OpenPosePipelineResponse>(`/pipeline/asd${qs}`, {
+        method: 'POST',
+        body: formData,
+      }),
+    )
   }
 
   /**
@@ -262,10 +358,12 @@ export class OpenPoseService {
     if (params.subjectId) searchParams.append('subject_id', params.subjectId)
 
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : ''
-    return requestOpenPose<OpenPoseExtractResponse>(`/subjects/extract${qs}`, {
-      method: 'POST',
-      body: formData,
-    })
+    return heavyCallGate.run(() =>
+      requestOpenPose<OpenPoseExtractResponse>(`/subjects/extract${qs}`, {
+        method: 'POST',
+        body: formData,
+      }),
+    )
   }
 
   /**
@@ -283,9 +381,10 @@ export class OpenPoseService {
     if (options.temperature !== undefined) searchParams.append('temperature', String(options.temperature))
 
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : ''
-    return requestOpenPose<OpenPoseSubjectPredictionResponse>(
-      `/subjects/${encodeURIComponent(subjectId)}/predict${qs}`,
-      { method: 'POST' },
+    return heavyCallGate.run(() =>
+      requestOpenPose<OpenPoseSubjectPredictionResponse>(subjectPath(subjectId, `/predict${qs}`), {
+        method: 'POST',
+      }),
     )
   }
 
@@ -293,42 +392,44 @@ export class OpenPoseService {
    * GET /subjects
    */
   async listSubjects(): Promise<{ total: number; subjects: OpenPoseSubjectMetadata[] }> {
-    return requestOpenPose<{ total: number; subjects: OpenPoseSubjectMetadata[] }>('/subjects')
+    return requestOpenPose<{ total: number; subjects: OpenPoseSubjectMetadata[] }>('/subjects', {
+      timeoutMs: 60_000,
+    })
   }
 
   /**
    * GET /subjects/{subject_id}
    */
   async getSubject(subjectId: string): Promise<OpenPoseSubjectDetail> {
-    return requestOpenPose<OpenPoseSubjectDetail>(`/subjects/${encodeURIComponent(subjectId)}`)
+    return requestOpenPose<OpenPoseSubjectDetail>(subjectPath(subjectId), { timeoutMs: 60_000 })
   }
 
   /**
    * GET /subjects/{subject_id}/keypoints
    */
   async getSubjectKeypoints(subjectId: string): Promise<OpenPoseKeypointsResponse> {
-    return requestOpenPose<OpenPoseKeypointsResponse>(
-      `/subjects/${encodeURIComponent(subjectId)}/keypoints`,
-    )
+    return requestOpenPose<OpenPoseKeypointsResponse>(subjectPath(subjectId, '/keypoints'), {
+      timeoutMs: 5 * 60_000,
+    })
   }
 
   /**
    * GET /subjects/{subject_id}/prediction
    */
   async getSubjectPrediction(subjectId: string): Promise<OpenPoseSubjectPredictionResponse> {
-    return requestOpenPose<OpenPoseSubjectPredictionResponse>(
-      `/subjects/${encodeURIComponent(subjectId)}/prediction`,
-    )
+    return requestOpenPose<OpenPoseSubjectPredictionResponse>(subjectPath(subjectId, '/prediction'), {
+      timeoutMs: 60_000,
+    })
   }
 
   /**
    * DELETE /subjects/{subject_id}
    */
   async deleteSubject(subjectId: string): Promise<{ subject_id: string; deleted: boolean }> {
-    return requestOpenPose<{ subject_id: string; deleted: boolean }>(
-      `/subjects/${encodeURIComponent(subjectId)}`,
-      { method: 'DELETE' },
-    )
+    return requestOpenPose<{ subject_id: string; deleted: boolean }>(subjectPath(subjectId), {
+      method: 'DELETE',
+      timeoutMs: 60_000,
+    })
   }
 }
 

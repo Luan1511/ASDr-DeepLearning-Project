@@ -1,7 +1,7 @@
 const steps = [
-  { n: '1', title: 'Tải video', desc: 'Quay hành vi tự nhiên của trẻ.' },
-  { n: '2', title: 'AI phân tích', desc: 'Xử lý vận động, biểu cảm, tương tác.' },
-  { n: '3', title: 'Kết quả', desc: 'Nhận mức nguy cơ tham khảo.' },
+  { n: '1', title: 'Quay & tải video', desc: 'Quay 6–10 giây trẻ đi thẳng, thấy toàn thân.' },
+  { n: '2', title: 'AI phân tích', desc: 'Trích khung xương (OpenPose) và phân tích chuyển động.' },
+  { n: '3', title: 'Kết quả', desc: 'Mức cần theo dõi và chỉ số dáng đi (tham khảo).' },
 ]
 
 export function AnalysisSteps() {

@@ -1,39 +1,29 @@
-# Multi-stage build
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS base
+# ML server image (FastAPI + ST-GCN). OpenPose is NOT built here: mount a Linux
+# OpenPose build at /opt/openpose (see docker-compose.yml, profile "ml") or run
+# the server directly on the GPU host, which is the tested setup.
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 
-RUN apt-get update && apt-get install -y \
-    python3.11 \
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Ubuntu 22.04 ships Python 3.10, the version the code is developed with.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
     python3-pip \
-    libgl1-mesa-glx \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
+    libgl1 \
+    libglib2.0-0 \
     libgomp1 \
-    git \
-    wget \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Build stage
-FROM base AS builder
-
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    --extra-index-url https://download.pytorch.org/whl/cu121
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Runtime stage
-FROM base
-
-WORKDIR /app
-
-# Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.11/dist-packages /usr/local/lib/python3.11/dist-packages
-
-# Copy application
 COPY . .
 
-# Create directories
 RUN mkdir -p storage ASD_Model
 
 EXPOSE 8000

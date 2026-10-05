@@ -94,13 +94,10 @@ async function main() {
         create: {
           riskLevel: RiskLevel.MEDIUM,
           confidenceScore: 0.73,
-          eyeContactScore: 0.62,
-          motorPatternScore: 0.71,
-          responseBehaviorScore: 0.68,
-          repetitiveBehaviorScore: 0.55,
           recommendation:
             'Kết quả mang tính tham khảo. Nếu bạn lo lắng về sự phát triển của trẻ, hãy trao đổi với bác sĩ nhi/ chuyên gia tâm lý phát triển để được đánh giá trực tiếp.',
-          rawAiResponse: { source: 'seed', version: 'mock-v1' },
+          calibrated: false,
+          rawAiResponse: { provider: 'mock', source: 'seed', version: 'mock-v1' },
         },
       },
     },
@@ -134,13 +131,10 @@ async function main() {
         create: {
           riskLevel: RiskLevel.LOW,
           confidenceScore: 0.81,
-          eyeContactScore: 0.78,
-          motorPatternScore: 0.74,
-          responseBehaviorScore: 0.80,
-          repetitiveBehaviorScore: 0.70,
           recommendation:
             'Kết quả mang tính tham khảo. Tiếp tục theo dõi các mốc phát triển, duy trì tương tác tích cực và trao đổi với chuyên gia nếu có dấu hiệu bất thường.',
-          rawAiResponse: { source: 'seed', version: 'mock-v1' },
+          calibrated: false,
+          rawAiResponse: { provider: 'mock', source: 'seed', version: 'mock-v1' },
         },
       },
     },

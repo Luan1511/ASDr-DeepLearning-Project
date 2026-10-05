@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import uuid
@@ -10,6 +11,27 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from pydantic import BaseModel
 
 from services.llama_service import LlamaModelRegistry
+
+# =========================
+# CONFIG
+# =========================
+
+API_DIR = Path(__file__).resolve().parent
+
+
+def _adapter_root() -> Path:
+    """Folder holding output_llama_asd_lora_*: LLAMA_ADAPTER_ROOT, else the
+    existing one of Llama/ or LLama/ (both spellings exist; Linux is case-sensitive)."""
+    configured = os.getenv("LLAMA_ADAPTER_ROOT")
+    if configured:
+        return Path(configured)
+    for name in ("Llama", "LLama"):
+        if (API_DIR / name).is_dir():
+            return API_DIR / name
+    return API_DIR / "Llama"
+
+
+ADAPTER_ROOT = _adapter_root()
 
 # =========================
 # APP
@@ -48,7 +70,7 @@ def startup():
         configs={
             "asd_lora_1": {
                 "base_model": "meta-llama/Llama-3.2-3B-Instruct",
-                "adapter_path": "LLama/output_llama_asd_lora_1",
+                "adapter_path": str(ADAPTER_ROOT / "output_llama_asd_lora_1"),
                 "system_prompt": (
                     "Bạn là trợ lý tiếng Việt hỗ trợ phụ huynh và chuyên viên trong chủ đề "
                     "Rối loạn phổ tự kỷ ASD. Trả lời rõ ràng, thận trọng, dễ hiểu. "
@@ -57,7 +79,7 @@ def startup():
             },
             "asd_lora_2": {
                 "base_model": "meta-llama/Llama-3.2-3B-Instruct",
-                "adapter_path": "LLama/output_llama_asd_lora_2",
+                "adapter_path": str(ADAPTER_ROOT / "output_llama_asd_lora_2"),
                 "system_prompt": (
                     "Bạn là trợ lý tiếng Việt chỉ hỗ trợ trong phạm vi Rối loạn phổ tự kỷ ASD. "
                     "Nếu câu hỏi không liên quan ASD, hãy từ chối ngắn gọn và điều hướng người dùng "

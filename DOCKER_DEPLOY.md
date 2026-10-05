@@ -1,221 +1,71 @@
-# ASDr - Docker Deployment Guide
+# ASDr / AIMBRACE — Triển khai bằng Docker
 
-## 📋 Prerequisites
+> Trạng thái: cấu hình đã được sửa ngày 2026-10-05 nhưng **chưa build thử** (Docker Desktop không chạy trên máy phát triển lúc sửa). Hãy chạy thử theo các bước dưới đây trước khi dùng cho demo.
 
-- **Docker** (version 20.10+)
-- **Docker Compose** (version 2.0+)
-- **NVIDIA GPU** (recommended for ML API)
-- **NVIDIA Container Toolkit** (for GPU support in ML API)
+## Thành phần
 
-## 🚀 Quick Start
+| Service | Mặc định | Ghi chú |
+|---|---|---|
+| `db` | PostgreSQL 16, `127.0.0.1:5433` | dữ liệu trong volume `asdr_db_data`, múi giờ UTC |
+| `backend` | `http://localhost:4000` | tự chạy `prisma migrate deploy` khi khởi động |
+| `frontend` | `http://localhost:3000` | nginx phục vụ SPA và proxy `/api` → backend |
+| `ml-api` (profile `ml`) | `http://localhost:8000` | **không** có sẵn OpenPose, xem mục ML server |
 
-### 1. Prepare Environment
-
-```bash
-# Copy environment template if needed
-cp backend/.env.example backend/.env  # Optional if .env doesn't exist
-
-# Ensure necessary directories exist
-mkdir -p backend/uploads
-mkdir -p API/storage
-mkdir -p API/ASD_Model
-```
-
-### 2. Build Images
+## Các bước
 
 ```bash
-# Build all services
-docker-compose build
+# 1. Biến môi trường cho compose (mật khẩu DB, JWT_SECRET, ML_API_KEY, URL ML server)
+cp .env.example .env    # rồi sửa các giá trị change-me
 
-# Or build specific service
-docker-compose build backend
-docker-compose build frontend
-docker-compose build ml-api
+# 2. Build và chạy db + backend + frontend
+docker compose up -d --build
+
+# 3. (Tuỳ chọn) dữ liệu demo — chạy từ máy dev (image runtime không có tsx)
+cd backend
+DATABASE_URL="postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5433/asdr" npm run prisma:seed
 ```
 
-### 3. Start Services
+- Frontend: <http://localhost:3000>, backend: <http://localhost:4000/api/health>.
+- `frontend` được build với `VITE_API_URL=/api` (đường dẫn tương đối) nên trình duyệt gọi API qua nginx, không cần CORS.
+
+## ML server (OpenPose + ST-GCN)
+
+Cách đã kiểm chứng: **chạy trực tiếp trên máy GPU** (như hiện tại) rồi đặt `OPENPOSE_SERVER_URL` trong `.env` trỏ tới máy đó (ngrok hoặc `http://host.docker.internal:8000`).
 
 ```bash
-# Start all services in background
-docker-compose up -d
-
-# Or start with logs visible
-docker-compose up
+# trên máy GPU, trong thư mục API/
+pip install -r requirements.txt
+export ML_API_KEY=<cùng giá trị với backend>     # khuyến nghị
+export VIDEO_RETENTION=blurred                   # blurred | none | raw
+python3 -m uvicorn server_openpose:app --host 0.0.0.0 --port 8000
 ```
 
-### 4. Initialize Database
+Profile `ml` của compose chỉ dùng được khi có **bản build OpenPose cho Linux tương thích với container** (CUDA/glibc/thư viện), mount qua `OPENPOSE_HOST_DIR`. Checkpoint (`finetuned_best_model.pth`) và `calibration.json` đặt trong `API/ASD_Model/` (không commit vào git).
 
 ```bash
-# Run Prisma migrations
-docker-compose exec backend npm run prisma:migrate
-
-# (Optional) Seed database
-docker-compose exec backend npm run prisma:seed
+docker compose --profile ml up -d --build
+# và đặt OPENPOSE_SERVER_URL=http://ml-api:8000 trong .env
 ```
 
-### 5. Access Application
+## Lưu ý quan trọng
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **ML API Docs**: http://localhost:8000/docs
-- **Database**: localhost:5433 (postgres:123456)
+- **Không trỏ backend trong compose vào DB dùng chung của nhóm** (`100.104.148.57:5433`): DB đó có lịch sử migration khác repo, `prisma migrate deploy` sẽ lỗi. Nếu bắt buộc phải trỏ vào đó, đặt `SKIP_MIGRATIONS=1` cho service `backend` và áp migration thủ công theo `master_prompt.md` §5.
+- Video gốc người dùng upload nằm ở `backend/uploads` (volume) và được xoá sau khi phân tích thành công (`RETAIN_UPLOADED_VIDEOS=false`).
+- Kiểm tra máy GPU: nếu `/health` báo `cuda_available: false` hoặc OpenPose lỗi `Cuda check failed ... no CUDA-capable device`, container/máy chủ không thấy GPU (driver, `--gpus all`, NVIDIA Container Toolkit).
 
-## 📊 Service Architecture
-
-```
-┌─────────────────────────────────────────┐
-│         Frontend (Nginx/React)          │
-│         http://localhost:3000           │
-└────────────────┬────────────────────────┘
-                 │
-         ┌───────┼───────┐
-         ▼       ▼       ▼
-    ┌────────────────┐  ┌─────────────────┐
-    │ Backend (Node) │  │ ML API (Python) │
-    │ :4000          │  │ :8000           │
-    └────────┬───────┘  └────────┬────────┘
-             │                   │
-         ┌───┴─────────────────┐ │
-         ▼                     ▼ ▼
-    ┌────────────────────────────────────┐
-    │    PostgreSQL Database             │
-    │    localhost:5433                  │
-    └────────────────────────────────────┘
-```
-
-## 🛠️ Common Commands
+## Lệnh thường dùng
 
 ```bash
-# View logs
-docker-compose logs -f backend
-docker-compose logs -f ml-api
-docker-compose logs -f frontend
-
-# Stop services
-docker-compose down
-
-# Remove volumes (WARNING: deletes database)
-docker-compose down -v
-
-# Restart specific service
-docker-compose restart backend
-
-# Run commands in container
-docker-compose exec backend npm run prisma:generate
-docker-compose exec ml-api python3 -c "import torch; print(torch.cuda.is_available())"
+docker compose logs -f backend
+docker compose ps
+docker compose down          # dừng
+docker compose down -v       # dừng và XOÁ dữ liệu DB (cẩn thận)
 ```
 
-## 🐛 Troubleshooting
+## Checklist production
 
-### ML API fails to start (CUDA not available)
-
-```bash
-# Check GPU support
-docker run --rm --gpus all nvidia/cuda:12.2.2-runtime-ubuntu22.04 nvidia-smi
-
-# If no GPU, temporarily disable in docker-compose.yml
-# Comment out the 'deploy' section in ml-api service
-```
-
-### Database connection refused
-
-```bash
-# Check if db service is healthy
-docker-compose ps
-docker-compose logs db
-
-# Wait a bit longer for DB to initialize
-sleep 10
-docker-compose up -d
-```
-
-### Port conflicts
-
-If ports are already in use, modify `docker-compose.yml`:
-
-- Frontend: `3000:5173`
-- Backend: `4000:4000`
-- ML API: `8000:8000`
-- Database: `5433:5432`
-
-## 📁 File Structure
-
-```
-project/
-├── docker-compose.yml           # Orchestrates all services
-├── frontend/
-│   ├── Dockerfile              # React build + Nginx
-│   └── nginx.conf              # Nginx configuration
-├── backend/
-│   ├── Dockerfile              # Node build
-│   ├── .env                    # Environment variables
-│   └── prisma/                 # Database schemas
-├── API/
-│   ├── Dockerfile              # Python ML API
-│   ├── erequirements.txt         # Python dependencies
-│   ├── server_openpose.py      # FastAPI entry point
-│   └── ASD_Model/              # Pre-trained models
-└── README.md
-```
-
-## 🔧 Customization
-
-### Change Database
-
-Edit `docker-compose.yml`:
-
-```yaml
-db:
-  environment:
-    POSTGRES_PASSWORD: your-password-here
-```
-
-### Enable GPU for ML API
-
-Ensure NVIDIA Container Toolkit is installed:
-
-```bash
-docker run --rm --gpus all ubuntu nvidia-smi
-```
-
-### Adjust Resource Limits
-
-```yaml
-services:
-  backend:
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-```
-
-## 📦 Production Checklist
-
-- [ ] Use strong JWT_SECRET
-- [ ] Set CORS_ORIGIN correctly
-- [ ] Use managed PostgreSQL instead of container
-- [ ] Configure proper logging
-- [ ] Set up health checks
-- [ ] Use reverse proxy (Nginx, Traefik)
-- [ ] Enable HTTPS/SSL
-- [ ] Set resource limits
-- [ ] Monitor container health
-- [ ] Regular backups
-
-## 🔐 Security Notes
-
-1. Change default database password
-2. Update JWT_SECRET to a strong random string
-3. Whitelist CORS origins properly
-4. Use secrets management for production
-5. Don't expose sensitive environment variables
-6. Regularly update base images
-
----
-
-For more help, check individual service documentation or run:
-
-```bash
-docker-compose logs -f
-```
+- [ ] `JWT_SECRET`, `POSTGRES_PASSWORD`, `ML_API_KEY` mạnh và khác giá trị mẫu
+- [ ] HTTPS ở reverse proxy phía trước frontend
+- [ ] `CORS_ORIGIN` đúng domain thật
+- [ ] Sao lưu volume `asdr_db_data`
+- [ ] ML server đặt sau API key, chạy bản `server_openpose.py` mới (có `/health`, làm mờ mặt)

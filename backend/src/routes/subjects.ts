@@ -4,11 +4,23 @@ import path from 'path'
 import fs from 'fs'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
+import { UserRole } from '@prisma/client'
 import { env } from '../lib/env'
 import { asyncHandler } from '../middleware/asyncHandler'
+import { requireAuth } from '../middleware/auth'
+import { requireRole } from '../middleware/requireRole'
+import { SUBJECT_ID_PATTERN, validateSubjectIdParam } from '../middleware/subjectId'
 import { openposeService } from '../services/openposeService'
 
+/**
+ * Raw proxy to the ML server's /subjects API, mounted at /subjects and
+ * /api/subjects. Admin only: it can list and delete every subject.
+ */
 export const subjectsRouter = Router()
+
+subjectsRouter.use(requireAuth)
+subjectsRouter.use(requireRole(UserRole.ADMIN))
+subjectsRouter.param('subject_id', validateSubjectIdParam)
 
 const uploadStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -31,7 +43,7 @@ const upload = multer({
   },
   fileFilter: (_req, file, cb) => {
     const ext = (path.extname(file.originalname) || '').toLowerCase()
-    const okExt = ['.mp4', '.mov', '.avi'].includes(ext)
+    const okExt = ['.mp4', '.mov', '.avi', '.mkv'].includes(ext)
     const okMime =
       file.mimetype.startsWith('video/') ||
       ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/avi'].includes(file.mimetype)
@@ -66,6 +78,10 @@ subjectsRouter.post(
     }
 
     const subjectId = typeof req.query.subject_id === 'string' ? req.query.subject_id : undefined
+    if (subjectId !== undefined && !SUBJECT_ID_PATTERN.test(subjectId)) {
+      fs.promises.unlink(req.file.path).catch(() => {})
+      return res.status(422).json({ error: 'INVALID_SUBJECT_ID' })
+    }
 
     try {
       const data = await openposeService.extractSubject({

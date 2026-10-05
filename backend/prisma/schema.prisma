@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +5,165 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Schema changes must stay additive (new tables, nullable columns) because
+// several team members share one remote database while running different
+// revisions of this code.
+
+model User {
+  id           String          @id @default(uuid())
+  name         String
+  email        String          @unique
+  passwordHash String
+  role         UserRole        @default(USER)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  chatMessages ChatMessage[]
+  children     ChildProfile[]
+  uploads      VideoUpload[]
+  consents     ConsentRecord[]
+}
+
+model ChildProfile {
+  id          String          @id @default(uuid())
+  userId      String
+  fullName    String
+  dateOfBirth DateTime
+  gender      Gender          @default(UNSPECIFIED)
+  note        String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploads     VideoUpload[]
+  consents    ConsentRecord[]
+
+  @@index([userId])
+}
+
+model VideoUpload {
+  id               String           @id @default(uuid())
+  userId           String
+  childId          String
+  originalFilename String
+  storedFilename   String
+  filePath         String
+  mimeType         String
+  fileSize         Int
+  durationSeconds  Int?
+  // Measured by the browser before upload; the ML server's own probe wins when available.
+  durationMs       Int?
+  videoWidth       Int?
+  videoHeight      Int?
+  // Set when the raw upload was removed from backend storage after processing.
+  videoDeletedAt   DateTime?
+  consentId        String?
+  status           ScreeningStatus  @default(UPLOADED)
+  errorMessage     String?
+  createdAt        DateTime         @default(now())
+  result           ScreeningResult?
+  job              ScreeningJob?
+  consent          ConsentRecord?   @relation(fields: [consentId], references: [id], onDelete: SetNull)
+  child            ChildProfile     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([childId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ScreeningResult {
+  id                      String      @id @default(uuid())
+  videoId                 String      @unique
+  riskLevel               RiskLevel
+  // max(p_asd, p_typical); kept for older clients. Use asdProbability instead.
+  confidenceScore         Float
+  // Legacy columns: values derived from p_asd/p_typical, not real measurements.
+  // Still written (same derivation) so older backends sharing the database can
+  // read new rows; never exposed by the API. Nullable for a future cleanup.
+  eyeContactScore         Float?
+  motorPatternScore       Float?
+  responseBehaviorScore   Float?
+  repetitiveBehaviorScore Float?
+  // ST-GCN softmax output for the ASD class (after temperature scaling).
+  asdProbability          Float?
+  decisionThreshold       Float?
+  highRiskThreshold       Float?
+  calibrated              Boolean?
+  modelVersion            String?
+  // Interpretable gait descriptors + data-quality report (see gaitFeatures.ts).
+  gaitFeatures            Json?
+  recommendation          String
+  rawAiResponse           Json
+  createdAt               DateTime    @default(now())
+  video                   VideoUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([riskLevel])
+  @@index([createdAt])
+}
+
+// Parent/guardian consent for processing a child's videos. One active record
+// (revokedAt = null) per child and consent version.
+model ConsentRecord {
+  id        String        @id @default(uuid())
+  userId    String
+  childId   String
+  version   String
+  scopes    String[]
+  // Exact text shown to the guardian when they agreed (audit trail).
+  statement Json?
+  grantedAt DateTime      @default(now())
+  revokedAt DateTime?
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child     ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  uploads   VideoUpload[]
+
+  @@index([childId])
+  @@index([userId])
+}
+
+// Durable queue for screening jobs. Workers claim rows with
+// SELECT ... FOR UPDATE SKIP LOCKED and refresh lockedAt as a heartbeat.
+model ScreeningJob {
+  id          String      @id @default(uuid())
+  videoId     String      @unique
+  status      JobStatus   @default(QUEUED)
+  attempts    Int         @default(0)
+  maxAttempts Int         @default(3)
+  runAfter    DateTime    @default(now())
+  lockedBy    String?
+  lockedAt    DateTime?
+  lastError   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  video       VideoUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([status, runAfter])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  role      ChatRole
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Article {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  category  String
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@index([createdAt])
 }
 
 enum UserRole {
@@ -43,100 +196,9 @@ enum ChatRole {
   ASSISTANT
 }
 
-model User {
-  id           String         @id @default(uuid())
-  name         String
-  email        String         @unique
-  passwordHash String
-  role         UserRole       @default(USER)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-
-  children     ChildProfile[]
-  uploads      VideoUpload[]
-  chatMessages ChatMessage[]
-}
-
-model ChildProfile {
-  id          String       @id @default(uuid())
-  userId      String
-  fullName    String
-  dateOfBirth DateTime
-  gender      Gender       @default(UNSPECIFIED)
-  note        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  uploads     VideoUpload[]
-
-  @@index([userId])
-}
-
-model VideoUpload {
-  id               String          @id @default(uuid())
-  userId           String
-  childId          String
-  originalFilename String
-  storedFilename   String
-  filePath         String
-  mimeType         String
-  fileSize         Int
-  durationSeconds  Int?
-  status           ScreeningStatus @default(UPLOADED)
-  errorMessage     String?
-  createdAt        DateTime        @default(now())
-
-  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  child  ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  result ScreeningResult?
-
-  @@index([userId])
-  @@index([childId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model ScreeningResult {
-  id                     String    @id @default(uuid())
-  videoId                String    @unique
-  riskLevel              RiskLevel
-  confidenceScore        Float
-  eyeContactScore        Float
-  motorPatternScore      Float
-  responseBehaviorScore  Float
-  repetitiveBehaviorScore Float
-  recommendation         String
-  rawAiResponse          Json
-  createdAt              DateTime  @default(now())
-
-  video VideoUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
-  @@index([riskLevel])
-  @@index([createdAt])
-}
-
-model ChatMessage {
-  id        String   @id @default(uuid())
-  userId    String
-  role      ChatRole
-  content   String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model Article {
-  id        String   @id @default(uuid())
-  title     String
-  slug      String   @unique
-  content   String
-  category  String
-  createdAt DateTime @default(now())
-
-  @@index([category])
-  @@index([createdAt])
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
 }
