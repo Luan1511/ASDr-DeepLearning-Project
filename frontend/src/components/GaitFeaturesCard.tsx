@@ -2,35 +2,11 @@ import { useState } from 'react'
 import { ChevronDown, Footprints } from 'lucide-react'
 import type { GaitFeatures } from '../lib/types'
 import { GAIT_VIEW_LABEL, formatNumber, formatPercent } from '../lib/format'
-
-type Metrics = GaitFeatures['metrics']
-
-type Row = {
-  key: keyof Metrics
-  label: string
-  hint: string
-  format: (v: number) => string
-}
-
-const ROWS: Row[] = [
-  { key: 'stepCount', label: 'Số bước phát hiện', hint: 'Số lần chạm đất nhận ra được trong video.', format: (v) => formatNumber(v, 0) },
-  { key: 'cadenceStepsPerMin', label: 'Nhịp bước', hint: 'Số bước mỗi phút.', format: (v) => `${formatNumber(v, 0)} bước/phút` },
-  { key: 'stepTimeMeanSec', label: 'Thời gian mỗi bước', hint: 'Trung bình giữa hai lần chạm đất liên tiếp.', format: (v) => `${formatNumber(v, 2)} giây` },
-  { key: 'stepTimeCv', label: 'Độ dao động nhịp bước', hint: 'Càng cao thì nhịp bước càng không đều.', format: (v) => formatPercent(v) },
-  { key: 'stepTimeAsymmetry', label: 'Chênh lệch bước trái – phải', hint: 'Khác biệt thời gian giữa bước chân trái và phải.', format: (v) => formatPercent(v) },
-  { key: 'stepLengthLegRatio', label: 'Độ dài bước', hint: 'So với chiều dài chân của chính trẻ.', format: (v) => `${formatNumber(v, 2)} × chiều dài chân` },
-  { key: 'walkingSpeedLegPerSec', label: 'Tốc độ đi', hint: 'Quãng đường mỗi giây, tính theo chiều dài chân.', format: (v) => `${formatNumber(v, 2)} chiều dài chân/giây` },
-  { key: 'trunkLeanDeg', label: 'Độ nghiêng thân về trước', hint: 'Góc trung bình của thân so với phương thẳng đứng.', format: (v) => `${formatNumber(v, 1)}°` },
-  { key: 'trunkSwayDeg', label: 'Độ lắc thân', hint: 'Mức thay đổi góc thân trong lúc đi.', format: (v) => `${formatNumber(v, 1)}°` },
-  { key: 'armSwingLeft', label: 'Biên độ vung tay trái', hint: 'So với chiều dài thân.', format: (v) => `${formatNumber(v, 2)} × chiều dài thân` },
-  { key: 'armSwingRight', label: 'Biên độ vung tay phải', hint: 'So với chiều dài thân.', format: (v) => `${formatNumber(v, 2)} × chiều dài thân` },
-  { key: 'armSwingAsymmetry', label: 'Chênh lệch vung tay', hint: 'Khác biệt biên độ giữa hai tay.', format: (v) => formatPercent(v) },
-  { key: 'heelRaiseRatio', label: 'Tỉ lệ nhón gót (thử nghiệm)', hint: 'Tỉ lệ khung hình chân trụ có gót nhấc cao. Độ tin cậy thấp với video thường.', format: (v) => formatPercent(v) },
-]
+import { GAIT_METRICS } from '../lib/gaitMetrics'
 
 export function GaitFeaturesCard({ features, defaultOpen = false }: { features: GaitFeatures; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
-  const rows = ROWS.filter((r) => features.metrics[r.key] !== null && features.metrics[r.key] !== undefined)
+  const rows = GAIT_METRICS.filter((r) => features.metrics[r.key] !== null && features.metrics[r.key] !== undefined)
   const q = features.quality
 
   return (

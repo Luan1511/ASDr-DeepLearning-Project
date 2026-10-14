@@ -8,6 +8,7 @@
  * torso length so they do not depend on camera distance.
  */
 import type { OpenPoseKeypointFrame } from './openposeService'
+import { buildTracks, confidentJointCount, gaitTrackScore, selectTrack, trackToFrames, type Point } from './poseTracking'
 
 export type GaitView = 'side' | 'frontal' | 'oblique' | 'unknown'
 export type QualityLevel = 'good' | 'fair' | 'poor'
@@ -74,17 +75,12 @@ const L_HEEL = 21
 const R_BIG_TOE = 22
 const R_HEEL = 24
 
-const MIN_CONFIDENCE = 0.3
 const FOOT_MIN_CONFIDENCE = 0.4
 const MAX_INTERPOLATED_GAP = 5
 const ASSUMED_FPS_FOR_SMOOTHING = 30
 const MIN_STEP_SEC = 0.2
 const MAX_STEP_SEC = 2.0
 const HEEL_RAISE_FOOT_RATIO = 0.35
-
-type Point = { x: number; y: number }
-type Pose = Array<Point | null>
-type Person = OpenPoseKeypointFrame['people'][number]
 
 // ---------------------------------------------------------------------------
 // Small numeric helpers
@@ -126,124 +122,6 @@ function round(value: number | null, digits = 3): number | null {
   if (value === null || !Number.isFinite(value)) return null
   const f = 10 ** digits
   return Math.round(value * f) / f
-}
-
-// ---------------------------------------------------------------------------
-// Person selection
-// ---------------------------------------------------------------------------
-
-function toPose(person: Person): Pose {
-  const pose: Pose = new Array(25).fill(null)
-  for (const joint of person.body25 ?? []) {
-    if (joint.id < 0 || joint.id > 24) continue
-    if (!(joint.confidence >= MIN_CONFIDENCE)) continue
-    if (joint.x === 0 && joint.y === 0) continue
-    if (!Number.isFinite(joint.x) || !Number.isFinite(joint.y)) continue
-    pose[joint.id] = { x: joint.x, y: joint.y }
-  }
-  return pose
-}
-
-function confidentJointCount(person: Person): number {
-  return (person.body25 ?? []).filter((j) => j.confidence >= MIN_CONFIDENCE && (j.x !== 0 || j.y !== 0)).length
-}
-
-function meanConfidence(person: Person): number {
-  const confs = (person.body25 ?? []).map((j) => j.confidence).filter((c) => Number.isFinite(c))
-  return confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : 0
-}
-
-function poseCenter(pose: Pose): Point | null {
-  if (pose[MID_HIP]) return pose[MID_HIP]
-  if (pose[NECK]) return pose[NECK]
-  const pts = pose.filter((p): p is Point => p !== null)
-  if (!pts.length) return null
-  return { x: pts.reduce((a, p) => a + p.x, 0) / pts.length, y: pts.reduce((a, p) => a + p.y, 0) / pts.length }
-}
-
-type Track = {
-  lastCenter: Point
-  lastFrame: number
-  scale: number
-  members: Map<number, { person: Person; pose: Pose }>
-}
-
-const MAX_TRACK_GAP_FRAMES = 15
-
-/**
- * Find the walking child among everyone OpenPose detected: link detections
- * frame-to-frame by proximity into tracks, then keep the track that is both
- * long and has moving legs. A still, confident adult at the edge of the frame
- * therefore does not replace the child (the ST-GCN preprocessing on the ML
- * server still uses its own per-frame "most confident person" rule).
- */
-function trackMainPerson(
-  frames: OpenPoseKeypointFrame[],
-): Array<{ pose: Pose; confidence: number; person: Person } | null> {
-  const tracks: Track[] = []
-
-  frames.forEach((frame, t) => {
-    const candidates = (frame.people ?? [])
-      .filter((p) => confidentJointCount(p) >= 6)
-      .map((person) => {
-        const pose = toPose(person)
-        return { person, pose, center: poseCenter(pose), scale: dist(pose[NECK], pose[MID_HIP]) ?? 100 }
-      })
-      .filter((c): c is typeof c & { center: Point } => c.center !== null)
-      .sort((a, b) => meanConfidence(b.person) - meanConfidence(a.person))
-
-    const used = new Set<Track>()
-    for (const c of candidates) {
-      let best: Track | null = null
-      let bestDistance = Number.POSITIVE_INFINITY
-      for (const track of tracks) {
-        const gap = t - track.lastFrame
-        if (used.has(track) || gap > MAX_TRACK_GAP_FRAMES) continue
-        const d = Math.hypot(c.center.x - track.lastCenter.x, c.center.y - track.lastCenter.y)
-        const maxJump = Math.max(track.scale, c.scale) * (0.5 + 0.1 * gap)
-        if (d <= maxJump && d < bestDistance) {
-          best = track
-          bestDistance = d
-        }
-      }
-      const track: Track = best ?? { lastCenter: c.center, lastFrame: t, scale: c.scale, members: new Map() }
-      if (!best) tracks.push(track)
-      track.lastCenter = c.center
-      track.lastFrame = t
-      track.scale = 0.8 * track.scale + 0.2 * c.scale
-      track.members.set(t, { person: c.person, pose: c.pose })
-      used.add(track)
-    }
-  })
-
-  const legMotion = (track: Track) => {
-    const sx: number[] = []
-    const sy: number[] = []
-    for (const { pose } of track.members.values()) {
-      const l = pose[L_ANKLE]
-      const r = pose[R_ANKLE]
-      if (!l || !r) continue
-      sx.push((l.x - r.x) / track.scale)
-      sy.push((l.y - r.y) / track.scale)
-    }
-    return (std(sx) ?? 0) + (std(sy) ?? 0)
-  }
-  const chosen = tracks.reduce<Track | null>((best, track) => {
-    const score = track.members.size * (1 + legMotion(track))
-    const bestScore = best ? best.members.size * (1 + legMotion(best)) : -1
-    return score > bestScore ? track : best
-  }, null)
-
-  return frames.map((_, t) => {
-    const member = chosen?.members.get(t)
-    if (!member) return null
-    const core = (member.person.body25 ?? []).filter((j) => j.id <= 14).map((j) => j.confidence)
-    return {
-      pose: member.pose,
-      confidence: core.length ? core.reduce((a, b) => a + b, 0) / core.length : 0,
-      person: member.person,
-    }
-  })
 }
 
 // ---------------------------------------------------------------------------
@@ -416,7 +294,7 @@ export function computeGaitFeatures(input: GaitInput): GaitFeatures {
   const fpsSource = fps === null ? null : input.fpsSource ?? null
   const framesTotal = frames.length
 
-  const tracked = trackMainPerson(frames)
+  const tracked = trackToFrames(selectTrack(buildTracks(frames), gaitTrackScore), frames.length)
   const poses = tracked.map((t) => t?.pose ?? null)
   const framesWithPerson = poses.filter(Boolean).length
   const multiPersonFrames = frames.filter(

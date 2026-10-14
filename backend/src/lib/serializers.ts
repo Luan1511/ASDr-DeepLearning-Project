@@ -1,5 +1,22 @@
 import type { ChildProfile, ScreeningJob, ScreeningResult, VideoUpload } from '@prisma/client'
 import { asdProbabilityFromRaw } from '../services/screeningResult'
+import { resultProvider, type ChildScreeningSummary } from './screeningData'
+
+export type ChildSummary = ChildScreeningSummary & { hasActiveConsent: boolean }
+
+/** Child profile without the owner id; `summary` only where the route computed it. */
+export function serializeChild(child: ChildProfile, summary?: ChildSummary) {
+  return {
+    id: child.id,
+    fullName: child.fullName,
+    dateOfBirth: child.dateOfBirth,
+    gender: child.gender,
+    note: child.note,
+    createdAt: child.createdAt,
+    updatedAt: child.updatedAt,
+    ...(summary ? { summary } : {}),
+  }
+}
 
 /**
  * Parent-facing shape of a screening result. Leaves out rawAiResponse (ML
@@ -18,7 +35,7 @@ export function serializeResult(result: ScreeningResult) {
     modelVersion: result.modelVersion,
     gaitFeatures: result.gaitFeatures,
     recommendation: result.recommendation,
-    provider: typeof raw?.provider === 'string' ? raw.provider : null,
+    provider: resultProvider(raw),
     createdAt: result.createdAt,
   }
 }

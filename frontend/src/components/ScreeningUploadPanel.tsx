@@ -3,7 +3,8 @@ import { Loader2, RotateCcw, ShieldCheck } from 'lucide-react'
 import { api, apiErrorCode, isNetworkError } from '../lib/api'
 import type { ChildProfile, ConsentScope, ConsentStatement, ConsentStatus, VideoScreening } from '../lib/types'
 import { readVideoMetadata } from '../lib/video'
-import { SCREENING_STATUS_LABEL } from '../lib/format'
+import { childApiErrorMessage } from '../lib/children'
+import { SCREENING_STATUS_LABEL, formatBirthDate, todayInputValue } from '../lib/format'
 import { UploadDropzone } from './UploadDropzone'
 import { ConsentPanel } from './ConsentPanel'
 import { ScreeningResultView } from './ScreeningResultView'
@@ -27,7 +28,16 @@ function uploadErrorMessage(e: unknown): string {
  * Child picker + guardian consent + upload + live job status + result.
  * Used by the home page and the screening page.
  */
-export function ScreeningUploadPanel({ title, headerRight }: { title: string; headerRight?: ReactNode }) {
+export function ScreeningUploadPanel({
+  title,
+  headerRight,
+  initialChildId,
+}: {
+  title: string
+  headerRight?: ReactNode
+  /** Preselected child (e.g. "Sàng lọc mới" on a child's page); ignored if not in the list. */
+  initialChildId?: string
+}) {
   const [children, setChildren] = useState<ChildProfile[] | null>(null)
   const [childId, setChildId] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -54,14 +64,18 @@ export function ScreeningUploadPanel({ title, headerRight }: { title: string; he
     api
       .get('/children')
       .then((res) => {
-        setChildren(res.data.children)
-        if (res.data.children?.[0]?.id) setChildId((current) => current || res.data.children[0].id)
+        const list: ChildProfile[] = res.data.children ?? []
+        setChildren(list)
+        const preferred = list.find((c) => c.id === initialChildId) ?? list[0]
+        if (preferred) setChildId((current) => current || preferred.id)
       })
       .catch(() => setChildren([]))
     api
       .get('/consent/current')
       .then((res) => setStatement(res.data.statement))
       .catch(() => setStatement(null))
+    // Runs once: initialChildId only seeds the first selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -98,8 +112,8 @@ export function ScreeningUploadPanel({ title, headerRight }: { title: string; he
       setNewDob('')
       setNewGender('UNSPECIFIED')
       setShowCreateForm(false)
-    } catch {
-      setError('Không thể tạo hồ sơ trẻ.')
+    } catch (e) {
+      setError(childApiErrorMessage(e, 'Không thể tạo hồ sơ trẻ.'))
     }
   }
 
@@ -240,7 +254,7 @@ export function ScreeningUploadPanel({ title, headerRight }: { title: string; he
         </select>
         {selectedChild && (
           <div className="mt-1.5 text-xs font-bold text-duo-mute">
-            Sinh: {new Date(selectedChild.dateOfBirth).toLocaleDateString('vi-VN')}
+            Sinh: {formatBirthDate(selectedChild.dateOfBirth)}
           </div>
         )}
       </div>
@@ -249,7 +263,7 @@ export function ScreeningUploadPanel({ title, headerRight }: { title: string; he
         <div className="mb-4 space-y-3 rounded-2xl bg-duo-mist p-4 shadow-card-inner">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <input className="input-duo" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Họ tên" />
-            <input className="input-duo" type="date" value={newDob} onChange={(e) => setNewDob(e.target.value)} />
+            <input className="input-duo" type="date" max={todayInputValue()} value={newDob} onChange={(e) => setNewDob(e.target.value)} />
             <select className="input-duo" value={newGender} onChange={(e) => setNewGender(e.target.value as ChildProfile['gender'])}>
               <option value="UNSPECIFIED">Giới tính</option>
               <option value="MALE">Nam</option>

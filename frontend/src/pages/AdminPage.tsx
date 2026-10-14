@@ -4,6 +4,7 @@ import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
 import { api } from '../lib/api'
 import { RiskPill } from '../components/RiskPill'
+import { AdminQuestionnaireStatusCard } from '../components/questionnaire/AdminQuestionnaireStatusCard'
 import type { RiskLevel, ScreeningStatus } from '../lib/types'
 import { JOB_STATUS_LABEL, SCREENING_STATUS_LABEL } from '../lib/format'
 
@@ -141,6 +142,8 @@ export function AdminPage() {
             </Card>
           )}
         </div>
+
+        <AdminQuestionnaireStatusCard />
 
         {stats && (
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_420px]">

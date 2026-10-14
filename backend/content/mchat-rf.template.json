@@ -1,0 +1,577 @@
+{
+  "instrument": "MCHAT_RF",
+  "structureVersion": "mchat-rf-2025-03",
+  "structureHash": "ee0604d6660a38d0",
+  "contentVersion": "",
+  "locale": "vi",
+  "licenseRef": "",
+  "translationSource": "",
+  "copyrightNotice": "",
+  "ui": {
+    "stage1Instructions": "",
+    "yes": "",
+    "no": "",
+    "maybe": "",
+    "maybePrompt": "",
+    "mostOftenPrompt": "",
+    "otherDescribe": "",
+    "followUpInstructions": ""
+  },
+  "stage1": {
+    "1": {
+      "text": "",
+      "examples": ""
+    },
+    "2": {
+      "text": "",
+      "examples": ""
+    },
+    "3": {
+      "text": "",
+      "examples": ""
+    },
+    "4": {
+      "text": "",
+      "examples": ""
+    },
+    "5": {
+      "text": "",
+      "examples": ""
+    },
+    "6": {
+      "text": "",
+      "examples": ""
+    },
+    "7": {
+      "text": "",
+      "examples": ""
+    },
+    "8": {
+      "text": "",
+      "examples": ""
+    },
+    "9": {
+      "text": "",
+      "examples": ""
+    },
+    "10": {
+      "text": "",
+      "examples": ""
+    },
+    "11": {
+      "text": "",
+      "examples": ""
+    },
+    "12": {
+      "text": "",
+      "examples": ""
+    },
+    "13": {
+      "text": "",
+      "examples": ""
+    },
+    "14": {
+      "text": "",
+      "examples": ""
+    },
+    "15": {
+      "text": "",
+      "examples": ""
+    },
+    "16": {
+      "text": "",
+      "examples": ""
+    },
+    "17": {
+      "text": "",
+      "examples": ""
+    },
+    "18": {
+      "text": "",
+      "examples": ""
+    },
+    "19": {
+      "text": "",
+      "examples": ""
+    },
+    "20": {
+      "text": "",
+      "examples": ""
+    }
+  },
+  "followUp": {
+    "1": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": "",
+            "f1": "",
+            "f2": "",
+            "f3": ""
+          }
+        },
+        "mo": {
+          "text": ""
+        }
+      }
+    },
+    "2": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "cl": {
+          "stem": "",
+          "examples": {
+            "f1": "",
+            "f2": ""
+          }
+        }
+      },
+      "supplementary": {
+        "s1": {
+          "text": ""
+        },
+        "s2": {
+          "text": "",
+          "options": {
+            "r1": "",
+            "r2": "",
+            "r3": ""
+          }
+        }
+      }
+    },
+    "3": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": "",
+            "p5": "",
+            "p6": "",
+            "p7": "",
+            "p8": "",
+            "p9": "",
+            "p10": "",
+            "p11o": ""
+          }
+        }
+      }
+    },
+    "4": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": ""
+          }
+        }
+      }
+    },
+    "5": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "f1": "",
+            "f2": "",
+            "f3": "",
+            "f4": "",
+            "f5o": ""
+          }
+        },
+        "freq": {
+          "text": ""
+        }
+      }
+    },
+    "6": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": "",
+            "n4": ""
+          }
+        },
+        "q1": {
+          "text": ""
+        }
+      }
+    },
+    "7": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": "",
+            "n4": ""
+          }
+        },
+        "q1": {
+          "text": ""
+        },
+        "q2": {
+          "text": "",
+          "options": {
+            "optA": "",
+            "optBoth": "",
+            "optB": ""
+          }
+        }
+      },
+      "preambles": {
+        "after6": ""
+      }
+    },
+    "8": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "q1": {
+          "text": ""
+        },
+        "q2": {
+          "text": ""
+        },
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": "",
+            "p5": "",
+            "p6": "",
+            "p7": ""
+          }
+        },
+        "freq": {
+          "text": ""
+        }
+      }
+    },
+    "9": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": "",
+            "p5": "",
+            "p6o": ""
+          }
+        },
+        "q1": {
+          "text": ""
+        }
+      }
+    },
+    "10": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "f1": "",
+            "f2": "",
+            "f3": "",
+            "f4": ""
+          }
+        },
+        "mo": {
+          "text": ""
+        }
+      }
+    },
+    "11": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "f1": "",
+            "f2": "",
+            "f3": ""
+          }
+        },
+        "mo": {
+          "text": ""
+        }
+      }
+    },
+    "12": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "cnt": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": "",
+            "n4": "",
+            "n5": "",
+            "n6": "",
+            "n7": "",
+            "n8": "",
+            "n9": "",
+            "n10o": ""
+          }
+        },
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "f1": "",
+            "f2": "",
+            "f3": ""
+          }
+        },
+        "mo": {
+          "text": ""
+        }
+      }
+    },
+    "13": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "q1": {
+          "text": ""
+        }
+      }
+    },
+    "14": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cnt": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": "",
+            "n4": "",
+            "n5": "",
+            "n6": ""
+          }
+        },
+        "f1": {
+          "text": ""
+        },
+        "f2": {
+          "text": ""
+        }
+      }
+    },
+    "15": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cnt": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": "",
+            "n4": "",
+            "n5": "",
+            "n6": "",
+            "n7o": ""
+          }
+        }
+      }
+    },
+    "16": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "f1": "",
+            "f2": ""
+          }
+        },
+        "mo": {
+          "text": ""
+        }
+      }
+    },
+    "17": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4": "",
+            "p5o": ""
+          }
+        }
+      }
+    },
+    "18": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "q1": {
+          "text": ""
+        },
+        "q2": {
+          "text": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "n1": "",
+            "n2": "",
+            "n3": ""
+          }
+        }
+      }
+    },
+    "19": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "q1": {
+          "text": ""
+        },
+        "q2": {
+          "text": ""
+        },
+        "q3": {
+          "text": ""
+        }
+      }
+    },
+    "20": {
+      "header": "",
+      "recap": "",
+      "nodes": {
+        "prompt": {
+          "text": "",
+          "note": ""
+        },
+        "cl": {
+          "stem": "",
+          "examples": {
+            "p1": "",
+            "p2": "",
+            "p3": "",
+            "p4o": ""
+          }
+        }
+      }
+    }
+  }
+}

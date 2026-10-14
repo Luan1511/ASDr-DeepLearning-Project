@@ -74,6 +74,11 @@ pipelineRouter.post(
       fs.promises.unlink(req.file!.path).catch(() => {})
       return res.status(status).json(body)
     }
+    // Exercise subjects (ex_/tpl_) are created only by the exercise pipeline.
+    if (subjectId !== undefined && /^(ex|tpl)_/.test(subjectId)) {
+      fs.promises.unlink(req.file.path).catch(() => {})
+      return res.status(403).json({ error: 'EXERCISE_SUBJECT_PROTECTED' })
+    }
     if (subjectId !== undefined && !SUBJECT_ID_PATTERN.test(subjectId)) {
       return reject(422, { error: 'INVALID_SUBJECT_ID' })
     }

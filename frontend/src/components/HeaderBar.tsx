@@ -12,7 +12,7 @@ export function HeaderBar() {
 
   return (
     <header className="flex items-center justify-between gap-3">
-      <div className="md:hidden text-xl font-black text-duo-ink">ASDr</div>
+      <div className="md:hidden text-xl font-black text-duo-ink">AIMBRACE</div>
       <div className="ml-auto flex items-center gap-3">
         {user && (
           <div className="flex items-center gap-2">

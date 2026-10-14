@@ -12,9 +12,22 @@ export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'UNSPECIFIED'
 export type ChildProfile = {
   id: string
   fullName: string
+  /** Calendar date stored at UTC midnight. */
   dateOfBirth: string
   gender: Gender
   note?: string | null
+  createdAt?: string
+  updatedAt?: string
+  /** Present on GET /children and GET /children/:id. */
+  summary?: ChildSummary
+}
+
+export type ChildSummary = {
+  screeningCount: number
+  completedCount: number
+  lastScreeningAt: string | null
+  lastResult: { riskLevel: RiskLevel; screenedAt: string } | null
+  hasActiveConsent: boolean
 }
 
 export type ScreeningStatus = 'UPLOADED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
@@ -102,7 +115,16 @@ export type VideoScreening = {
   result?: ScreeningResult | null
 }
 
-export type ConsentScope = 'VIDEO_PROCESSING' | 'RESEARCH_USE'
+/** A screening listed under its child (GET /children/:id), without the nested child. */
+export type ChildScreening = Omit<VideoScreening, 'child'>
+
+export type ChildDetail = {
+  child: ChildProfile
+  consent: ConsentStatus['consent']
+  screenings: ChildScreening[]
+}
+
+export type ConsentScope = 'VIDEO_PROCESSING' | 'RESEARCH_USE' | 'EXERCISE_VIDEO'
 
 export type ConsentStatement = {
   version: string

@@ -3,13 +3,15 @@ import { createApp } from './app'
 import { env } from './lib/env'
 import { prisma } from './lib/prisma'
 import { startScreeningWorker, stopScreeningWorker } from './services/screeningProcessor'
+import { startExerciseWorker, stopExerciseWorker } from './services/exerciseProcessor'
 
 const app = createApp()
 
 const server = app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`ASDr backend listening on http://localhost:${env.PORT}`)
+  console.log(`AIMBRACE (ASDr) backend listening on http://localhost:${env.PORT}`)
   startScreeningWorker()
+  startExerciseWorker()
 })
 
 let shuttingDown = false
@@ -21,6 +23,7 @@ function shutdown(signal: string) {
   // Running jobs keep their lock; another worker re-queues them once the
   // heartbeat goes stale, so nothing is lost by exiting here.
   stopScreeningWorker()
+  stopExerciseWorker()
   server.close(() => {
     prisma.$disconnect().finally(() => process.exit(0))
   })

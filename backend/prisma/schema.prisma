@@ -9,34 +9,45 @@ datasource db {
 
 // Schema changes must stay additive (new tables, nullable columns) because
 // several team members share one remote database while running different
-// revisions of this code.
+// revisions of this code. Never run `prisma db push` or `prisma migrate dev`
+// against the shared database: an older revision would drop newer tables.
 
 model User {
-  id           String          @id @default(uuid())
-  name         String
-  email        String          @unique
-  passwordHash String
-  role         UserRole        @default(USER)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  chatMessages ChatMessage[]
-  children     ChildProfile[]
-  uploads      VideoUpload[]
-  consents     ConsentRecord[]
+  id                     String                  @id @default(uuid())
+  name                   String
+  email                  String                  @unique
+  passwordHash           String
+  role                   UserRole                @default(USER)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  chatMessages           ChatMessage[]
+  children               ChildProfile[]
+  uploads                VideoUpload[]
+  consents               ConsentRecord[]
+  // Back-relations only (no columns): Giai đoạn 4 + questionnaires + community.
+  exerciseSessions       ExerciseSession[]
+  questionnaireResponses QuestionnaireResponse[]
+  communityPosts         CommunityPost[]
+  communityComments      CommunityComment[]
+  communityLikes         CommunityLike[]
+  communityBookmarks     CommunityBookmark[]
 }
 
 model ChildProfile {
-  id          String          @id @default(uuid())
-  userId      String
-  fullName    String
-  dateOfBirth DateTime
-  gender      Gender          @default(UNSPECIFIED)
-  note        String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  uploads     VideoUpload[]
-  consents    ConsentRecord[]
+  id                     String                  @id @default(uuid())
+  userId                 String
+  fullName               String
+  dateOfBirth            DateTime
+  gender                 Gender                  @default(UNSPECIFIED)
+  note                   String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploads                VideoUpload[]
+  consents               ConsentRecord[]
+  // Back-relations only (no columns).
+  exerciseSessions       ExerciseSession[]
+  questionnaireResponses QuestionnaireResponse[]
 
   @@index([userId])
 }
@@ -106,18 +117,21 @@ model ScreeningResult {
 // Parent/guardian consent for processing a child's videos. One active record
 // (revokedAt = null) per child and consent version.
 model ConsentRecord {
-  id        String        @id @default(uuid())
-  userId    String
-  childId   String
-  version   String
-  scopes    String[]
+  id               String            @id @default(uuid())
+  userId           String
+  childId          String
+  version          String
+  scopes           String[]
   // Exact text shown to the guardian when they agreed (audit trail).
-  statement Json?
-  grantedAt DateTime      @default(now())
-  revokedAt DateTime?
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  child     ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
-  uploads   VideoUpload[]
+  statement        Json?
+  grantedAt        DateTime          @default(now())
+  revokedAt        DateTime?
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child            ChildProfile      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  uploads          VideoUpload[]
+  // Back-relation only (no column). Exercise consent lives in its own version
+  // namespace ("exercise-...", see lib/consent.ts).
+  exerciseSessions ExerciseSession[]
 
   @@index([childId])
   @@index([userId])
@@ -140,6 +154,210 @@ model ScreeningJob {
   video       VideoUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([status, runAfter])
+}
+
+// ---------------------------------------------------------------------------
+// Giai đoạn 4: motor exercises with a guide character + imitation scoring
+// (migration 20261007_exercise_imitation). Exercise videos never use
+// VideoUpload/ScreeningJob and never reach the ST-GCN screening model.
+// ---------------------------------------------------------------------------
+
+model Exercise {
+  id                String             @id @default(uuid())
+  slug              String             @unique
+  title             String
+  description       String
+  // Line spoken by the guide character ("bạn Mầm").
+  childPrompt       String
+  difficulty        Int                @default(1)
+  // Subset of ARMS | LEGS | TRUNK.
+  bodyFocus         String[]
+  // ADMIN | BUILTIN_SYNTHETIC
+  source            String             @default("ADMIN")
+  status            ExerciseStatus     @default(DRAFT)
+  sortOrder         Int                @default(0)
+  currentTemplateId String?            @unique
+  // Audit only, no foreign key.
+  createdById       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  templates         ExerciseTemplate[] @relation("ExerciseTemplates")
+  currentTemplate   ExerciseTemplate?  @relation("CurrentTemplate", fields: [currentTemplateId], references: [id], onDelete: SetNull)
+  sessions          ExerciseSession[]
+
+  @@index([status, sortOrder])
+}
+
+// Immutable once created: a new recording, trim or mirror policy is a new version.
+model ExerciseTemplate {
+  id                       String            @id @default(uuid())
+  exerciseId               String
+  version                  Int
+  // ML_SUBJECT | BUILTIN_SYNTHETIC
+  source                   String
+  // "tpl_<uuid>" subjects created by the admin template upload only.
+  sourceSubjectId          String?
+  // { text, adminId, at }: the demonstrator is a consenting adult team member.
+  sourceAttestation        Json?
+  sourceMlSubjectDeletedAt DateTime?
+  sourceFps                Float
+  // ml | duration | admin | synthetic
+  fpsSource                String
+  mirrorPolicy             MirrorPolicy
+  algorithmVersion         String
+  templateHash             String
+  activeStartSec           Float
+  activeEndSec             Float
+  durationSec              Float
+  lateralized              Boolean
+  activeParts              String[]
+  // Normalised guide skeleton for the character (services/imitation GuideTrack).
+  guideTrack               Json
+  // Scoring features (services/imitation TemplateFeatures); never sent to parents.
+  features                 Json
+  quality                  Json
+  selfTest                 Json?
+  createdById              String?
+  createdAt                DateTime          @default(now())
+  exercise                 Exercise          @relation("ExerciseTemplates", fields: [exerciseId], references: [id], onDelete: Cascade)
+  currentOf                Exercise?         @relation("CurrentTemplate")
+  sessions                 ExerciseSession[]
+  scores                   SessionScore[]
+
+  @@unique([exerciseId, version])
+  @@index([templateHash])
+}
+
+// One practice attempt. Queue columns live on the row (claimed with
+// FOR UPDATE SKIP LOCKED by services/exerciseProcessor.ts).
+model ExerciseSession {
+  id                 String                @id @default(uuid())
+  userId             String
+  childId            String
+  exerciseId         String
+  templateId         String
+  consentId          String?
+  status             ExerciseSessionStatus @default(QUEUED)
+  // WEBCAM | UPLOAD
+  recordedVia        String
+  // FOLLOW_ALONG | AFTER_DEMO
+  practiceMode       String
+  playbackRate       Float                 @default(1)
+  // Recording start to guide start (FOLLOW_ALONG).
+  guideOffsetMs      Int?
+  // <uuid><ext>; the original file name is never stored.
+  storedFilename     String
+  filePath           String
+  mimeType           String
+  fileSize           Int
+  durationMs         Int?
+  videoWidth         Int?
+  videoHeight        Int?
+  videoDeletedAt     DateTime?
+  // "ex_<id>" (or the id an older ML server returned).
+  mlSubjectId        String?               @unique
+  mlSubjectDeletedAt DateTime?
+  attempts           Int                   @default(0)
+  maxAttempts        Int                   @default(2)
+  runAfter           DateTime              @default(now())
+  lockedBy           String?
+  lockedAt           DateTime?
+  // Technical detail, admins only.
+  lastError          String?
+  // Parent-facing Vietnamese message.
+  errorMessage       String?
+  completedAt        DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child              ChildProfile          @relation(fields: [childId], references: [id], onDelete: Cascade)
+  exercise           Exercise              @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  template           ExerciseTemplate      @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  consent            ConsentRecord?        @relation(fields: [consentId], references: [id], onDelete: SetNull)
+  scores             SessionScore[]
+
+  @@index([childId, exerciseId, createdAt])
+  @@index([status, runAfter])
+  @@index([userId])
+}
+
+// Scores only (numbers, codes, feedback); the child's skeleton is not stored.
+model SessionScore {
+  id               String           @id @default(uuid())
+  sessionId        String
+  templateId       String
+  algorithmVersion String
+  templateHash     String
+  // SCORED | INSUFFICIENT
+  status           String
+  overall          Int?
+  stars            Int?
+  // VERY_CLOSE | CLOSE | PROGRESSING | KEEP_PRACTISING
+  band             String?
+  // mirror | anatomical
+  mode             String?
+  reasonCodes      String[]
+  // services/imitation ImitationResult
+  detail           Json
+  createdAt        DateTime         @default(now())
+  session          ExerciseSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  template         ExerciseTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, algorithmVersion])
+  @@index([templateId])
+}
+
+// ---------------------------------------------------------------------------
+// Parent questionnaires (migration 20261007_parent_questionnaire). Answers are
+// stored by item NUMBER only; no questionnaire wording is stored anywhere.
+// ---------------------------------------------------------------------------
+
+model QuestionnaireResponse {
+  id                  String       @id @default(uuid())
+  userId              String
+  childId             String
+  // "MCHAT_RF"
+  instrument          String
+  structureVersion    String
+  scoringVersion      String
+  // "OFFICIAL_FORM_ENTRY" (answers typed from the official form) | "IN_APP"
+  mode                String
+  // Licensed item text shown in the app ("<id>@<sha256-12>"); null for answer entry.
+  contentVersion      String?
+  // MOTHER | FATHER | GUARDIAN | OTHER_CAREGIVER
+  respondent          String
+  childAgeMonths      Int
+  // {"1":true,...,"20":false}; true = "Có".
+  answers             Json
+  totalScore          Int
+  // LOW | MODERATE | HIGH
+  band                String
+  failedItems         Int[]
+  // NOT_NEEDED | PENDING | COMPLETED | NOT_APPLICABLE
+  followUpStatus      String
+  // HEALTH_WORKER | A365 | OTHER
+  followUpSource      String?
+  followUpFailedItems Int[]
+  followUpFailCount   Int?
+  // In-app Follow-Up: node ids and answers per item (no wording), for audit.
+  followUpAnswers     Json?
+  followUpCompletedAt DateTime?
+  // SCREEN_NEGATIVE | FOLLOW_UP_NEEDED | REFER
+  outcome             String
+  // UTC midnight of the 2nd birthday (LOW result before 24 months).
+  rescreenAfter       DateTime?
+  // Explicit consent snapshot stored on the row (not in ConsentRecord).
+  consentVersion      String
+  consentStatement    Json
+  consentedAt         DateTime
+  completedAt         DateTime     @default(now())
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child               ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId, completedAt])
+  @@index([userId])
 }
 
 model ChatMessage {
@@ -202,3 +420,97 @@ enum JobStatus {
   SUCCEEDED
   FAILED
 }
+
+enum ExerciseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MirrorPolicy {
+  EITHER
+  ANATOMICAL_ONLY
+  MIRROR_ONLY
+}
+
+enum ExerciseSessionStatus {
+  QUEUED
+  PROCESSING
+  SCORED
+  INSUFFICIENT
+  FAILED
+}
+
+enum PostCategory {
+  STORY
+  PARENTING
+  LIFESTYLE
+  EDUCATION
+  QA
+}
+
+model CommunityPost {
+  id            String              @id @default(uuid())
+  userId        String
+  category      PostCategory        @default(STORY)
+  title         String
+  content       String
+  isAnonymous   Boolean             @default(false)
+  isPinned      Boolean             @default(false)
+  likesCount    Int                 @default(0)
+  commentsCount Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments      CommunityComment[]
+  likes         CommunityLike[]
+  bookmarks     CommunityBookmark[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model CommunityComment {
+  id          String              @id @default(uuid())
+  postId      String
+  userId      String
+  parentId    String?
+  content     String
+  isAnonymous Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+
+  post        CommunityPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      CommunityComment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     CommunityComment[]  @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model CommunityLike {
+  id        String        @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime      @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model CommunityBookmark {
+  id        String        @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime      @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+

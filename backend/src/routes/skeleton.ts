@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type NextFunction, type Request, type Response } from 'express'
 import fs from 'fs'
 import path from 'path'
 import multer from 'multer'
@@ -17,6 +17,7 @@ export const skeletonRouter = Router()
 skeletonRouter.use(requireAuth)
 skeletonRouter.use(requireRole(UserRole.ADMIN))
 skeletonRouter.param('subject_id', validateSubjectIdParam)
+skeletonRouter.param('subject_id', protectExerciseSubjects)
 
 const uploadStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -47,6 +48,21 @@ const upload = multer({
   },
 })
 
+/**
+ * Children's exercise clips ("ex_") and adult template sources ("tpl_") are
+ * managed only through the exercise pipeline / admin exercise routes: hide
+ * them here and refuse direct access, so child skeletons cannot be read or
+ * downloaded and template sources cannot be deleted behind the template's back.
+ */
+function isExerciseSubjectId(subjectId: unknown): boolean {
+  return typeof subjectId === 'string' && (subjectId.startsWith('ex_') || subjectId.startsWith('tpl_'))
+}
+
+function protectExerciseSubjects(_req: Request, res: Response, next: NextFunction, value: string) {
+  if (isExerciseSubjectId(value)) return res.status(403).json({ error: 'EXERCISE_SUBJECT_PROTECTED' })
+  return next()
+}
+
 function flattenKeypoints(frames: Array<{ frame_index: number; people: Array<{ person_id: number; body25: Array<{ id: number; x: number; y: number; confidence: number }> }> }>) {
   const rows: string[] = ['frame_index,person_id,joint_id,x,y,confidence']
 
@@ -74,7 +90,8 @@ skeletonRouter.get(
   '/subjects/list',
   asyncHandler(async (_req, res) => {
     const data = await openposeService.listSubjects()
-    return res.json(data)
+    const subjects = (data.subjects ?? []).filter((s) => !isExerciseSubjectId(s.subject_id))
+    return res.json({ ...data, total: subjects.length, subjects })
   }),
 )
 
@@ -158,7 +175,7 @@ skeletonRouter.get(
     )
     archive.append(
       [
-        'ASDr skeleton extraction archive',
+        'AIMBRACE skeleton extraction archive',
         '',
         `Subject ID: ${subjectId}`,
         `Filename: ${detail.metadata?.filename ?? subjectId}`,

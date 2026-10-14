@@ -2,17 +2,23 @@ import { useState } from 'react'
 import { ShieldCheck } from 'lucide-react'
 import type { ConsentScope, ConsentStatement } from '../lib/types'
 
-/** Guardian consent form; the text comes from the backend (GET /consent/current). */
+/**
+ * Guardian consent form; the text comes from the backend (screening:
+ * GET /consent/current, exercises: GET /exercises/consent-statement, …).
+ */
 export function ConsentPanel({
   statement,
   childName,
   submitting,
   onAccept,
+  requiredScopes = ['VIDEO_PROCESSING'],
 }: {
   statement: ConsentStatement
   childName: string
   submitting: boolean
   onAccept: (scopes: ConsentScope[]) => void
+  /** Scopes granted by the main checkbox (exercise consent: ['EXERCISE_VIDEO']; questionnaire: []). */
+  requiredScopes?: ConsentScope[]
 }) {
   const [agreed, setAgreed] = useState(false)
   const [optional, setOptional] = useState<ConsentScope[]>([])
@@ -59,7 +65,7 @@ export function ConsentPanel({
         type="button"
         className="btn-duo"
         disabled={!agreed || submitting}
-        onClick={() => onAccept(['VIDEO_PROCESSING', ...optional])}
+        onClick={() => onAccept([...requiredScopes, ...optional])}
       >
         {submitting ? 'Đang lưu...' : 'Xác nhận đồng ý'}
       </button>

@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { AnalysisSteps } from '../components/AnalysisSteps'
 import { ScreeningUploadPanel } from '../components/ScreeningUploadPanel'
 
 export function ScreeningPage() {
+  const [params] = useSearchParams()
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -16,6 +17,7 @@ export function ScreeningPage() {
 
         <ScreeningUploadPanel
           title="Tải video"
+          initialChildId={params.get('childId') ?? undefined}
           headerRight={
             <Link to="/guide" className="link-duo text-xs">
               Hướng dẫn quay

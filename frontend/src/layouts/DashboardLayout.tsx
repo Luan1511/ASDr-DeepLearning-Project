@@ -2,7 +2,8 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar'
 import { HeaderBar } from '../components/HeaderBar'
-import { Home, Video, History, Bot, BookOpen, type LucideIcon } from 'lucide-react'
+import { Home, Video, History, Baby, Bot, BookOpen, PersonStanding, type LucideIcon } from 'lucide-react'
+import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
 
 interface MobileItem {
   to: string
@@ -14,12 +15,25 @@ interface MobileItem {
 const mobileItems: MobileItem[] = [
   { to: '/', label: 'Home', end: true, icon: Home },
   { to: '/screening', label: 'Sàng lọc', icon: Video },
+  { to: '/children', label: 'Trẻ', icon: Baby },
   { to: '/history', label: 'Lịch sử', icon: History },
   { to: '/assistant', label: 'AI', icon: Bot },
   { to: '/knowledge', label: 'Học', icon: BookOpen },
 ]
 
+// With exercises available, "Tập" takes the slot of "Học" (still reachable from Home and the sidebar).
+const exerciseMobileItems: MobileItem[] = [
+  { to: '/', label: 'Home', end: true, icon: Home },
+  { to: '/screening', label: 'Sàng lọc', icon: Video },
+  { to: '/children', label: 'Trẻ', icon: Baby },
+  { to: '/exercises', label: 'Tập', icon: PersonStanding },
+  { to: '/assistant', label: 'AI', icon: Bot },
+  { to: '/history', label: 'Lịch sử', icon: History },
+]
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const caps = useExerciseCapabilities()
+  const navItems = caps?.available ? exerciseMobileItems : mobileItems
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex">
@@ -33,8 +47,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 bg-white shadow-nav-bar md:hidden">
-        {mobileItems.map((it) => {
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 bg-white shadow-nav-bar md:hidden">
+        {navItems.map((it) => {
           const Icon = it.icon
           return (
             <NavLink

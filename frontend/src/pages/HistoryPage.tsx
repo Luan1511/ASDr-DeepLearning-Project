@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2, RotateCcw } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Loader2, RotateCcw, Trash2 } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { api, apiErrorCode } from '../lib/api'
-import type { RiskLevel, VideoScreening } from '../lib/types'
+import { childApiErrorMessage } from '../lib/children'
+import type { ChildProfile, RiskLevel, VideoScreening } from '../lib/types'
+import { ChildAvatar } from '../components/ChildAvatar'
 import { RiskPill } from '../components/RiskPill'
 import { ScreeningResultView } from '../components/ScreeningResultView'
-import { SCREENING_STATUS_LABEL } from '../lib/format'
+import { SCREENING_STATUS_LABEL, formatDateTime } from '../lib/format'
 
 function toApiRisk(risk: RiskLevel | 'ALL') {
   if (risk === 'ALL') return undefined
@@ -15,15 +18,19 @@ function toApiRisk(risk: RiskLevel | 'ALL') {
 export function HistoryPage() {
   const [screenings, setScreenings] = useState<VideoScreening[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [children, setChildren] = useState<ChildProfile[]>([])
+  const [childFilter, setChildFilter] = useState('')
   const [risk, setRisk] = useState<RiskLevel | 'ALL'>('ALL')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   function fetchScreenings() {
     const params: Record<string, string> = {}
+    if (childFilter) params.childId = childFilter
     const r = toApiRisk(risk)
     if (r) params.risk_level = r
     if (from) params.from = from
@@ -33,7 +40,8 @@ export function HistoryPage() {
 
   function applyScreenings(list: VideoScreening[]) {
     setScreenings(list)
-    setSelectedId((current) => current ?? list[0]?.id ?? null)
+    // Keep the selection only while it is still in the (filtered) list.
+    setSelectedId((current) => (current && list.some((s) => s.id === current) ? current : (list[0]?.id ?? null)))
   }
 
   function showLoadError() {
@@ -55,6 +63,10 @@ export function HistoryPage() {
 
   useEffect(() => {
     fetchScreenings().then(applyScreenings, showLoadError)
+    api
+      .get('/children')
+      .then((res) => setChildren(res.data.children ?? []))
+      .catch(() => setChildren([]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -77,6 +89,28 @@ export function HistoryPage() {
     }
   }
 
+  async function remove(s: VideoScreening) {
+    if (
+      !window.confirm(
+        `Xoá vĩnh viễn lượt sàng lọc của ${s.child.fullName} lúc ${formatDateTime(s.createdAt)}?
+
+Kết quả, dữ liệu khung xương trên máy chủ phân tích và video (nếu còn) sẽ bị xoá, không khôi phục được.`,
+      )
+    ) {
+      return
+    }
+    setDeleting(true)
+    setError(null)
+    try {
+      await api.delete(`/screenings/${s.id}`)
+      await load()
+    } catch (e) {
+      setError(childApiErrorMessage(e, 'Không xoá được lượt sàng lọc. Vui lòng thử lại.'))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_420px]">
@@ -88,7 +122,15 @@ export function HistoryPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 px-5 pt-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 px-5 pt-4 md:grid-cols-2 2xl:grid-cols-4">
+            <select className="input-duo" value={childFilter} onChange={(e) => setChildFilter(e.target.value)} aria-label="Lọc theo trẻ">
+              <option value="">Tất cả trẻ</option>
+              {children.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.fullName}
+                </option>
+              ))}
+            </select>
             <select className="input-duo" value={risk} onChange={(e) => setRisk(e.target.value as RiskLevel | 'ALL')}>
               <option value="ALL">Tất cả mức</option>
               <option value="LOW">Thấp</option>
@@ -117,9 +159,7 @@ export function HistoryPage() {
                   selectedId === s.id ? 'bg-duo-green-soft shadow-ring-green' : 'hover:bg-duo-mist',
                 ].join(' ')}
               >
-                <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-duo-blue text-sm font-black text-white">
-                  {s.child.fullName.charAt(0)}
-                </div>
+                <ChildAvatar name={s.child.fullName} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-extrabold text-duo-ink">{s.child.fullName}</div>
                   <div className="mt-0.5 text-xs font-bold text-duo-mute">
@@ -144,9 +184,14 @@ export function HistoryPage() {
             {!selected && <div className="py-12 text-center text-sm font-semibold text-duo-mute">Chọn một kết quả để xem.</div>}
             {selected && (
               <div className="space-y-5">
-                <div>
-                  <div className="text-sm font-extrabold text-duo-ink">{selected.child.fullName}</div>
-                  <div className="mt-0.5 text-xs font-bold text-duo-mute">{new Date(selected.createdAt).toLocaleString('vi-VN')}</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-extrabold text-duo-ink">{selected.child.fullName}</div>
+                    <div className="mt-0.5 text-xs font-bold text-duo-mute">{new Date(selected.createdAt).toLocaleString('vi-VN')}</div>
+                  </div>
+                  <Link to={`/children/${selected.childId}`} className="link-duo flex-shrink-0 text-xs">
+                    Hồ sơ trẻ
+                  </Link>
                 </div>
 
                 {selected.result && <ScreeningResultView result={selected.result} showGaitByDefault />}
@@ -182,6 +227,19 @@ export function HistoryPage() {
                     </button>
                   </div>
                 )}
+
+                <div className="flex justify-end border-t border-duo-line/60 pt-4">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 text-xs font-extrabold text-duo-red hover:underline disabled:opacity-50"
+                    disabled={deleting || selected.status === 'PROCESSING'}
+                    title={selected.status === 'PROCESSING' ? 'Đợi phân tích xong rồi mới xoá được.' : undefined}
+                    onClick={() => void remove(selected)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {deleting ? 'Đang xoá...' : 'Xoá lượt sàng lọc này'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -3,16 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import type { VideoScreening } from '../lib/types'
 import { RiskPill } from './RiskPill'
-
-function ChildAvatar({ name }: { name: string }) {
-  const colors = ['bg-duo-green', 'bg-duo-blue', 'bg-duo-gold', 'bg-[#CE82FF]']
-  const idx = name.charCodeAt(0) % colors.length
-  return (
-    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-black text-white ${colors[idx]}`}>
-      {name.charAt(0)}
-    </div>
-  )
-}
+import { ChildAvatar } from './ChildAvatar'
 
 export function RecentResultsCard() {
   const [screenings, setScreenings] = useState<VideoScreening[] | null>(null)

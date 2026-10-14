@@ -142,10 +142,17 @@ async function tick() {
       const jobs = await claimJobs(free)
       for (const job of jobs) {
         running += 1
-        void processJob(job).finally(() => {
-          running -= 1
-          kick()
-        })
+        void processJob(job)
+          .catch((error) => {
+            // processJob handles its own failures; this only guards the process
+            // against an unhandled rejection (fatal in Node >= 15).
+            // eslint-disable-next-line no-console
+            console.error(`[screening-queue] job ${job.id} crashed:`, (error as Error)?.message ?? error)
+          })
+          .finally(() => {
+            running -= 1
+            kick()
+          })
       }
     }
     consecutivePollErrors = 0
@@ -240,44 +247,92 @@ async function processJob(job: ClaimedJob) {
   try {
     await runScreening(job)
   } catch (error) {
-    const technical = error instanceof Error ? error.message : String(error)
-    const retry = isRetryable(error) && job.attempts < job.maxAttempts
-    // eslint-disable-next-line no-console
-    console.error(
-      `[screening-queue] job ${job.id} (video ${job.videoId}) attempt ${job.attempts}/${job.maxAttempts} failed:`,
-      technical,
-    )
-
-    if (retry) {
-      const delay = BACKOFF_BASE_MS * 2 ** Math.max(0, job.attempts - 1)
-      await prisma.screeningJob.updateMany({
-        where: { id: job.id, lockedBy: WORKER_ID },
-        data: {
-          status: JobStatus.QUEUED,
-          lockedBy: null,
-          lockedAt: null,
-          runAfter: new Date(Date.now() + delay),
-          lastError: technical,
-        },
-      })
-      await prisma.videoUpload.update({
-        where: { id: job.videoId },
-        data: {
-          errorMessage: `${userFacingError(error, false)} Hệ thống sẽ tự thử lại (lần ${job.attempts + 1}/${job.maxAttempts}).`,
-        },
-      })
-    } else {
-      await prisma.screeningJob.updateMany({
-        where: { id: job.id, lockedBy: WORKER_ID },
-        data: { status: JobStatus.FAILED, lockedBy: null, lockedAt: null, lastError: technical },
-      })
-      await prisma.videoUpload.update({
-        where: { id: job.videoId },
-        data: { status: ScreeningStatus.FAILED, errorMessage: userFacingError(error, true) },
-      })
+    try {
+      await recordJobFailure(job, error)
+    } catch (recordError) {
+      // e.g. the database is unreachable. The heartbeat stops below, so
+      // recoverStaleJobs() re-queues the job once its lock goes stale.
+      // eslint-disable-next-line no-console
+      console.error(
+        `[screening-queue] could not record the failure of job ${job.id}:`,
+        (recordError as Error)?.message ?? recordError,
+      )
     }
   } finally {
     clearInterval(heartbeat)
+  }
+}
+
+async function recordJobFailure(job: ClaimedJob, error: unknown) {
+  if (!(await prisma.videoUpload.count({ where: { id: job.videoId } }))) {
+    // Deleted before runScreening() could load it; nothing to record.
+    await discardOrphanSubject(job.videoId)
+    return
+  }
+
+  const technical = error instanceof Error ? error.message : String(error)
+  const retry = isRetryable(error) && job.attempts < job.maxAttempts
+  // eslint-disable-next-line no-console
+  console.error(
+    `[screening-queue] job ${job.id} (video ${job.videoId}) attempt ${job.attempts}/${job.maxAttempts} failed:`,
+    technical,
+  )
+
+  if (retry) {
+    const delay = BACKOFF_BASE_MS * 2 ** Math.max(0, job.attempts - 1)
+    await prisma.screeningJob.updateMany({
+      where: { id: job.id, lockedBy: WORKER_ID },
+      data: {
+        status: JobStatus.QUEUED,
+        lockedBy: null,
+        lockedAt: null,
+        runAfter: new Date(Date.now() + delay),
+        lastError: technical,
+      },
+    })
+    await prisma.videoUpload.updateMany({
+      where: { id: job.videoId },
+      data: {
+        errorMessage: `${userFacingError(error, false)} Hệ thống sẽ tự thử lại (lần ${job.attempts + 1}/${job.maxAttempts}).`,
+      },
+    })
+  } else {
+    await prisma.screeningJob.updateMany({
+      where: { id: job.id, lockedBy: WORKER_ID },
+      data: { status: JobStatus.FAILED, lockedBy: null, lockedAt: null, lastError: technical },
+    })
+    await prisma.videoUpload.updateMany({
+      where: { id: job.videoId },
+      data: { status: ScreeningStatus.FAILED, errorMessage: userFacingError(error, true) },
+    })
+  }
+}
+
+async function discardDeletedUpload(videoId: string, fullPath: string) {
+  try {
+    await fs.promises.unlink(fullPath)
+  } catch (error: any) {
+    if (error?.code !== 'ENOENT') {
+      // eslint-disable-next-line no-console
+      console.error(`[screening-queue] could not delete raw video of deleted upload ${videoId}:`, error?.message ?? error)
+    }
+  }
+  await discardOrphanSubject(videoId)
+}
+
+async function discardOrphanSubject(videoId: string) {
+  if (env.BYPASS_EXTRACT_API) return
+  try {
+    await openposeService.deleteSubject(videoId)
+    // eslint-disable-next-line no-console
+    console.warn(`[screening-queue] video ${videoId} was deleted during analysis; removed its ML subject`)
+  } catch (error) {
+    if (error instanceof OpenPoseApiError && error.kind === 'http' && error.status === 404) return
+    // eslint-disable-next-line no-console
+    console.error(
+      `[screening-queue] video ${videoId} was deleted during analysis; its ML subject could not be removed:`,
+      (error as Error)?.message ?? error,
+    )
   }
 }
 
@@ -333,6 +388,25 @@ async function runScreening(job: ClaimedJob) {
   }
 
   const fullPath = path.resolve(process.cwd(), video.filePath)
+  try {
+    await analyseUpload(job, video, fullPath)
+  } catch (error) {
+    if (!(await prisma.videoUpload.count({ where: { id: video.id } }))) {
+      // Deleted while it was being analysed (normally prevented by
+      // dataDeletion.ts): drop what this run produced instead of failing.
+      await discardDeletedUpload(video.id, fullPath)
+      return
+    }
+    throw error
+  }
+  await discardRawVideo(video.id, fullPath)
+}
+
+async function analyseUpload(
+  job: ClaimedJob,
+  video: { id: string; originalFilename: string; mimeType: string; durationMs: number | null },
+  fullPath: string,
+) {
   let response: OpenPosePipelineResponse
   if (!fs.existsSync(fullPath)) {
     // The ML server may still hold this subject from an earlier attempt.
@@ -394,8 +468,6 @@ async function runScreening(job: ClaimedJob) {
     }),
     ...finishJobOps(job, video.id),
   ])
-
-  await discardRawVideo(video.id, fullPath)
 }
 
 async function recoverFromExistingSubject(
@@ -496,7 +568,13 @@ async function discardRawVideo(videoId: string, fullPath: string) {
       return
     }
   }
-  await prisma.videoUpload.update({ where: { id: videoId }, data: { videoDeletedAt: new Date() } })
+  try {
+    await prisma.videoUpload.updateMany({ where: { id: videoId }, data: { videoDeletedAt: new Date() } })
+  } catch (error) {
+    // The result is already saved; failing here must not turn it into FAILED.
+    // eslint-disable-next-line no-console
+    console.error(`[screening-queue] could not mark raw video of ${videoId} as deleted:`, (error as Error)?.message ?? error)
+  }
 }
 
 async function createMockResult(job: ClaimedJob, videoId: string) {

@@ -21,6 +21,12 @@ export const subjectsRouter = Router()
 subjectsRouter.use(requireAuth)
 subjectsRouter.use(requireRole(UserRole.ADMIN))
 subjectsRouter.param('subject_id', validateSubjectIdParam)
+// Exercise practice ("ex_") and template ("tpl_") subjects are managed only
+// through /api/admin/exercises (same rule as routes/skeleton.ts).
+const isExerciseSubject = (id: string) => id.startsWith('ex_') || id.startsWith('tpl_')
+subjectsRouter.param('subject_id', (_req, res, next, value: string) =>
+  isExerciseSubject(value) ? res.status(403).json({ error: 'EXERCISE_SUBJECT_PROTECTED' }) : next(),
+)
 
 const uploadStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -61,7 +67,8 @@ subjectsRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
     const data = await openposeService.listSubjects()
-    return res.json(data)
+    const subjects = (data.subjects ?? []).filter((s) => !isExerciseSubject(s.subject_id))
+    return res.json({ ...data, total: subjects.length, subjects })
   }),
 )
 
@@ -78,6 +85,11 @@ subjectsRouter.post(
     }
 
     const subjectId = typeof req.query.subject_id === 'string' ? req.query.subject_id : undefined
+    // Exercise subjects (ex_/tpl_) are created only by the exercise pipeline.
+    if (subjectId !== undefined && /^(ex|tpl)_/.test(subjectId)) {
+      fs.promises.unlink(req.file.path).catch(() => {})
+      return res.status(403).json({ error: 'EXERCISE_SUBJECT_PROTECTED' })
+    }
     if (subjectId !== undefined && !SUBJECT_ID_PATTERN.test(subjectId)) {
       fs.promises.unlink(req.file.path).catch(() => {})
       return res.status(422).json({ error: 'INVALID_SUBJECT_ID' })

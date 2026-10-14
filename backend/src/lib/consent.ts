@@ -63,3 +63,67 @@ export function buildConsentStatement(retention: ConsentStatement['retention']):
 export function normalizeMlRetention(value: unknown): MlVideoRetention {
   return value === 'blurred' || value === 'none' || value === 'raw' ? value : 'unknown'
 }
+
+// ---------------------------------------------------------------------------
+// Giai đoạn 4: exercise practice videos. Kept in its own ConsentRecord version
+// namespace ("exercise-…") so the screening consent (CONSENT_VERSION) and older
+// code that only knows it stay untouched. New code never revokes one namespace
+// from the other; older code's "revoke every active record" also revokes this
+// one, which is fail-safe (the parent is simply asked again).
+// ---------------------------------------------------------------------------
+
+export const EXERCISE_CONSENT_VERSION = 'exercise-2026-10-07'
+export const EXERCISE_CONSENT_PREFIX = 'exercise-'
+export const EXERCISE_CONSENT_SCOPES = ['EXERCISE_VIDEO'] as const
+export type ExerciseConsentScope = (typeof EXERCISE_CONSENT_SCOPES)[number]
+
+export function isExerciseConsentVersion(version: string): boolean {
+  return version.startsWith(EXERCISE_CONSENT_PREFIX)
+}
+
+export function buildExerciseConsentStatement(retention: ConsentStatement['retention']): ConsentStatement {
+  const mlMayKeepRaw = retention.mlVideoRetention === 'raw' || retention.mlVideoRetention === 'unknown'
+  return {
+    version: EXERCISE_CONSENT_VERSION,
+    title: 'Đồng ý ghi hình khi trẻ tập vận động',
+    items: [
+      'Tôi là cha, mẹ hoặc người giám hộ hợp pháp của trẻ và có quyền đồng ý thay cho trẻ.',
+      'Khi trẻ tập, camera chỉ ghi hình, không ghi âm. Video chỉ được gửi đi khi tôi bấm “Gửi chấm điểm”.',
+      'Video được gửi tới máy chủ phân tích của nhóm nghiên cứu chỉ để trích xuất khung xương và so sánh với động tác mẫu. Video bài tập không được dùng cho mô hình sàng lọc.',
+      'Sau khi chấm điểm, video gốc trên máy chủ ứng dụng và dữ liệu trên máy chủ phân tích được xoá; hệ thống chỉ giữ điểm luyện tập và nhận xét, không giữ khung xương của trẻ. Nếu chấm lỗi, video được giữ tối đa 24 giờ để thử lại rồi tự xoá.',
+      ...(mlMayKeepRaw
+        ? ['Trong lúc xử lý (thường vài phút), máy chủ phân tích có thể tạm lưu bản sao video gốc chưa làm mờ khuôn mặt.']
+        : []),
+      'Điểm bắt chước chỉ để luyện tập và theo dõi tiến bộ, không phải kết quả sàng lọc hay chẩn đoán.',
+      'Dữ liệu chỉ hiển thị với tài khoản của bạn và quản trị viên hệ thống; bạn có thể thu hồi đồng ý hoặc xoá từng lượt tập bất cứ lúc nào.',
+    ],
+    optionalScopes: [],
+    retention,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Parent questionnaires: explicit consent snapshot stored on every response row
+// (not a ConsentRecord, so no code path can revoke it as a side effect).
+// ---------------------------------------------------------------------------
+
+export const QUESTIONNAIRE_CONSENT_VERSION = 'questionnaire-2026-10-08'
+
+export function buildQuestionnaireConsentStatement(): ConsentStatement {
+  return {
+    version: QUESTIONNAIRE_CONSENT_VERSION,
+    title: 'Đồng ý lưu câu trả lời bảng hỏi của trẻ',
+    items: [
+      'Tôi là cha, mẹ hoặc người giám hộ hợp pháp của trẻ và có quyền đồng ý thay cho trẻ.',
+      'Câu trả lời (Có/Không theo số thứ tự câu), điểm và kết quả được lưu trong hồ sơ của trẻ để theo dõi theo thời gian.',
+      'Nếu làm phần hỏi thêm trong ứng dụng, các lựa chọn của bạn và phần mô tả thêm (nếu có) cũng được lưu cùng lần trả lời, chỉ để tính kết quả và để nhân viên y tế xem lại; không ghi tên, địa chỉ hay số điện thoại vào phần mô tả.',
+      'Đây là sàng lọc tham khảo, không phải chẩn đoán.',
+      'Trong ứng dụng, chỉ tài khoản của bạn xem được câu trả lời; quản trị viên chỉ xem số liệu tổng hợp.',
+      'Dữ liệu không dùng cho mô hình sàng lọc bằng video và không chia sẻ cho bên thứ ba.',
+      'Bạn có thể xoá từng lần trả lời hoặc toàn bộ hồ sơ của trẻ bất cứ lúc nào.',
+    ],
+    optionalScopes: [],
+    // Not applicable to questionnaires (no video); kept for the shared shape.
+    retention: { backendKeepsVideo: false, mlVideoRetention: 'none' },
+  }
+}

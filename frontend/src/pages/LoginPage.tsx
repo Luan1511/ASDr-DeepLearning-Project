@@ -32,7 +32,7 @@ export function LoginPage() {
             A
           </div>
           <h1 className="mt-5 text-3xl font-black text-duo-ink">Đăng nhập</h1>
-          <p className="mt-2 text-sm font-semibold text-duo-mute">ASDr hỗ trợ sàng lọc tham khảo, không thay thế chẩn đoán.</p>
+          <p className="mt-2 text-sm font-semibold text-duo-mute">AIMBRACE hỗ trợ sàng lọc tham khảo, không thay thế chẩn đoán.</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">

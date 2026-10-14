@@ -7,10 +7,12 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { serializeResult, serializeScreening } from '../lib/serializers'
+import { mlSubjectIdFor } from '../lib/screeningData'
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { enqueueScreeningProcessing, getQueuePosition } from '../services/screeningProcessor'
 import { findActiveConsent } from '../services/consentService'
+import { DataDeletionError, deleteScreeningData } from '../services/dataDeletion'
 import { openposeService } from '../services/openposeService'
 import { RiskLevel, ScreeningStatus } from '@prisma/client'
 
@@ -63,6 +65,8 @@ const listQuerySchema = z.object({
   risk_level: z.string().optional(),
   from: z.string().optional(),
   to: z.string().optional(),
+  child_id: z.string().uuid().optional(),
+  childId: z.string().uuid().optional(),
 })
 
 function parseRiskLevel(input?: string): RiskLevel | undefined {
@@ -84,6 +88,8 @@ screeningsRouter.get(
     const to = query.to ? new Date(query.to) : undefined
 
     const where: any = { userId }
+    const childId = query.childId ?? query.child_id
+    if (childId) where.childId = childId
 
     if (from || to) {
       where.createdAt = {}
@@ -258,7 +264,7 @@ screeningsRouter.get(
 
     if (!screening) return res.status(404).json({ error: 'NOT_FOUND' })
 
-    const subjectId = (screening.result?.rawAiResponse as any)?.subjectId || id
+    const subjectId = mlSubjectIdFor(screening)
 
     try {
       const keypoints = await openposeService.getSubjectKeypoints(subjectId)
@@ -295,7 +301,7 @@ screeningsRouter.get(
       }
     }
 
-    const subjectId = (screening.result?.rawAiResponse as any)?.subjectId || id
+    const subjectId = mlSubjectIdFor(screening)
     try {
       const prediction = await openposeService.getSubjectPrediction(subjectId)
       return res.json(prediction)
@@ -303,6 +309,28 @@ screeningsRouter.get(
       // eslint-disable-next-line no-console
       console.error(`[screenings] prediction for ${subjectId} unavailable:`, err?.message ?? err)
       return res.status(404).json({ error: 'PREDICTION_NOT_FOUND' })
+    }
+  }),
+)
+
+/** Permanently delete one screening (result, raw upload, ML-side keypoints and video copy). */
+screeningsRouter.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id
+    const id = z.string().uuid().parse(req.params.id)
+
+    const screening = await prisma.videoUpload.findFirst({ where: { id, userId }, select: { id: true } })
+    if (!screening) return res.status(404).json({ error: 'NOT_FOUND' })
+
+    try {
+      const summary = await deleteScreeningData(id)
+      return res.json({ deleted: true, ...summary })
+    } catch (error) {
+      if (error instanceof DataDeletionError) {
+        return res.status(error.httpStatus).json({ error: error.code, message: error.message })
+      }
+      throw error
     }
   }),
 )

@@ -41,7 +41,42 @@ export function GuidePage() {
           <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
             <div>• Trước lần tải đầu tiên cho mỗi trẻ, bạn cần xác nhận đồng ý; có thể thu hồi bất cứ lúc nào.</div>
             <div>• Video gốc được xoá khỏi máy chủ ứng dụng sau khi phân tích xong; hệ thống giữ lại dữ liệu khung xương và kết quả.</div>
+            <div>
+              • Bạn có thể xoá vĩnh viễn từng lượt sàng lọc (trang Lịch sử) hoặc cả hồ sơ trẻ cùng toàn bộ dữ liệu (trang Hồ sơ trẻ),
+              kể cả dữ liệu khung xương trên máy chủ phân tích.
+            </div>
+            <div>
+              • Video bài tập vận động chỉ dùng để chấm mức bắt chước, không dùng cho mô hình sàng lọc; video và dữ liệu trên máy chủ
+              phân tích được xoá ngay sau khi chấm, hệ thống chỉ giữ điểm luyện tập và nhận xét.
+            </div>
             <div>• Chỉ tải video bạn có quyền chia sẻ và tránh quay kèm thông tin nhạy cảm (tên, địa chỉ, người khác).</div>
+          </div>
+        </Card>
+        <Card title="Tập vận động cùng bạn Mầm">
+          <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
+            <div>• Đặt máy cách con khoảng 2–3 mét, ngang tầm ngực con, thấy cả người từ đầu đến bàn chân; phòng đủ sáng.</div>
+            <div>• Chỉ một mình con trong khung hình — bố mẹ đứng phía sau máy. Camera chỉ ghi hình, không ghi âm.</div>
+            <div>
+              • Camera trong trình duyệt chỉ hoạt động khi trang được mở bằng https:// hoặc trên localhost. Nếu không dùng được camera,
+              bạn có thể quay bằng điện thoại rồi tải video lên.
+            </div>
+            <div>
+              • Điểm luyện tập chỉ để khích lệ và theo dõi tiến bộ của chính con qua các lần tập cùng một bài; cách chấm đang thử
+              nghiệm và không dùng để sàng lọc hay đánh giá y khoa.
+            </div>
+          </div>
+        </Card>
+        <Card title="Bảng hỏi phụ huynh (M-CHAT-R/F)">
+          <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
+            <div>
+              • M-CHAT-R/F là bảng hỏi sàng lọc cho trẻ 16–30 tháng tuổi (tính theo tuổi thực, không hiệu chỉnh sinh non). Tuỳ
+              cấu hình, bạn trả lời từng câu trong ứng dụng hoặc nhập câu trả lời theo số câu từ phiếu chính thức.
+            </div>
+            <div>
+              • Kết quả bảng hỏi là sàng lọc tham khảo, không phải chẩn đoán, và là một nguồn thông tin riêng — không gộp với kết quả
+              sàng lọc bằng video hay điểm luyện tập.
+            </div>
+            <div>• Nếu bạn còn lo lắng về sự phát triển của con, hãy trao đổi với bác sĩ nhi dù kết quả thế nào.</div>
           </div>
         </Card>
       </div>

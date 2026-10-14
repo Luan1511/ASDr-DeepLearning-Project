@@ -1,0 +1,370 @@
+{
+  "side": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": "ml",
+      "durationSec": 6,
+      "warnings": []
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 150,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0,
+      "stepTimeAsymmetry": 0.001,
+      "stepLengthLegRatio": 0.507,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.386,
+      "armSwingRight": 0.386,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "side-leftward": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": []
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 150,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0,
+      "stepTimeAsymmetry": 0.001,
+      "stepLengthLegRatio": 0.507,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.386,
+      "armSwingRight": 0.386,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "asymmetric": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": []
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 148.9,
+      "stepTimeMeanSec": 0.403,
+      "stepTimeCv": 0.099,
+      "stepTimeAsymmetry": 0.19,
+      "stepLengthLegRatio": 0.505,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.392,
+      "armSwingRight": 0.392,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "noisy": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 172,
+      "personCoverage": 0.956,
+      "lowerBodyCoverage": 0.956,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": "upload",
+      "durationSec": 6,
+      "warnings": []
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 149.4,
+      "stepTimeMeanSec": 0.402,
+      "stepTimeCv": 0.055,
+      "stepTimeAsymmetry": 0.021,
+      "stepLengthLegRatio": 0.502,
+      "walkingSpeedLegPerSec": 0.75,
+      "trunkLeanDeg": 5.2,
+      "trunkSwayDeg": 0.8,
+      "armSwingLeft": 0.399,
+      "armSwingRight": 0.408,
+      "armSwingAsymmetry": 0.021,
+      "heelRaiseRatio": 0
+    }
+  },
+  "extra-person": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "fair",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 1,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": [
+        "Có nhiều người trong khung hình. Kết quả có thể bị ảnh hưởng; nên quay khi chỉ có trẻ trong khung."
+      ]
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 150,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0,
+      "stepTimeAsymmetry": 0.001,
+      "stepLengthLegRatio": 0.507,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.386,
+      "armSwingRight": 0.386,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "heel-raise": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": []
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 150,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0,
+      "stepTimeAsymmetry": 0.001,
+      "stepLengthLegRatio": 0.507,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.386,
+      "armSwingRight": 0.386,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 1
+    }
+  },
+  "poor-coverage": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "poor",
+      "framesTotal": 180,
+      "framesWithPerson": 90,
+      "personCoverage": 0.5,
+      "lowerBodyCoverage": 0.5,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": [
+        "Nhiều khung hình không nhận ra trẻ. Hãy quay ở nơi đủ sáng, giữ trẻ trong khung hình.",
+        "Không thấy rõ hông, gối và cổ chân trong nhiều khung hình. Đặt máy quay đủ xa để thấy cả bàn chân."
+      ]
+    },
+    "metrics": {
+      "stepCount": 12,
+      "cadenceStepsPerMin": 149.9,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0.068,
+      "stepTimeAsymmetry": 0.066,
+      "stepLengthLegRatio": 0.496,
+      "walkingSpeedLegPerSec": 0.752,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.39,
+      "armSwingRight": 0.39,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "no-fps": {
+    "version": 1,
+    "view": "side",
+    "quality": {
+      "level": "good",
+      "framesTotal": 180,
+      "framesWithPerson": 180,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": null,
+      "fpsSource": null,
+      "durationSec": null,
+      "warnings": [
+        "Không xác định được tốc độ khung hình nên không tính các chỉ số theo thời gian (nhịp bước, tốc độ)."
+      ]
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": null,
+      "stepTimeMeanSec": null,
+      "stepTimeCv": null,
+      "stepTimeAsymmetry": null,
+      "stepLengthLegRatio": 0.507,
+      "walkingSpeedLegPerSec": null,
+      "trunkLeanDeg": 5,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": 0.386,
+      "armSwingRight": 0.386,
+      "armSwingAsymmetry": 0,
+      "heelRaiseRatio": 0
+    }
+  },
+  "frontal": {
+    "version": 1,
+    "view": "frontal",
+    "quality": {
+      "level": "good",
+      "framesTotal": 150,
+      "framesWithPerson": 150,
+      "personCoverage": 1,
+      "lowerBodyCoverage": 1,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": 0.85,
+      "fps": 25,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": [
+        "Video quay chính diện: độ dài bước, tốc độ đi và biên độ vung tay chỉ tính được khi quay ngang."
+      ]
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 150,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0,
+      "stepTimeAsymmetry": 0,
+      "stepLengthLegRatio": null,
+      "walkingSpeedLegPerSec": null,
+      "trunkLeanDeg": null,
+      "trunkSwayDeg": 0,
+      "armSwingLeft": null,
+      "armSwingRight": null,
+      "armSwingAsymmetry": null,
+      "heelRaiseRatio": null
+    }
+  },
+  "frontal-noisy-extra": {
+    "version": 1,
+    "view": "frontal",
+    "quality": {
+      "level": "fair",
+      "framesTotal": 150,
+      "framesWithPerson": 136,
+      "personCoverage": 0.907,
+      "lowerBodyCoverage": 0.907,
+      "multiPersonRatio": 0.907,
+      "meanKeypointConfidence": 0.85,
+      "fps": 25,
+      "fpsSource": null,
+      "durationSec": 6,
+      "warnings": [
+        "Có nhiều người trong khung hình. Kết quả có thể bị ảnh hưởng; nên quay khi chỉ có trẻ trong khung.",
+        "Video quay chính diện: độ dài bước, tốc độ đi và biên độ vung tay chỉ tính được khi quay ngang."
+      ]
+    },
+    "metrics": {
+      "stepCount": 14,
+      "cadenceStepsPerMin": 149.9,
+      "stepTimeMeanSec": 0.4,
+      "stepTimeCv": 0.084,
+      "stepTimeAsymmetry": 0.063,
+      "stepLengthLegRatio": null,
+      "walkingSpeedLegPerSec": null,
+      "trunkLeanDeg": null,
+      "trunkSwayDeg": 1,
+      "armSwingLeft": null,
+      "armSwingRight": null,
+      "armSwingAsymmetry": null,
+      "heelRaiseRatio": null
+    }
+  },
+  "empty": {
+    "version": 1,
+    "view": "unknown",
+    "quality": {
+      "level": "poor",
+      "framesTotal": 0,
+      "framesWithPerson": 0,
+      "personCoverage": 0,
+      "lowerBodyCoverage": 0,
+      "multiPersonRatio": 0,
+      "meanKeypointConfidence": null,
+      "fps": 30,
+      "fpsSource": null,
+      "durationSec": null,
+      "warnings": [
+        "Nhiều khung hình không nhận ra trẻ. Hãy quay ở nơi đủ sáng, giữ trẻ trong khung hình.",
+        "Không thấy rõ hông, gối và cổ chân trong nhiều khung hình. Đặt máy quay đủ xa để thấy cả bàn chân.",
+        "Phát hiện ít hơn 4 bước chân, chưa đủ để tính các chỉ số dáng đi."
+      ]
+    },
+    "metrics": {
+      "stepCount": 0,
+      "cadenceStepsPerMin": null,
+      "stepTimeMeanSec": null,
+      "stepTimeCv": null,
+      "stepTimeAsymmetry": null,
+      "stepLengthLegRatio": null,
+      "walkingSpeedLegPerSec": null,
+      "trunkLeanDeg": null,
+      "trunkSwayDeg": null,
+      "armSwingLeft": null,
+      "armSwingRight": null,
+      "armSwingAsymmetry": null,
+      "heelRaiseRatio": null
+    }
+  }
+}

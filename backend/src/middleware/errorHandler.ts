@@ -2,11 +2,20 @@ import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 import { MulterError } from 'multer'
 import { SCHEMA_OUTDATED_HINT, isSchemaOutdatedError } from '../lib/prismaErrors'
+import { GENERIC_ERROR_MESSAGE, redactedErrorSummary } from '../lib/errorLog'
 import { OpenPoseApiError } from '../services/openposeService'
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+  // Prisma and JSON-parse errors can carry request data (answers, "Other"
+  // descriptions, the raw body): only a one-line summary is logged for them.
   // eslint-disable-next-line no-console
-  console.error('Request failed:', err)
+  console.error('Request failed:', redactedErrorSummary(err) ?? err)
+
+  // express.json() rejects a body that is not valid JSON: a client error, and
+  // the body itself is never echoed.
+  if ((err as { type?: unknown } | null)?.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'INVALID_JSON' })
+  }
 
   if (err instanceof ZodError) {
     return res.status(400).json({
@@ -37,9 +46,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     if (err.message === 'UNSUPPORTED_FILE_TYPE') {
       return res.status(400).json({ error: 'UNSUPPORTED_FILE_TYPE' })
     }
-    const message = err.message || 'Unexpected error'
-    return res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message })
   }
 
-  return res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message: 'Unexpected error' })
+  // Never echo an internal message (it may quote the request or the database).
+  return res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message: GENERIC_ERROR_MESSAGE })
 }

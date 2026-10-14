@@ -344,6 +344,8 @@ export class OpenPoseService {
     originalFilename?: string
     mimeType?: string
     subjectId?: string
+    /** Defaults to EXTRACT_API_TIMEOUT_MS (exercise clips use a shorter limit). */
+    timeoutMs?: number
   }): Promise<OpenPoseExtractResponse> {
     const blob = await prepareVideoBlob({
       filePath: params.filePath,
@@ -362,6 +364,7 @@ export class OpenPoseService {
       requestOpenPose<OpenPoseExtractResponse>(`/subjects/extract${qs}`, {
         method: 'POST',
         body: formData,
+        timeoutMs: params.timeoutMs,
       }),
     )
   }

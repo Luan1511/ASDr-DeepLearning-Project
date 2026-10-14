@@ -38,6 +38,11 @@ __pycache__/
 # Debug dumps
 backend/response.json
 
+# Licensed questionnaire text (M-CHAT-R/F). Only the empty template is versioned;
+# the filled file stays local until the authors grant permission (master_prompt.md).
+backend/content/*.json
+!backend/content/mchat-rf.template.json
+
 # Personal tool settings
 .claude/settings.local.json
 

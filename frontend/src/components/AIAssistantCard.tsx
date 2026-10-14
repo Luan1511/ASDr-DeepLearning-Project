@@ -8,7 +8,7 @@ const quick = ['ASD là gì?', 'Dấu hiệu sớm?', 'Cách sàng lọc?']
 
 export function AIAssistantCard() {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý AI của ASDr. Bạn muốn hỏi gì về ASD?' },
+    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý AI của AIMBRACE. Bạn muốn hỏi gì về ASD?' },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

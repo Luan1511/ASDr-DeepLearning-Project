@@ -11,10 +11,16 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "tsx --test test/gaitFeatures.test.ts test/screeningResult.test.ts test/semaphore.test.ts test/prismaErrors.test.ts",
+    "test": "tsx --test test/gaitFeatures.test.ts test/screeningResult.test.ts test/semaphore.test.ts test/prismaErrors.test.ts test/childInput.test.ts test/screeningData.test.ts test/poseTracking.test.ts test/imitationScoring.test.ts test/imitationTemplate.test.ts test/imitationConstants.test.ts test/imitationFeedback.test.ts test/exerciseInput.test.ts test/exerciseData.test.ts test/exerciseSerializers.test.ts test/exerciseConsent.test.ts test/mchatRf.test.ts test/questionnaireAge.test.ts test/questionnaireCopy.test.ts test/mchatRfStructure.test.ts test/followUpEngine.test.ts test/mchatContent.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
     "prisma:deploy": "prisma migrate deploy",
-    "privacy:purge-videos": "tsx scripts/purgeProcessedVideos.ts"
+    "privacy:purge-videos": "tsx scripts/purgeProcessedVideos.ts",
+    "exercises:probe-ml": "tsx scripts/probeMlExercise.ts",
+    "exercises:calibrate": "tsx scripts/calibrateImitation.ts",
+    "privacy:purge-exercise-uploads": "tsx scripts/purgeExerciseUploads.ts",
+    "test:e2e": "tsx --test --test-concurrency=1 test/e2e/exercise.e2e.ts test/e2e/questionnaire.e2e.ts test/e2e/questionnaireInApp.e2e.ts",
+    "questionnaires:content-template": "tsx scripts/mchatContentTemplate.ts",
+    "questionnaires:validate-content": "tsx scripts/validateMchatContent.ts"
   },
   "keywords": [],
   "author": "",
