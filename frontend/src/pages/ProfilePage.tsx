@@ -128,7 +128,7 @@ export function ProfilePage() {
       setProfileSuccess('Cập nhật thông tin tài khoản thành công!')
       setTimeout(() => setProfileSuccess(null), 4000)
     } catch (err) {
-      setProfileError(apiErrorMessage(err, 'Không thể cập nhật thông tin. Vui lòng thử lại.'))
+      setProfileError(await apiErrorMessage(err, 'Không thể cập nhật thông tin. Vui lòng thử lại.'))
     } finally {
       setSavingProfile(false)
     }
@@ -162,7 +162,7 @@ export function ProfilePage() {
       setConfirmPassword('')
       setTimeout(() => setPasswordSuccess(null), 5000)
     } catch (err) {
-      setPasswordError(apiErrorMessage(err, 'Mật khẩu hiện tại không đúng hoặc đã xảy ra lỗi.'))
+      setPasswordError(await apiErrorMessage(err, 'Mật khẩu hiện tại không đúng hoặc đã xảy ra lỗi.'))
     } finally {
       setSavingPassword(false)
     }

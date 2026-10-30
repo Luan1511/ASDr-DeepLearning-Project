@@ -89,7 +89,7 @@ function Divider() {
 }
 
 export function Sidebar() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const caps = useExerciseCapabilities()

@@ -5,6 +5,8 @@ export type User = {
   name: string
   email: string
   role: UserRole
+  /** Returned by /auth/me and /auth/login. */
+  createdAt?: string
 }
 
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'UNSPECIFIED'

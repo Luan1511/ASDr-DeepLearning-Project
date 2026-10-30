@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, ClipboardList, Info } from 'lucide-react'
+import { ChevronRight, ClipboardList } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
 import { InfoTooltip } from '../components/Tooltip'
