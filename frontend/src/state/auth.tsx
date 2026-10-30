@@ -10,6 +10,7 @@ type AuthState = {
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshMe: () => Promise<void>
+  updateUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -91,8 +92,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(TOKEN_KEY)
   }
 
+  function updateUser(updated: User) {
+    setUser(updated)
+  }
+
   const value = useMemo<AuthState>(
-    () => ({ token, user, loading, login, register, logout, refreshMe }),
+    () => ({ token, user, loading, login, register, logout, refreshMe, updateUser }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [token, user, loading],
   )

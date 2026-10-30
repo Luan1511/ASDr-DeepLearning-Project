@@ -16,6 +16,7 @@ import { childExercisesRouter } from './childExercises'
 import { adminExercisesRouter } from './adminExercises'
 import { childQuestionnairesRouter, questionnaireResponsesRouter, questionnairesRouter } from './questionnaires'
 import { communityRouter } from './community'
+import { buddyRouter } from './buddy'
 
 export const apiRouter = Router()
 
@@ -27,6 +28,7 @@ apiRouter.use('/results', resultsRouter)
 apiRouter.use('/chat', chatRouter)
 apiRouter.use('/articles', articlesRouter)
 apiRouter.use('/community', communityRouter)
+apiRouter.use('/buddy', buddyRouter)
 apiRouter.use('/admin', adminRouter)
 apiRouter.use('/admin/skeleton', skeletonRouter)
 // Giai đoạn 4 + questionnaires. The /children/:childId mounts come after

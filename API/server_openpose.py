@@ -55,6 +55,24 @@ if VIDEO_RETENTION not in ("blurred", "none", "raw"):
 DEFAULT_THRESHOLD = 0.5
 DEFAULT_TEMPERATURE = 1.0
 
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+# Inference settings. Defaults reproduce the fine-tune preprocessing of the
+# deployed checkpoint (research_src/fine_tune.py). Re-run the calibration
+# (research_src/calibrate_evaluate.py) after changing any of them: the
+# thresholds in calibration.json were fitted on the server's own predictions.
+STGCN_PREPROCESS = _env_flag("STGCN_PREPROCESS", True)  # spike/gap/median cleaning
+STGCN_RESAMPLE = os.getenv("STGCN_RESAMPLE", "").strip().lower() or None  # nearest | linear | "" = checkpoint/default
+STGCN_WINDOW_FRAMES = int(os.getenv("STGCN_WINDOW_FRAMES", "0"))  # 0 = whole clip (as trained)
+STGCN_WINDOW_STRIDE = int(os.getenv("STGCN_WINDOW_STRIDE", "0"))  # 0 = half a window
+STGCN_MIN_PERSON_FRAMES = int(os.getenv("STGCN_MIN_PERSON_FRAMES", "16"))  # below: HTTP 422
+
 ALLOWED_VIDEO_EXTENSIONS = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 SUBJECT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 KEYPOINT_FORMAT = "OpenPose BODY_25"
@@ -140,12 +158,18 @@ def startup():
         seq_len=128,
         input_layout="openpose",
         normalization=None,
+        preprocess=STGCN_PREPROCESS,
+        resample=STGCN_RESAMPLE,
+        window_frames=STGCN_WINDOW_FRAMES,
+        window_stride=STGCN_WINDOW_STRIDE,
+        min_person_frames=STGCN_MIN_PERSON_FRAMES,
     )
     checkpoint_sha256 = _sha256(STGCN_CHECKPOINT)
     model_info = {
         "checkpoint": STGCN_CHECKPOINT.name,
         "sha256": checkpoint_sha256,
         "num_joints": int(stgcn_predictor.ckpt.get("num_joints", 18)),
+        "settings": stgcn_predictor.settings(),
     }
     calibration = load_calibration(checkpoint_sha256)
     logger.info("Model %s loaded on %s; calibrated=%s", STGCN_CHECKPOINT.name, stgcn_predictor.device, calibration is not None)

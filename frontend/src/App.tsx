@@ -12,6 +12,7 @@ import { KnowledgePage } from './pages/KnowledgePage'
 import { ArticlePage } from './pages/ArticlePage'
 import { GuidePage } from './pages/GuidePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { ChildrenPage } from './pages/ChildrenPage'
 import { ChildDetailPage } from './pages/ChildDetailPage'
 
@@ -30,6 +31,8 @@ const QuestionnaireResultPage = lazy(() => import('./pages/QuestionnaireResultPa
 const QuestionnaireFollowUpPage = lazy(() =>
   import('./pages/QuestionnaireFollowUpPage').then((m) => ({ default: m.QuestionnaireFollowUpPage })),
 )
+const BuddyPage = lazy(() => import('./pages/BuddyPage').then((m) => ({ default: m.BuddyPage })))
+const BuddyStudioPage = lazy(() => import('./pages/BuddyStudioPage').then((m) => ({ default: m.BuddyStudioPage })))
 const CommunityPage = lazy(() => import('./pages/CommunityPage').then((m) => ({ default: m.CommunityPage })))
 const CommunityPostDetailPage = lazy(() =>
   import('./pages/CommunityPostDetailPage').then((m) => ({ default: m.CommunityPostDetailPage })),
@@ -173,6 +176,16 @@ export default function App() {
         }
       />
 
+      {/* Kid mode: full screen chat with the 2D companion. */}
+      <Route
+        path="/buddy"
+        element={
+          <ProtectedRoute>
+            <BuddyPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/knowledge"
         element={
@@ -200,10 +213,19 @@ export default function App() {
       />
 
       <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/settings"
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
@@ -222,6 +244,15 @@ export default function App() {
         element={
           <AdminRoute>
             <AdminSkeletonPage />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/buddy"
+        element={
+          <AdminRoute>
+            <BuddyStudioPage />
           </AdminRoute>
         }
       />

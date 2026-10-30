@@ -1,0 +1,749 @@
+{
+  "version": 1,
+  "seed": 42,
+  "ratios": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2
+  },
+  "created_at": "2026-10-27T09:45:33+00:00",
+  "source": {
+    "manifest": "/home/khmt01/Luan_workspace/asdr/ml/calibration/manifest.csv"
+  },
+  "subjects": {
+    "train": [
+      "Autism/video_1",
+      "Autism/video_10",
+      "Autism/video_12",
+      "Autism/video_18",
+      "Autism/video_19",
+      "Autism/video_2",
+      "Autism/video_21",
+      "Autism/video_23",
+      "Autism/video_24",
+      "Autism/video_25",
+      "Autism/video_27",
+      "Autism/video_28",
+      "Autism/video_29",
+      "Autism/video_3",
+      "Autism/video_32",
+      "Autism/video_33",
+      "Autism/video_34",
+      "Autism/video_35",
+      "Autism/video_36",
+      "Autism/video_37",
+      "Autism/video_38",
+      "Autism/video_39",
+      "Autism/video_4",
+      "Autism/video_43",
+      "Autism/video_44",
+      "Autism/video_47",
+      "Autism/video_48",
+      "Autism/video_50",
+      "Autism/video_8",
+      "Autism/video_9",
+      "Typical/video_1",
+      "Typical/video_12",
+      "Typical/video_13",
+      "Typical/video_18",
+      "Typical/video_19",
+      "Typical/video_2",
+      "Typical/video_20",
+      "Typical/video_24",
+      "Typical/video_26",
+      "Typical/video_27",
+      "Typical/video_28",
+      "Typical/video_29",
+      "Typical/video_3",
+      "Typical/video_30",
+      "Typical/video_31",
+      "Typical/video_32",
+      "Typical/video_33",
+      "Typical/video_35",
+      "Typical/video_36",
+      "Typical/video_37",
+      "Typical/video_38",
+      "Typical/video_39",
+      "Typical/video_4",
+      "Typical/video_42",
+      "Typical/video_44",
+      "Typical/video_48",
+      "Typical/video_5",
+      "Typical/video_8",
+      "Typical/video_9"
+    ],
+    "val": [
+      "Autism/video_11",
+      "Autism/video_13",
+      "Autism/video_15",
+      "Autism/video_17",
+      "Autism/video_20",
+      "Autism/video_22",
+      "Autism/video_49",
+      "Autism/video_5",
+      "Autism/video_6",
+      "Autism/video_7",
+      "Typical/video_11",
+      "Typical/video_21",
+      "Typical/video_34",
+      "Typical/video_41",
+      "Typical/video_43",
+      "Typical/video_45",
+      "Typical/video_47",
+      "Typical/video_49",
+      "Typical/video_6",
+      "Typical/video_7"
+    ],
+    "test": [
+      "Autism/video_14",
+      "Autism/video_16",
+      "Autism/video_26",
+      "Autism/video_30",
+      "Autism/video_31",
+      "Autism/video_40",
+      "Autism/video_41",
+      "Autism/video_42",
+      "Autism/video_45",
+      "Autism/video_46",
+      "Typical/video_10",
+      "Typical/video_14",
+      "Typical/video_15",
+      "Typical/video_16",
+      "Typical/video_17",
+      "Typical/video_22",
+      "Typical/video_23",
+      "Typical/video_25",
+      "Typical/video_40",
+      "Typical/video_46"
+    ]
+  },
+  "samples": [
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_1/keypoints_body25.json",
+      "subject_id": "Autism/video_1",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_10/keypoints_body25.json",
+      "subject_id": "Autism/video_10",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_11/keypoints_body25.json",
+      "subject_id": "Autism/video_11",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_12/keypoints_body25.json",
+      "subject_id": "Autism/video_12",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_13/keypoints_body25.json",
+      "subject_id": "Autism/video_13",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_14/keypoints_body25.json",
+      "subject_id": "Autism/video_14",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_15/keypoints_body25.json",
+      "subject_id": "Autism/video_15",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_16/keypoints_body25.json",
+      "subject_id": "Autism/video_16",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_17/keypoints_body25.json",
+      "subject_id": "Autism/video_17",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_18/keypoints_body25.json",
+      "subject_id": "Autism/video_18",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_19/keypoints_body25.json",
+      "subject_id": "Autism/video_19",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_2/keypoints_body25.json",
+      "subject_id": "Autism/video_2",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_20/keypoints_body25.json",
+      "subject_id": "Autism/video_20",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_21/keypoints_body25.json",
+      "subject_id": "Autism/video_21",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_22/keypoints_body25.json",
+      "subject_id": "Autism/video_22",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_23/keypoints_body25.json",
+      "subject_id": "Autism/video_23",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_24/keypoints_body25.json",
+      "subject_id": "Autism/video_24",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_25/keypoints_body25.json",
+      "subject_id": "Autism/video_25",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_26/keypoints_body25.json",
+      "subject_id": "Autism/video_26",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_27/keypoints_body25.json",
+      "subject_id": "Autism/video_27",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_28/keypoints_body25.json",
+      "subject_id": "Autism/video_28",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_29/keypoints_body25.json",
+      "subject_id": "Autism/video_29",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_3/keypoints_body25.json",
+      "subject_id": "Autism/video_3",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_30/keypoints_body25.json",
+      "subject_id": "Autism/video_30",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_31/keypoints_body25.json",
+      "subject_id": "Autism/video_31",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_32/keypoints_body25.json",
+      "subject_id": "Autism/video_32",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_33/keypoints_body25.json",
+      "subject_id": "Autism/video_33",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_34/keypoints_body25.json",
+      "subject_id": "Autism/video_34",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_35/keypoints_body25.json",
+      "subject_id": "Autism/video_35",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_36/keypoints_body25.json",
+      "subject_id": "Autism/video_36",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_37/keypoints_body25.json",
+      "subject_id": "Autism/video_37",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_38/keypoints_body25.json",
+      "subject_id": "Autism/video_38",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_39/keypoints_body25.json",
+      "subject_id": "Autism/video_39",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_4/keypoints_body25.json",
+      "subject_id": "Autism/video_4",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_40/keypoints_body25.json",
+      "subject_id": "Autism/video_40",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_41/keypoints_body25.json",
+      "subject_id": "Autism/video_41",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_42/keypoints_body25.json",
+      "subject_id": "Autism/video_42",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_43/keypoints_body25.json",
+      "subject_id": "Autism/video_43",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_44/keypoints_body25.json",
+      "subject_id": "Autism/video_44",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_45/keypoints_body25.json",
+      "subject_id": "Autism/video_45",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_46/keypoints_body25.json",
+      "subject_id": "Autism/video_46",
+      "label": 1,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_47/keypoints_body25.json",
+      "subject_id": "Autism/video_47",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_48/keypoints_body25.json",
+      "subject_id": "Autism/video_48",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_49/keypoints_body25.json",
+      "subject_id": "Autism/video_49",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_5/keypoints_body25.json",
+      "subject_id": "Autism/video_5",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_50/keypoints_body25.json",
+      "subject_id": "Autism/video_50",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_6/keypoints_body25.json",
+      "subject_id": "Autism/video_6",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_7/keypoints_body25.json",
+      "subject_id": "Autism/video_7",
+      "label": 1,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_8/keypoints_body25.json",
+      "subject_id": "Autism/video_8",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_9/keypoints_body25.json",
+      "subject_id": "Autism/video_9",
+      "label": 1,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_1/keypoints_body25.json",
+      "subject_id": "Typical/video_1",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_10/keypoints_body25.json",
+      "subject_id": "Typical/video_10",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_11/keypoints_body25.json",
+      "subject_id": "Typical/video_11",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_12/keypoints_body25.json",
+      "subject_id": "Typical/video_12",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_13/keypoints_body25.json",
+      "subject_id": "Typical/video_13",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_14/keypoints_body25.json",
+      "subject_id": "Typical/video_14",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_15/keypoints_body25.json",
+      "subject_id": "Typical/video_15",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_16/keypoints_body25.json",
+      "subject_id": "Typical/video_16",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_17/keypoints_body25.json",
+      "subject_id": "Typical/video_17",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_18/keypoints_body25.json",
+      "subject_id": "Typical/video_18",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_19/keypoints_body25.json",
+      "subject_id": "Typical/video_19",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_2/keypoints_body25.json",
+      "subject_id": "Typical/video_2",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_20/keypoints_body25.json",
+      "subject_id": "Typical/video_20",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_21/keypoints_body25.json",
+      "subject_id": "Typical/video_21",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_22/keypoints_body25.json",
+      "subject_id": "Typical/video_22",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_23/keypoints_body25.json",
+      "subject_id": "Typical/video_23",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_24/keypoints_body25.json",
+      "subject_id": "Typical/video_24",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_25/keypoints_body25.json",
+      "subject_id": "Typical/video_25",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_26/keypoints_body25.json",
+      "subject_id": "Typical/video_26",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_27/keypoints_body25.json",
+      "subject_id": "Typical/video_27",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_28/keypoints_body25.json",
+      "subject_id": "Typical/video_28",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_29/keypoints_body25.json",
+      "subject_id": "Typical/video_29",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_3/keypoints_body25.json",
+      "subject_id": "Typical/video_3",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_30/keypoints_body25.json",
+      "subject_id": "Typical/video_30",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_31/keypoints_body25.json",
+      "subject_id": "Typical/video_31",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_32/keypoints_body25.json",
+      "subject_id": "Typical/video_32",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_33/keypoints_body25.json",
+      "subject_id": "Typical/video_33",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_34/keypoints_body25.json",
+      "subject_id": "Typical/video_34",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_35/keypoints_body25.json",
+      "subject_id": "Typical/video_35",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_36/keypoints_body25.json",
+      "subject_id": "Typical/video_36",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_37/keypoints_body25.json",
+      "subject_id": "Typical/video_37",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_38/keypoints_body25.json",
+      "subject_id": "Typical/video_38",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_39/keypoints_body25.json",
+      "subject_id": "Typical/video_39",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_4/keypoints_body25.json",
+      "subject_id": "Typical/video_4",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_40/keypoints_body25.json",
+      "subject_id": "Typical/video_40",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_41/keypoints_body25.json",
+      "subject_id": "Typical/video_41",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_42/keypoints_body25.json",
+      "subject_id": "Typical/video_42",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_43/keypoints_body25.json",
+      "subject_id": "Typical/video_43",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_44/keypoints_body25.json",
+      "subject_id": "Typical/video_44",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_45/keypoints_body25.json",
+      "subject_id": "Typical/video_45",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_46/keypoints_body25.json",
+      "subject_id": "Typical/video_46",
+      "label": 0,
+      "split": "test"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_47/keypoints_body25.json",
+      "subject_id": "Typical/video_47",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_48/keypoints_body25.json",
+      "subject_id": "Typical/video_48",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_49/keypoints_body25.json",
+      "subject_id": "Typical/video_49",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_5/keypoints_body25.json",
+      "subject_id": "Typical/video_5",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_6/keypoints_body25.json",
+      "subject_id": "Typical/video_6",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_7/keypoints_body25.json",
+      "subject_id": "Typical/video_7",
+      "label": 0,
+      "split": "val"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_8/keypoints_body25.json",
+      "subject_id": "Typical/video_8",
+      "label": 0,
+      "split": "train"
+    },
+    {
+      "path": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_9/keypoints_body25.json",
+      "subject_id": "Typical/video_9",
+      "label": 0,
+      "split": "train"
+    }
+  ],
+  "counts": {
+    "train": {
+      "subjects": {
+        "ASD": 30,
+        "Typical": 29
+      },
+      "samples": {
+        "ASD": 30,
+        "Typical": 29
+      }
+    },
+    "val": {
+      "subjects": {
+        "ASD": 10,
+        "Typical": 10
+      },
+      "samples": {
+        "ASD": 10,
+        "Typical": 10
+      }
+    },
+    "test": {
+      "subjects": {
+        "ASD": 10,
+        "Typical": 10
+      },
+      "samples": {
+        "ASD": 10,
+        "Typical": 10
+      }
+    }
+  },
+  "warnings": []
+}

@@ -513,6 +513,90 @@ def _resample_time_linear(seq: np.ndarray, L: int) -> np.ndarray:
     return out
 
 
+def _resample_time_nearest(seq: np.ndarray, L: int) -> np.ndarray:
+    """Pick the nearest source frame for each of the L target positions.
+
+    This is what research_src/fine_tune.py fed the deployed checkpoint
+    (``_resample_nearest``): no frame blending, so a (0,0) joint stays (0,0)
+    and a real frame stays a real frame.
+    """
+    T = seq.shape[0]
+    if L is None or L <= 0 or T == L:
+        return seq
+    if T <= 1:
+        return np.repeat(seq, repeats=L, axis=0)
+    idx = np.rint(np.linspace(0.0, float(T - 1), num=L)).astype(np.int64)
+    idx = np.clip(idx, 0, T - 1)
+    return np.ascontiguousarray(seq[idx]).astype(np.float32)
+
+
+RESAMPLE_METHODS = ("nearest", "linear")
+# The deployed checkpoint is fine-tuned with nearest resampling
+# (research_src/fine_tune.py). The original ST_GCN.py training used linear.
+DEFAULT_RESAMPLE = "nearest"
+
+
+def _resolve_resample(resample: Optional[str], cfg: dict) -> str:
+    method = str(resample or cfg.get("resample") or DEFAULT_RESAMPLE).strip().lower()
+    if method not in RESAMPLE_METHODS:
+        raise ValueError(f"Unknown resample={method!r}. Expected one of: {RESAMPLE_METHODS}")
+    return method
+
+
+def _resample_time(seq: np.ndarray, L: int, method: str) -> np.ndarray:
+    if method == "linear":
+        return _resample_time_linear(seq, L)
+    if method == "nearest":
+        return _resample_time_nearest(seq, L)
+    raise ValueError(f"Unknown resample method {method!r}")
+
+
+def _build_model_input(
+    seq_xy: np.ndarray,
+    *,
+    cfg: dict,
+    seq_len: int,
+    normalization: str,
+    num_joints: int,
+    resample: str,
+) -> np.ndarray:
+    """(T,J,2) joint sequence -> (seq_len,J,C) model input.
+
+    Order matches the fine-tune dataset (research_src/fine_tune.py): resample
+    to seq_len FIRST, then normalise, then dynamic features on the resampled
+    clip. Computing velocity before resampling scales it by T/seq_len, which
+    the model never saw.
+    """
+    include_dynamics = bool(cfg.get("include_dynamics", False))
+    dynamic_fusion = str(cfg.get("dynamic_fusion", "none"))
+    dynamic_features = cfg.get("dynamic_features") or []
+    if isinstance(dynamic_features, str):
+        dynamic_features = [dynamic_features]
+    dynamic_features = list(dynamic_features)
+    fps = float(cfg.get("fps", 30.0))
+
+    seq_xy = _resample_time(seq_xy, seq_len, method=resample)
+    seq_xy = _apply_training_normalization(seq_xy, normalization, num_joints=num_joints)
+
+    feats: List[np.ndarray] = [seq_xy.astype(np.float32)]
+    if include_dynamics and dynamic_fusion != "none":
+        from ST_GCN import (
+            compute_acceleration,
+            compute_motion_energy,
+            compute_velocity,
+        )
+
+        if "velocity" in dynamic_features:
+            feats.append(compute_velocity(seq_xy, fps=fps).astype(np.float32))
+        if "acceleration" in dynamic_features:
+            feats.append(compute_acceleration(seq_xy, fps=fps).astype(np.float32))
+        if "motion_energy" in dynamic_features:
+            me = compute_motion_energy(seq_xy, fps=fps).astype(np.float32)
+            feats.append(me[..., None])
+
+    return np.concatenate(feats, axis=2)
+
+
 def _apply_training_normalization(seq: np.ndarray, normalization: str, *, num_joints: int) -> np.ndarray:
     from ST_GCN import (
         normalize_by_bbox,
@@ -662,6 +746,7 @@ def predict_from_excels(
     remove_kp: Optional[Sequence[int]],
     excel_removed_kp: Optional[Sequence[int]],
     expect_joints: Optional[int],
+    resample: Optional[str] = None,
 ) -> None:
     import torch
 
@@ -673,13 +758,7 @@ def predict_from_excels(
     model = model.to(device2)
 
     cfg = ckpt.get("config") or {}
-    include_dynamics = bool(cfg.get("include_dynamics", False))
-    dynamic_fusion = str(cfg.get("dynamic_fusion", "none"))
-    dynamic_features = cfg.get("dynamic_features") or []
-    if isinstance(dynamic_features, str):
-        dynamic_features = [dynamic_features]
-    dynamic_features = list(dynamic_features)
-    fps = float(cfg.get("fps", 30.0))
+    resample2 = _resolve_resample(resample, cfg)
 
     ckpt_num_joints = int(ckpt.get("num_joints", 18))
 
@@ -729,26 +808,15 @@ def predict_from_excels(
                 "(Use --remove-to-17/--remove-to-18/--remove-kp, or --excel-removed-kp to expand.)"
             )
 
-        seq_xy = _apply_training_normalization(seq_xy, normalization2, num_joints=expect_j)
-
-        feats: List[np.ndarray] = [seq_xy]
-        if include_dynamics and dynamic_fusion != "none":
-            from ST_GCN import (
-                compute_acceleration,
-                compute_motion_energy,
-                compute_velocity,
-            )
-
-            if "velocity" in dynamic_features:
-                feats.append(compute_velocity(seq_xy, fps=fps).astype(np.float32))
-            if "acceleration" in dynamic_features:
-                feats.append(compute_acceleration(seq_xy, fps=fps).astype(np.float32))
-            if "motion_energy" in dynamic_features:
-                me = compute_motion_energy(seq_xy, fps=fps).astype(np.float32)
-                feats.append(me[..., None])
-
-        seq_feat = np.concatenate(feats, axis=2)
-        seq_feat = _resample_time_linear(seq_feat, seq_len)
+        seq_feat = _build_model_input(
+            seq_xy,
+            cfg=cfg,
+            seq_len=seq_len,
+            normalization=normalization2,
+            num_joints=expect_j,
+            resample=resample2,
+        )
+        seq_xy = seq_feat[..., :2]
 
         pred, p_asd, probs, logits = _predict_one(model, seq_feat, device=device2, temperature=temperature)
         label = 1 if p_asd >= float(threshold) else 0
@@ -837,15 +905,19 @@ def _predict_sequence(
     remove_kp: Optional[Sequence[int]],
     excel_removed_kp: Optional[Sequence[int]],
     expect_joints: Optional[int],
+    preprocess: bool = True,
+    resample: Optional[str] = None,
 ) -> Dict[str, object]:
+    """Predict one (T,J,2) sequence.
+
+    preprocess: run services.preprocessing (spike rejection, short-gap
+        imputation, median filter) on the raw coordinates. STGCNPredictor
+        already does this WITH OpenPose confidences and passes False; running
+        it twice over-smooths the trajectories.
+    resample: "nearest" | "linear"; None -> checkpoint config -> DEFAULT_RESAMPLE.
+    """
     cfg = ckpt.get("config") or {}
-    include_dynamics = bool(cfg.get("include_dynamics", False))
-    dynamic_fusion = str(cfg.get("dynamic_fusion", "none"))
-    dynamic_features = cfg.get("dynamic_features") or []
-    if isinstance(dynamic_features, str):
-        dynamic_features = [dynamic_features]
-    dynamic_features = list(dynamic_features)
-    fps = float(cfg.get("fps", 30.0))
+    resample2 = _resolve_resample(resample, cfg)
 
     ckpt_num_joints = int(ckpt.get("num_joints", 18))
     normalization2 = normalization
@@ -857,6 +929,11 @@ def _predict_sequence(
         seq_xy = _trim_all_zero_ends(seq_xy)
         if seq_xy.shape[0] == 0:
             seq_xy = np.zeros((1, seq_xy.shape[1], 2), dtype=np.float32)
+
+    if preprocess:
+        from services.preprocessing import preprocess_skeleton_sequence
+
+        seq_xy = preprocess_skeleton_sequence(seq_xy, max_gap=5, method="linear")
 
     expect_j = ckpt_num_joints if expect_joints is None else int(expect_joints)
 
@@ -884,33 +961,23 @@ def _predict_sequence(
             "(Use --remove-to-17/--remove-to-18/--remove-kp, or --excel-removed-kp to expand.)"
         )
 
-    seq_xy = _apply_training_normalization(seq_xy, normalization2, num_joints=expect_j)
-
-    feats: List[np.ndarray] = [seq_xy]
-    if include_dynamics and dynamic_fusion != "none":
-        from ST_GCN import (
-            compute_acceleration,
-            compute_motion_energy,
-            compute_velocity,
-        )
-
-        if "velocity" in dynamic_features:
-            feats.append(compute_velocity(seq_xy, fps=fps).astype(np.float32))
-        if "acceleration" in dynamic_features:
-            feats.append(compute_acceleration(seq_xy, fps=fps).astype(np.float32))
-        if "motion_energy" in dynamic_features:
-            me = compute_motion_energy(seq_xy, fps=fps).astype(np.float32)
-            feats.append(me[..., None])
-
-    seq_feat = np.concatenate(feats, axis=2)
-    seq_feat = _resample_time_linear(seq_feat, seq_len)
+    T_after_trim = int(seq_xy.shape[0])
+    seq_feat = _build_model_input(
+        seq_xy,
+        cfg=cfg,
+        seq_len=seq_len,
+        normalization=normalization2,
+        num_joints=expect_j,
+        resample=resample2,
+    )
+    seq_xy = seq_feat[..., :2]
 
     pred, p_asd, probs, logits = _predict_one(model, seq_feat, device=device, temperature=temperature)
     label = 1 if p_asd >= float(threshold) else 0
 
     if debug:
         seq_stats = {
-            "T_after_trim": int(seq_xy.shape[0]),
+            "T_after_trim": T_after_trim,
             "x_min": float(np.min(seq_xy[..., 0])),
             "x_max": float(np.max(seq_xy[..., 0])),
             "y_min": float(np.max(seq_xy[..., 1] * 0 + np.min(seq_xy[..., 1]))),
@@ -925,6 +992,7 @@ def _predict_sequence(
     return {
         "file": sample_id,
         "T_in": T_orig,
+        "T_used": T_after_trim,
         "J": got_j,
         "p_typical": float(probs[0]),
         "p_asd": float(probs[1]),
@@ -934,6 +1002,7 @@ def _predict_sequence(
         "label_threshold": int(label),
         "threshold": float(threshold),
         "temperature": float(temperature),
+        "resample": resample2,
     }
 
 
@@ -958,6 +1027,7 @@ def predict_from_openpose_json(
     remove_kp: Optional[Sequence[int]],
     excel_removed_kp: Optional[Sequence[int]],
     expect_joints: Optional[int],
+    resample: Optional[str] = None,
 ) -> None:
     import torch
 
@@ -1005,6 +1075,7 @@ def predict_from_openpose_json(
                 remove_kp=remove_kp,
                 excel_removed_kp=excel_removed_kp,
                 expect_joints=expect_joints,
+                resample=resample,
             )
         )
 
@@ -1096,6 +1167,13 @@ def _build_predict_parser(sub: Optional[argparse._SubParsersAction] = None) -> a
 
     parser.add_argument("--seq-len", type=int, default=128)
     parser.add_argument(
+        "--resample",
+        choices=list(RESAMPLE_METHODS),
+        default=None,
+        help="Temporal resampling to --seq-len. Default: checkpoint config['resample'] else "
+        f"'{DEFAULT_RESAMPLE}' (what research_src/fine_tune.py used).",
+    )
+    parser.add_argument(
         "--input-layout",
         choices=["openpose", "kinect"],
         default="openpose",
@@ -1171,6 +1249,13 @@ def _build_json_predict_parser(sub: Optional[argparse._SubParsersAction] = None)
 
     # Predict options (same as predict)
     parser.add_argument("--seq-len", type=int, default=128)
+    parser.add_argument(
+        "--resample",
+        choices=list(RESAMPLE_METHODS),
+        default=None,
+        help="Temporal resampling to --seq-len. Default: checkpoint config['resample'] else "
+        f"'{DEFAULT_RESAMPLE}' (what research_src/fine_tune.py used).",
+    )
     parser.add_argument(
         "--input-layout",
         choices=["openpose", "kinect"],
@@ -1256,6 +1341,7 @@ def main_predict(argv: Optional[Sequence[str]] = None) -> None:
         remove_kp=args.remove_kp,
         excel_removed_kp=args.excel_removed_kp,
         expect_joints=args.expect_joints,
+        resample=args.resample,
     )
 
     print(f"Wrote predictions: {Path(args.output)}")
@@ -1285,6 +1371,7 @@ def main_json_predict(argv: Optional[Sequence[str]] = None) -> None:
         remove_kp=args.remove_kp,
         excel_removed_kp=args.excel_removed_kp,
         expect_joints=args.expect_joints,
+        resample=args.resample,
     )
 
     print(f"Wrote predictions: {Path(args.output)}")

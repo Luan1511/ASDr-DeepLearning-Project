@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronRight, ClipboardList, Info } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
+import { InfoTooltip } from '../components/Tooltip'
 import { ChildAvatar } from '../components/ChildAvatar'
 import { CopyrightLine } from '../components/questionnaire/CopyrightLine'
 import { PendingFollowUpBanner } from '../components/questionnaire/PendingFollowUpBanner'
@@ -132,7 +133,14 @@ export function QuestionnairesPage() {
           <div className="rounded-2xl bg-yellow-50 px-4 py-3 text-sm font-bold text-yellow-900">{QUESTIONNAIRE_DISABLED_MESSAGE}</div>
         )}
 
-        <Card title="M-CHAT-R/F (16–30 tháng tuổi)">
+        <Card
+          title={
+            <span className="flex items-center gap-2">
+              <span>M-CHAT-R/F (16–30 tháng tuổi)</span>
+              <InfoTooltip content={QUESTIONNAIRE_DASHBOARD_NOTE} widthClass="w-80" />
+            </span>
+          }
+        >
           <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
             <p>
               M-CHAT-R/F là bảng hỏi sàng lọc được dùng rộng rãi (và trong bộ công cụ của Bộ Y tế) cho trẻ 16–30 tháng tuổi: 20 câu
@@ -144,10 +152,6 @@ export function QuestionnairesPage() {
                 nhập theo phiếu giấy chính thức.
               </p>
             )}
-            <p className="flex items-start gap-2 text-xs font-bold text-duo-mute">
-              <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              {QUESTIONNAIRE_DASHBOARD_NOTE}
-            </p>
           </div>
         </Card>
 

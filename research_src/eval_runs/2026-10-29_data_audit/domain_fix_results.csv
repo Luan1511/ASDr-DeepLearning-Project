@@ -1,0 +1,10 @@
+config,auc_domain_features,auc_domain_pose,n_feat_gt_0_8,n_feat,video_cycle_found,worst,asd_kinect_to_video,asd_video_to_kinect
+0_hien_tai,0.9900953778429934,1.0,19,30,,"jitter_ratio=1.00, lr_shoulder=1.00, lr_hip=1.00, acc_mean=1.00, bone_spinemid_off=0.99",0.4993181818181817,0.5108695652173914
+1_lat_guong,0.9894839814135485,0.9805575935436537,18,30,,"jitter_ratio=1.00, acc_mean=1.00, bone_spinemid_off=0.99, vel_mean=0.99, bone_hip_w=0.95",0.5006818181818182,0.5108695652173914
+2_+noi_suy_khop,0.9998777207141111,0.9894839814135485,15,30,,"jitter_ratio=1.00, acc_mean=0.99, bone_spinemid_off=0.99, vel_mean=0.98, bone_hip_w=0.96",0.5254545454545455,0.48674443266171796
+3_+loc_nhieu,0.9993886035705551,0.9874052335534361,15,30,,"jitter_ratio=1.00, acc_mean=0.99, bone_spinemid_off=0.99, vel_mean=0.96, bone_hip_w=0.96",0.5945454545454545,0.5095440084835632
+4_+1_chu_ky_buoc,0.9996331621423331,0.9866715578381022,15,30,57/94,"jitter_ratio=1.00, frac_static_frames=0.99, bone_spinemid_off=0.99, acc_mean=0.98, bone_hip_w=0.94",0.5709090909090908,0.47826086956521735
+5_+resample_tuyen_tinh,0.9795793592565419,0.9863047199804353,11,30,57/94,"bone_spinemid_off=0.99, bone_hip_w=0.94, pos_y_SpineShoulder=0.92, bone_hip_to_base=0.90, bone_thigh=0.89",0.5863636363636363,0.5084835630965004
+6_+chuan_hoa_than,0.9910736121301051,0.9764000978234287,14,30,57/94,"bone_spinemid_off=1.00, bone_hip_w=0.93, bone_foot=0.90, bone_hip_to_base=0.89, lr_hip=0.89",0.5004545454545455,0.6373276776246023
+7_bbox+spinemid_tong_hop,0.9765223771093177,0.9849596478356567,10,30,57/94,"bone_hip_w=0.94, pos_y_SpineShoulder=0.92, bone_hip_to_base=0.90, bone_foot=0.90, bone_thigh=0.89",0.505,0.49787910922587486
+8_+chinh_xuong_kinect,0.9282220591831744,0.9843482514062117,0,30,57/94,"base_drift_x=0.79, jitter_ratio=0.78, acc_mean=0.77, pos_y_AnkleLeft=0.76, vel_mean=0.72",0.5056818181818181,0.41145281018027563

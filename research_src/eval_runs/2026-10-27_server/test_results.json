@@ -1,0 +1,407 @@
+{
+  "version": 1,
+  "created_at": "2026-10-27T09:45:56+00:00",
+  "note": "Test set evaluated ONCE with a frozen calibration. Subject-level metrics (mean calibrated p_asd per subject). Reference-only screening tool, not a diagnosis.",
+  "calibration_path": "/home/khmt01/Luan_workspace/asdr/ml/calibration/calibration.json",
+  "calibration": {
+    "version": 1,
+    "created_at": "2026-10-27T09:45:55+00:00",
+    "checkpoint_sha256": "5344ba2ff91678a8e54b480916e2ea5aed7cc1c5c37883021356ae4f8b1b2e40",
+    "temperature": 0.44133419286697556,
+    "threshold": 0.22324698702226023,
+    "high_risk_threshold": 0.4541456672390128,
+    "high_risk_threshold_achieved": true,
+    "method": {
+      "temperature": "nll_val",
+      "threshold": "youden_j_val",
+      "high_risk": "specificity>=0.95_val"
+    },
+    "aggregation": "sample",
+    "score_level": "sample",
+    "val_subjects": [
+      "Autism/video_11",
+      "Autism/video_13",
+      "Autism/video_15",
+      "Autism/video_17",
+      "Autism/video_20",
+      "Autism/video_22",
+      "Autism/video_49",
+      "Autism/video_5",
+      "Autism/video_6",
+      "Autism/video_7",
+      "Typical/video_11",
+      "Typical/video_21",
+      "Typical/video_34",
+      "Typical/video_41",
+      "Typical/video_43",
+      "Typical/video_45",
+      "Typical/video_47",
+      "Typical/video_49",
+      "Typical/video_6",
+      "Typical/video_7"
+    ],
+    "val_score_ids": [
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_11/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_13/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_15/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_17/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_20/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_22/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_49/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_5/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_6/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_7/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_11/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_21/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_34/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_41/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_43/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_45/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_47/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_49/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_6/keypoints_body25.json",
+      "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_7/keypoints_body25.json"
+    ],
+    "val_metrics": {
+      "auc": 0.99,
+      "sensitivity": 1.0,
+      "specificity": 0.9,
+      "ppv": 0.9090909090909091,
+      "npv": 1.0,
+      "f1": 0.9523809523809523,
+      "accuracy": 0.95,
+      "brier": 0.0720420851434366,
+      "ece": 0.14032671021077978,
+      "n_subjects": 20,
+      "n_pos": 10,
+      "n_neg": 10
+    },
+    "checkpoint_sha256_source": "--checkpoint",
+    "decision_rule": "ASD flag if the recording's calibrated p_asd >= threshold; tiers LOW < threshold <= MEDIUM < high_risk_threshold <= HIGH",
+    "temperature_fit": {
+      "objective": "sample-level NLL of softmax(logits / T)",
+      "bounds": [
+        0.05,
+        20.0
+      ],
+      "nll_t1": 0.24990055024690333,
+      "nll_calibrated": 0.20806206254101048
+    },
+    "val_metrics_sample_level": {
+      "auc": 0.99,
+      "sensitivity": 1.0,
+      "specificity": 0.9,
+      "ppv": 0.9090909090909091,
+      "npv": 1.0,
+      "f1": 0.9523809523809523,
+      "accuracy": 0.95,
+      "brier": 0.0720420851434366,
+      "ece": 0.14032671021077978,
+      "n_pos": 10,
+      "n_neg": 10,
+      "n_samples": 20
+    },
+    "data": {
+      "predictions_csv": "/home/khmt01/Luan_workspace/asdr/ml/calibration/preds.csv",
+      "rows_used": "split==val",
+      "n_samples": 20,
+      "n_skipped_error": 0,
+      "n_skipped_invalid": 0
+    },
+    "warnings": [
+      "sample-level thresholds: recordings of one child are correlated, so the val metrics are optimistic"
+    ]
+  },
+  "checkpoint_sha256": "5344ba2ff91678a8e54b480916e2ea5aed7cc1c5c37883021356ae4f8b1b2e40",
+  "temperature": 0.44133419286697556,
+  "threshold": 0.22324698702226023,
+  "high_risk_threshold": 0.4541456672390128,
+  "aggregation": "sample",
+  "score_level": "sample",
+  "n_subjects": 20,
+  "n_pos": 10,
+  "n_neg": 10,
+  "n_samples": 20,
+  "metrics": {
+    "auc": 0.95,
+    "sensitivity": 1.0,
+    "specificity": 0.8,
+    "ppv": 0.8333333333333334,
+    "npv": 1.0,
+    "f1": 0.9090909090909091,
+    "accuracy": 0.9,
+    "brier": 0.10233660485261542,
+    "ece": 0.11901208753934042,
+    "n_subjects": 20,
+    "n_pos": 10,
+    "n_neg": 10
+  },
+  "confusion_matrix": {
+    "tp": 10,
+    "fp": 2,
+    "tn": 8,
+    "fn": 0,
+    "matrix": [
+      [
+        8,
+        2
+      ],
+      [
+        0,
+        10
+      ]
+    ],
+    "layout": "rows = true label (0=Typical, 1=ASD), cols = predicted label"
+  },
+  "risk_tiers": {
+    "Typical": {
+      "LOW": 8,
+      "MEDIUM": 0,
+      "HIGH": 2
+    },
+    "ASD": {
+      "LOW": 0,
+      "MEDIUM": 0,
+      "HIGH": 10
+    }
+  },
+  "ci_95": {
+    "auc": {
+      "low": 0.84,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "sensitivity": {
+      "low": 1.0,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "specificity": {
+      "low": 0.6,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "ppv": {
+      "low": 0.7142857142857143,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "npv": {
+      "low": 1.0,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "f1": {
+      "low": 0.8333333333333334,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "accuracy": {
+      "low": 0.8,
+      "high": 1.0,
+      "n_valid": 2000
+    },
+    "brier": {
+      "low": 0.0028342462923453484,
+      "high": 0.2043493402791031,
+      "n_valid": 2000
+    },
+    "ece": {
+      "low": 0.02178094669476922,
+      "high": 0.23305168750267524,
+      "n_valid": 2000
+    }
+  },
+  "bootstrap": {
+    "n": 2000,
+    "seed": 42,
+    "method": "percentile; subjects resampled with replacement within each class"
+  },
+  "sample_level_metrics": {
+    "auc": 0.95,
+    "sensitivity": 1.0,
+    "specificity": 0.8,
+    "ppv": 0.8333333333333334,
+    "npv": 1.0,
+    "f1": 0.9090909090909091,
+    "accuracy": 0.9,
+    "brier": 0.10233660485261542,
+    "ece": 0.11901208753934042,
+    "n_pos": 10,
+    "n_neg": 10,
+    "n_samples": 20
+  },
+  "sample_level_note": "reference only: samples of one subject are correlated",
+  "per_subject": [
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_14/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999999881786027,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_16/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999868596366206,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_26/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9840816842822719,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_30/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999999939766502,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_31/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999989635501563,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_40/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999911535542301,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_41/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9999452260037308,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_42/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9997773820689283,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_45/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9504875230638632,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_46/keypoints_body25.json",
+      "label": 1,
+      "p_asd": 0.9966725029294731,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_10/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.20899650919569046,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_14/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.9993812298221442,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_15/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.9844495640605323,
+      "n_samples": 1,
+      "predicted": 1,
+      "tier": "HIGH"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_16/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.0004697894053496385,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_17/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.0032521043528334122,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_22/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 9.090262950914724e-06,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_23/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 6.855159412759865e-07,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_25/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.1475274470322923,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_40/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.00199762497016931,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    },
+    {
+      "subject_id": "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_46/keypoints_body25.json",
+      "label": 0,
+      "p_asd": 0.10321642892437738,
+      "n_samples": 1,
+      "predicted": 0,
+      "tier": "LOW"
+    }
+  ],
+  "data": {
+    "predictions_csv": "/home/khmt01/Luan_workspace/asdr/ml/calibration/preds.csv",
+    "rows_used": "split==test",
+    "n_samples": 20,
+    "n_skipped_error": 0,
+    "n_skipped_invalid": 0
+  },
+  "warnings": [
+    "sample-level evaluation: recordings of one child are correlated; bootstrap CIs are too narrow"
+  ]
+}

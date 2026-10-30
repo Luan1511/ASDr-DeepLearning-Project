@@ -500,9 +500,6 @@ export function computeGaitFeatures(input: GaitInput): GaitFeatures {
   const stepCount = steps.pivots.length
 
   const warnings: string[] = []
-  if (durationSec !== null && durationSec < 4) {
-    warnings.push('Video quá ngắn (dưới 4 giây). Nên quay 6–10 giây trẻ đi thẳng.')
-  }
   if (personCoverage < 0.85) {
     warnings.push('Nhiều khung hình không nhận ra trẻ. Hãy quay ở nơi đủ sáng, giữ trẻ trong khung hình.')
   }
@@ -517,9 +514,6 @@ export function computeGaitFeatures(input: GaitInput): GaitFeatures {
   }
   if (fps === null) {
     warnings.push('Không xác định được tốc độ khung hình nên không tính các chỉ số theo thời gian (nhịp bước, tốc độ).')
-  }
-  if (view === 'frontal') {
-    warnings.push('Video quay chính diện: độ dài bước, tốc độ đi và biên độ vung tay chỉ tính được khi quay ngang.')
   }
 
   let level: QualityLevel = 'good'

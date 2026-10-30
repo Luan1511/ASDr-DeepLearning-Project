@@ -44,6 +44,8 @@ services:
       # ML server: the GPU host by default; use http://ml-api:8000 with --profile ml.
       OPENPOSE_SERVER_URL: ${OPENPOSE_SERVER_URL:-http://host.docker.internal:8000}
       OPENPOSE_API_KEY: ${ML_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
       EXTRACT_API_TIMEOUT_MS: 3600000
       ML_MAX_CONCURRENCY: 1
       BYPASS_EXTRACT_API: ${BYPASS_EXTRACT_API:-false}

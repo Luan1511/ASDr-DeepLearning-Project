@@ -1,6 +1,6 @@
 # AIMBRACE — Master Prompt (Handoff cho AI agent và thành viên nhóm)
 
-> **Cập nhật:** 2026-10-14, phiên 14/10. Bảng hỏi M-CHAT-R/F chạy trọn trong app (20 câu + Follow-Up tự động), đã kiểm chứng trên màn hình thật, **chỉ thử nội bộ** (chưa có giấy phép); sửa 1 lỗi frontend; cách test bằng tay ở §5.5; xem §20. **Chat mới: bắt đầu từ §20.6.** Trước đó: 2026-10-13 DB chung, sidebar, M-CHAT phần 1 (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
+> **Cập nhật:** 2026-10-29, phiên 29/10. **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. **Chat mới: bắt đầu từ §22.9.** Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
 > **Nguồn:** đề cương "AIMBRACE – AI for Life 2026" (25/09/2026), khảo sát repo tại commit `c6b011e`, Giai đoạn 1–2 (người dùng đã commit trong `09d23fe`) và thay đổi chưa commit của phiên 2026-10-06 (Giai đoạn 3, §17), 2026-10-07 (Giai đoạn 4 + bảng hỏi, §18), 2026-10-13 (§19) và 2026-10-14 (§20).
 > **Vai trò:** nguồn sự thật (source of truth) khi tiếp quản repo. Đọc file liên quan trước khi sửa, giữ nguyên thay đổi đang có của người dùng, sửa hẹp và có kiểm chứng.
 > **Quy định của chủ dự án:** không dùng git trong project này (xem §13, §14). Mọi lệnh git để người dùng tự chạy.
@@ -26,7 +26,9 @@
 17. [Nhật ký phiên 2026-10-06 (GPU đã sửa, Giai đoạn 3) và checklist mới](#17-nhật-ký-phiên-2026-10-06-gpu-đã-sửa-giai-đoạn-3-và-checklist-mới)
 18. [Nhật ký phiên 2026-10-07 (Giai đoạn 4 + bảng hỏi M-CHAT-R/F) và checklist mới](#18-nhật-ký-phiên-2026-10-07-giai-đoạn-4--bảng-hỏi-m-chat-rf-và-checklist-mới)
 19. [Nhật ký phiên 2026-10-13 (DB chung, sidebar, nội dung M-CHAT phần 1) và checklist mới](#19-nhật-ký-phiên-2026-10-13-db-chung-sidebar-nội-dung-m-chat-phần-1-và-checklist-mới)
-20. [Nhật ký phiên 2026-10-14 (M-CHAT-R/F: bật và kiểm chứng Follow-Up trong app) và checklist mới — bàn giao ở §20.6](#20-nhật-ký-phiên-2026-10-14-m-chat-rf-bật-và-kiểm-chứng-follow-up-trong-app-và-checklist-mới)
+20. [Nhật ký phiên 2026-10-14 (M-CHAT-R/F: bật và kiểm chứng Follow-Up trong app) và checklist mới](#20-nhật-ký-phiên-2026-10-14-m-chat-rf-bật-và-kiểm-chứng-follow-up-trong-app-và-checklist-mới)
+21. [Nhật ký phiên 2026-10-27 (suy luận ST-GCN, máy GPU khmt01, deploy ML 2.0, calibration, chẩn đoán model)](#21-nhật-ký-phiên-2026-10-27-suy-luận-st-gcn-máy-gpu-khmt01-deploy-ml-20-calibration-chẩn-đoán-model)
+22. [Nhật ký phiên 2026-10-29 (đánh giá lại dữ liệu train ST-GCN, kiểm tra domain, Dryad) — bàn giao ở §22.9](#22-nhật-ký-phiên-2026-10-29-đánh-giá-lại-dữ-liệu-train-st-gcn)
 
 ---
 
@@ -98,7 +100,7 @@ Backend Express + TS (:4000, mọi router dưới /api)
    │   chấm bắt chước imitation-v1 ngay trong backend từ keypoints; subject ML "ex_<sessionId>" (lượt tập), "tpl_…" (mẫu)
    ├─ Bảng hỏi M-CHAT-R/F: QuestionnaireResponse; chấm điểm + engine Follow-Up chạy hoàn toàn trong backend (không gọi ML)
    └─ openposeService.ts ──fetch + X-API-Key + semaphore (ML_MAX_CONCURRENCY)──►
-ML server FastAPI "ASD OpenPose + ST-GCN" (:8000 trên máy GPU GTX 1650, public qua ngrok)
+ML server FastAPI "ASD OpenPose + ST-GCN" 2.0.0 (:8000 trên máy GPU khmt01 RTX 5060 Ti, container asdr-ml-api; public qua ngrok cho máy dev)
    ├─ openpose.bin BODY_25 → storage/asd_subjects/<subject_id>/ (keypoints, metadata, prediction)
    ├─ làm mờ mặt → input_blurred.mp4 (VIDEO_RETENTION=blurred|none|raw), xoá input.mp4 gốc
    ├─ ST-GCN finetuned_best_model.pth (+ calibration.json nếu khớp sha256) → p_asd, ngưỡng, thông tin model
@@ -107,8 +109,9 @@ ML server FastAPI "ASD OpenPose + ST-GCN" (:8000 trên máy GPU GTX 1650, public
 ```
 
 - `subject_id` trên máy ML = `VideoUpload.id` (UUID) → khớp 1–1 với DB.
-- **Máy ML đang chạy ở ngrok vẫn là bản CŨ 1.0.0** (không có `/health`, không API key, không làm mờ, không trả fps; có `DELETE /subjects/{id}`). Lỗi CUDA ngày 2026-10-05 **đã được sửa**: ngày 2026-10-06 hai lượt sàng lọc thật chạy xong trên GPU. Backend mới tương thích ngược với bản cũ.
-- Môi trường phát triển: Windows, PowerShell/Git Bash, Node 20+ (máy dev hiện có Node 24). Máy ML: Linux, OpenPose tại `/workspace/openpose/build_gtx1650_nocudnn`, Python 3.10. Workspace huấn luyện: `/home/nhomk23/workspace/NCKH_25-26/`.
+- **Từ 2026-10-27 máy ML chạy bản 2.0.0** (API key bắt buộc, làm mờ mặt, `/health`, calibration, probe video, tracking một người) trong Docker Compose trên máy `khmt01` (§21.2). Bản 1.0 cũ chỉ còn ở container `openpose_builder-old` (đã dừng).
+- Máy `khmt01` (`ssh khmt01@100.120.184.26`, Tailscale) chạy **trọn stack** bằng compose: `asdr-db` (DB riêng của máy này, cổng 5433 trên IP Tailscale), `asdr-backend` :4000, `asdr-frontend` :3010, `asdr-ml-api` :8000, `cloudflared-aimbrace`, `ngrok`. DB dùng chung của nhóm (`100.104.148.57:5433`, máy `user-KHMT02`) là DB khác, dành cho máy dev (§5.1, §5.4).
+- Môi trường phát triển: Windows, PowerShell/Git Bash, Node 20+ (máy dev hiện có Node 24). Máy ML: Ubuntu 24.04, OpenPose build `build_rtx5060ti` mount vào container tại `/workspace/openpose`, Python 3.12 + torch 2.14 cu130 trong image `openpose-api:rtx5060ti-v2`. Workspace huấn luyện gốc `/home/nhomk23/workspace/NCKH_25-26/` (máy cũ, có `ULTIMATE_*.py`) **không** có trên `khmt01`.
 
 ---
 
@@ -185,7 +188,7 @@ Main/
 
 - Frontend dev: `http://localhost:5173` / `http://127.0.0.1:5173`. Backend dev: `http://localhost:4000`, health `GET /api/health`.
 - DB dùng chung: `100.104.148.57:5433`, DB `asdr` (cần Tailscale đang kết nối). `backend/.env` trỏ `DATABASE_URL` tới đó. Không in/commit credentials. Container `asdr-db` trên máy `user-KHMT02` mất cổng sau mỗi lần máy chủ reboot cho tới khi sửa dứt điểm (§15 mục 24, §19.1).
-- ML server: origin lấy từ `OPENPOSE_SERVER_URL`, nếu trống thì `EXTRACT_API_URL` (hiện là URL ngrok). Nếu máy ML yêu cầu key thì `OPENPOSE_API_KEY` (backend) phải bằng `ML_API_KEY` (ML).
+- ML server: origin lấy từ `OPENPOSE_SERVER_URL`, nếu trống thì `EXTRACT_API_URL` (máy dev: URL ngrok; backend trong compose trên `khmt01`: `http://asdr-ml-api:8000`). **Từ 2026-10-27 máy ML yêu cầu key:** `OPENPOSE_API_KEY` (backend) phải bằng `ML_API_KEY` (ML). Giá trị nằm trong `asdr/.env` và `asdr/repo/.env` trên `khmt01` (không in, không commit); máy dev muốn gọi qua ngrok phải chép giá trị đó vào `backend/.env`.
 
 ### 5.2 Chạy
 
@@ -204,29 +207,30 @@ npm run dev -- --host 127.0.0.1
 # Không có máy ML: đặt BYPASS_EXTRACT_API=true trong backend/.env (kết quả mô phỏng, UI ghi rõ)
 ```
 
-ML server trên máy GPU (bản mới):
+ML server trên máy GPU `khmt01` (cách đang chạy, từ 2026-10-27, xem `~/Luan_workspace/README.md` trên máy đó):
 
 ```bash
-cd API
-pip install -r requirements.txt          # có pandas/openpyxl; torch theo index CUDA 12.1
-export ML_API_KEY=<bí mật, giống OPENPOSE_API_KEY của backend>
-export VIDEO_RETENTION=blurred           # blurred | none | raw
-# tuỳ chọn: OPENPOSE_BIN, OPENPOSE_MODEL_DIR, STGCN_CHECKPOINT, CALIBRATION_PATH, ML_MAX_CONCURRENT_JOBS=1
-python3 -m uvicorn server_openpose:app --host 0.0.0.0 --port 8000
-curl http://
-localhost:8000/health        # kiểm tra cuda_available, openpose_available, calibrated
+cd ~/Luan_workspace/asdr      && docker compose up -d          # asdr-db, asdr-ml-api (GPU), cloudflared, ngrok
+cd ~/Luan_workspace/asdr/repo && docker compose up -d --build  # asdr-backend + asdr-frontend
+curl http://127.0.0.1:8000/health    # model_loaded, cuda_available, openpose_available, calibrated, auth_required
+# deploy mã ML mới: chép API/*.py + API/services/ vào ~/Luan_workspace/asdr/ml/server/, rồi
+docker compose -f ~/Luan_workspace/asdr/docker-compose.yml restart ml-api
 ```
+
+Biến môi trường suy luận (đặt trong `asdr/docker-compose.yml`, mặc định tái hiện tiền xử lý fine-tune): `STGCN_PREPROCESS=1`, `STGCN_RESAMPLE=` (trống = checkpoint/nearest), `STGCN_WINDOW_FRAMES=0`, `STGCN_WINDOW_STRIDE=0`, `STGCN_MIN_PERSON_FRAMES=16`. Đổi biến nào thì phải calibrate lại (§8).
+
+Chạy tay không Docker (tham khảo, không phải cách đang dùng): `pip install -r API/requirements.txt`, đặt `ML_API_KEY`, `VIDEO_RETENTION`, `OPENPOSE_BIN`, `OPENPOSE_MODEL_DIR`, rồi `python3 -m uvicorn server_openpose:app --host 0.0.0.0 --port 8000` trong `API/`.
 
 Tài khoản demo sau seed: Admin `admin@asdr.local` / `admin123`, User `	` / `user123` (chỉ môi trường thử).
 
-### 5.3 Kiểm thử tự động (backend đạt ngày 2026-10-14; API/ và research_src/ đạt ngày 2026-10-07)
+### 5.3 Kiểm thử tự động (backend đạt ngày 2026-10-14; API/ và research_src/ đạt ngày 2026-10-27)
 
 ```bash
 cd backend && npm run typecheck && npm test            # 334 test
 cd backend && npm run test:e2e                         # 41 test: PostgreSQL tạm :55432 + backend :4100 + ML giả :8100 (không đụng DB chung)
 cd frontend && npx tsc -b && npm run build              # ESLint còn 2 lỗi có sẵn trong state/auth.tsx
-cd API/tests && python -m unittest test_anonymize test_server     # 18 test (OpenPose giả, checkpoint ngẫu nhiên)
-python -m unittest discover -s research_src/tests       # 29 test
+cd API && python -m pytest tests -q                     # 38 test (OpenPose giả, checkpoint ngẫu nhiên; gồm test_stgcn_service: tracking, cửa sổ, chất lượng)
+cd research_src && python -m pytest tests -q            # 30 test (gồm calibrate --score-level sample)
 ```
 
 Kiểm chứng runtime: `GET /api/health`, login thật, `GET /api/auth/me`, `GET /api/admin/ml-health` (admin) cho biết ML có kết nối không, có phải bản cũ (`legacy: true`) không.
@@ -410,7 +414,7 @@ Lỗi: JSON hỏng → 400 `INVALID_JSON`; Zod → 400; Multer → 413/400; lỗ
 
 ## 7. ML service (`API/`)
 
-### 7.1 `server_openpose.py` (bản 2.0.0, **chưa triển khai lên máy GPU**)
+### 7.1 `server_openpose.py` (bản 2.0.0, **đã triển khai lên `khmt01` ngày 2026-10-27**, API key bật)
 
 Biến môi trường (đường dẫn tương đối tính từ thư mục `API/`):
 
@@ -450,11 +454,19 @@ metadata.json            # + video, video_retention, anonymization{frames, head_
 prediction.json          # {subject_id, created_at, prediction}
 ```
 
-`prediction` = `{file, T_in, J, p_typical, p_asd, logit_typical, logit_asd, pred_argmax, label_threshold, threshold, temperature, label_name, high_risk_threshold, calibrated, model:{checkpoint, sha256, num_joints}}`.
+`prediction` = `{file, T_in, T_used, J, p_typical, p_asd, logit_typical, logit_asd, pred_argmax, label_threshold, threshold, temperature, resample, label_name, high_risk_threshold, calibrated, n_windows, windows:[{start,end,p_asd}], quality:{frames_total, frames_with_person, frames_tracked, person_coverage, multi_person_frames, n_tracks, mean_keypoint_confidence, lower_body_coverage}, reliable, model:{checkpoint, sha256, num_joints, settings:{seq_len, preprocess, resample, window_frames, window_stride, min_person_frames}}}` (các trường từ `T_used` trở đi thêm ngày 2026-10-27; backend đã có type, chưa dùng `quality`/`reliable` trong UI).
 
-### 7.3 ST-GCN (không đổi)
+### 7.3 ST-GCN và tiền xử lý suy luận (sửa 2026-10-27, không retrain)
 
-BatchNorm → 3 block ST-GCN 64→128→256, kernel thời gian 9, residual, 3 partition + edge importance → FC 2 lớp. Input `(N, C=2, T=128, V)`, 1 người/frame (người có confidence trung bình cao nhất). Tiền xử lý: bỏ frame thiếu, cắt frame 0 ở hai đầu, BODY_25 → thứ tự Kinect-25, bỏ khớp còn 18 (checkpoint đang dùng) hoặc 17, chuẩn hoá theo config checkpoint, nội suy về T=128.
+Model không đổi: BatchNorm → 3 block ST-GCN 64→128→256, kernel thời gian 9, residual, 3 partition + edge importance → FC 2 lớp. Input `(N, C=2, T=128, V=18)`. Checkpoint `finetuned_best_model.pth` (sha256 `5344ba2f…`): config `normalization=bbox` (chuẩn hoá bbox **từng frame**, tâm về 0, cạnh dài về [-1,1]), không dynamics, 18 khớp (`kinect23`), fine-tune bằng `research_src/fine_tune.py` với resample **nearest** rồi mới normalize, khớp thiếu giữ (0,0).
+
+Tiền xử lý suy luận (`API/services/stgcn_service.py` + `_predict_sequence`, `_build_model_input` trong `openpose_excel_stgcn_pipeline.py`), theo đúng thứ tự fine-tune:
+
+1. **Tracking một người** xuyên clip (ghép láng giềng gần nhất chuẩn hoá theo kích thước thân; chọn track dài, tự tin, thấy rõ chân) thay cho "người có confidence cao nhất từng frame". Frame không có người **giữ thành hàng 0** (không xoá) để không co thời gian.
+2. Làm sạch **một lần** với confidence OpenPose (`services/preprocessing.py`: lọc spike, nội suy gap ≤ 5 frame, median 3 frame). Trước đây chạy hai lần (lần hai không confidence, bọc `try/except: pass`).
+3. Cắt frame 0 hai đầu → BODY_25 → thứ tự Kinect-25 → bỏ khớp còn 18 → **resample nearest về 128** → chuẩn hoá theo config → (dynamics nếu checkpoint cần, tính sau resample).
+4. Cổng chất lượng: < `STGCN_MIN_PERSON_FRAMES` frame theo dõi được → 422; `quality` + `reliable` trả kèm.
+5. Tuỳ chọn cửa sổ trượt (`STGCN_WINDOW_FRAMES`, mặc định tắt): trung bình **logit** các cửa sổ rồi softmax(T), để calibration vẫn đúng. Chỉ bật sau khi so AUC trên val.
 
 ### 7.4 Llama server (chưa nối)
 
@@ -462,7 +474,8 @@ Llama-3.2-3B-Instruct 4-bit + LoRA `asd_lora_1`, `asd_lora_2`. Thư mục adapte
 
 ### 7.5 Docker phía ML
 
-Image dùng Python 3.10, cài từ `requirements.txt`, **không có OpenPose**; compose profile `ml` mount bản build OpenPose của máy host (chưa kiểm chứng). Cách đã kiểm chứng: chạy trực tiếp trên máy GPU.
+- **Đang chạy (khmt01):** image `openpose-api:rtx5060ti-v2` = image `openpose-api:rtx5060ti` dựng tay ngày 2026-10-17 (CUDA 13.0.2 + cuDNN 9.14, Python 3.12, torch 2.14+cu130, **không có Dockerfile gốc**) + `opencv-python-headless` (Dockerfile.v2 trong `~/Luan_workspace/asdr/docker/openpose-api/`). OpenPose **không nằm trong image**: source + build `build_rtx5060ti` mount từ `asdr/ml/openpose`. `requirements.lock` = `pip freeze` của image; `Dockerfile` cạnh đó là bản tái tạo từ đầu, **chưa build thử**.
+- `API/Dockerfile` trong repo (Python 3.10, `requirements.txt`, compose profile `ml`) vẫn chưa build thử và không phải thứ đang chạy.
 
 ---
 
@@ -470,14 +483,19 @@ Image dùng Python 3.10, cài từ `requirements.txt`, **không có OpenPose**; 
 
 | Script                                                                             | Nội dung                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `calibrate_evaluate.py` (mới)                                                   | `split` (chia train/val/test theo subject, phân tầng, seed), `calibrate` (temperature scaling NLL trên val, ngưỡng Youden hoặc theo độ nhạy, ngưỡng HIGH theo độ đặc hiệu → `calibration.json` kèm sha256 checkpoint), `evaluate` (chỉ chạy 1 lần trên test, chặn rò rỉ val→test, bootstrap CI 95% theo subject → `test_results.json`). |
+| `calibrate_evaluate.py` (mới)                                                   | `split` (chia train/val/test theo subject, phân tầng, seed), `calibrate` (temperature scaling NLL trên val, ngưỡng Youden hoặc theo độ nhạy, ngưỡng HIGH theo độ đặc hiệu → `calibration.json` kèm sha256 checkpoint), `evaluate` (chỉ chạy 1 lần trên test, chặn rò rỉ val→test, bootstrap CI 95% theo subject → `test_results.json`). **2026-10-27:** thêm `--score-level sample` (một điểm cho mỗi video = đúng quyết định của server; `evaluate` tự theo mức ghi trong calibration.json). |
 | `predict_dataset.py` (mới)                                                      | chạy đúng tiền xử lý của server (`STGCNPredictor`) trên keypoints JSON / thư mục OpenPose JSON / Excel → CSV logits để calibrate/evaluate.                                                                                                                                                                                                                    |
 | `fine_tune.py` (đã sửa)                                                       | thêm`--splits`; nếu không có thì tách val từ subject train (`--val-ratio`); chọn epoch theo **val** macro-F1; test 1 lần cuối; lưu `num_joints` và `test_results.json`. Sửa thêm lỗi: bản cũ lưu `state_dict()` theo tham chiếu nên "best" thực ra là epoch cuối. Vẫn phụ thuộc 2 module chỉ có trên server.                    |
 | `EVALUATION.md` (mới)                                                           | quy trình + lệnh cho máy GPU.                                                                                                                                                                                                                                                                                                                                             |
 | `ST-GCN.py`, `BiLSTM.py`, `SRM.py`, `training_llama.py`, `test_llama.py` | như trước (split subject-level 70/15/15, SRM có 5-fold theo subject).                                                                                                                                                                                                                                                                                                    |
 
+Lần chạy thật đầu tiên (2026-10-27, trên `khmt01`, artifact tại `research_src/eval_runs/2026-10-27_server/` và `~/Luan_workspace/asdr/ml/calibration/`): 99 video `Dataset_video` → trích keypoint qua chính ML server → split seed 42 (59/20/20) → `calibrate --score-level sample`: **T = 0.441, threshold = 0.223, high_risk = 0.454**; test 20 video: AUC 0.95 [0.84, 1.00], sens 1.0, spec 0.8. `calibration.json` đang chạy trên server. **Số liệu lạc quan**: cùng bộ video đã fine-tune, không có `splits.json` gốc để chắc val/test không dính train; thêm 5 cặp video trùng (bên dưới). Chẩn đoán model ở §21.6.
+
 Phát hiện quan trọng:
 
+- **Model đang dựa vào tỉ lệ chân/thân chiếu trên ảnh, không phải dáng đi** (§21.6): co chân 15% → mọi video thành ASD 100%, kéo dài 15% → Typical; riêng tỉ lệ này đã cho AUC 0.825 (model 0.915). ~~Nguyên nhân: trẻ ASD ngồi xổm/cúi~~ — **sửa 29/10 (§22):** góc gối vẫn ~150–177° (chân thẳng); nguyên nhân là **cách quay**: video ASD phần lớn quay điện thoại cầm tay, giơ cao chĩa xuống, còn Typical quay camera cố định ngang tầm. Nhãn `Dataset_video` trùng với cách quay (chỉ riêng chiều rộng video đã cho AUC 0.93) → không sửa được bằng tiền xử lý hay augmentation chân; không dùng bộ này nguyên trạng.
+- **Rò rỉ (§22.3):** 8/20 video test calibration 27/10 đã nằm trong train fine-tune cũ hoặc là bản trùng của video train; fine-tune cũ chia 30/70 và chọn epoch theo test.
+- **`Dataset_video/Typical` có 5 cặp file trùng md5** (video_9=32, 15=33, 14=44, 18=45, 16=47): thực tế 44 trẻ Typical; trùng có thể nằm xuyên train/val/test.
 - Checkpoint đang deploy được chọn theo **test accuracy** và còn dính lỗi `state_dict` tham chiếu → mọi con số cũ **không dùng được**. Phải chạy lại theo `EVALUATION.md` rồi mới báo cáo.
 - Dữ liệu `Dataset_video` đặt tên `video_1…video_50` (50 ASD, 49 Typical); regex subject mặc định `^([^/]+)` giả định **1 video = 1 trẻ** — nếu một trẻ có nhiều video phải truyền `--subject-regex`.
 - Trong `API/storage`: `36` và `136` là cùng một video, hai thư mục UUID cũng vậy → phải gộp chung một subject nếu dùng.
@@ -573,6 +591,8 @@ Theme "Duo" (xanh đậm `#166534`…), Nunito, lucide-react, class `btn-duo*`, 
 | **2026-10-06** | GPU đã sửa CUDA, lượt sàng lọc thật chạy xong trên GPU.**Giai đoạn 3** (chưa commit): CRUD hồ sơ trẻ, dashboard theo trẻ + biểu đồ xu hướng chỉ số dáng đi, xoá dữ liệu theo yêu cầu phụ huynh (DB + video + ML), lọc/xoá ở Lịch sử, gia cố worker, đổi tên UI sang AIMBRACE; 18 test mới (95 test tự động). Không đổi schema DB, không sửa `API/`.                                          |
 | **2026-10-07** | **Giai đoạn 4** (chưa commit): thư viện bài tập + bạn Mầm + ghi webcam, chấm bắt chước imitation-v1, hàng đợi bài tập, Admin tạo mẫu, tiến độ trên dashboard. **Bảng hỏi M-CHAT-R/F**: nhập theo phiếu (đang bật `entry`) + hỏi trong app với Follow-Up tự động (chờ giấy phép). 2 migration chỉ-thêm đã áp lên DB chung. 331 test đơn vị + 40 test e2e. Không sửa `API/`.            |
 | **2026-10-13/14** | DB chung mất kết nối sau khi máy chủ reboot (đã nối lại), sidebar gọn lại. **Bảng hỏi M-CHAT-R/F chạy trọn trong app** (20 câu + Follow-Up tự động; nội dung do chủ dự án điền), kiểm chứng trên màn hình thật; chỉ thử nội bộ, chưa có giấy phép (§19, §20). |
+| **2026-10-29** | **Đánh giá lại dữ liệu train** (chỉ đọc, §22): `Dataset_video` có nhãn trùng với cách quay; lối tắt chân/thân là phối cảnh; rò rỉ 8/20 video test 27/10; Kinect có 7 nhóm thư mục trùng (≈47 ASD + 41 Typical). Không sửa code. |
+| **2026-10-27** | Sửa suy luận ST-GCN khớp fine-tune (tracking một người, preprocess một lần, resample nearest, cổng chất lượng; không retrain). Máy GPU `khmt01` sắp xếp lại thành stack Docker Compose (không xoá gì). **Deploy ML 2.0 + API key**, backend gọi ML nội bộ. **Calibration lần đầu** trên 99 video (T 0.441, ngưỡng 0.223/0.454). **Chẩn đoán model dựa vào tỉ lệ chân/thân** → cần lọc dữ liệu + retrain (§21). Chưa commit. |
 
 ### 11.2 Tiến độ theo "Nội dung thực hiện" của đề cương
 
@@ -583,8 +603,8 @@ Theme "Duo" (xanh đậm `#166534`…), Nunito, lucide-react, class `btn-duo*`, 
 |                                       | Ghi hoạt động khi tập bài tập                   | 🟡           | Webcam (MediaRecorder`.webm`) hoặc tải video → ML trích khung xương; chưa thử với ML thật (G0).                                                                                                                   |
 |                                       | Lưu trữ riêng tư (che mặt, consent)              | 🟡           | Code xong: consent + làm mờ mặt + xoá video gốc +**xoá vĩnh viễn theo yêu cầu** (từng lượt / cả hồ sơ, kể cả trên ML). Chờ triển khai ML 2.0 và dọn video cũ (§12).                            |
 |                                       | Tiền xử lý skeleton                                | ✅           | Như trước + theo dõi trẻ/chuẩn hoá cho đặc trưng dáng đi.                                                                                                                                                         |
-| **2. AI sàng lọc**            | Huấn luyện + đánh giá                            | 🟡           | Công cụ split/calibrate/evaluate +`fine_tune.py` đã sửa; **chưa chạy trên dữ liệu thật**; số liệu cũ không hợp lệ.                                                                                   |
-|                                       | Triển khai cloud                                     | 🟡           | Máy GPU qua ngrok, CUDA đã sửa (2026-10-06) nhưng vẫn chạy ML 1.0; ML 2.0 chưa deploy; Docker đã sửa nhưng chưa build thử.                                                                                      |
+| **2. AI sàng lọc**            | Huấn luyện + đánh giá                            | 🟡           | Calibration đã chạy thật (2026-10-27): T 0.441, ngưỡng 0.223/0.454, test AUC 0.95 nhưng lạc quan (cùng video fine-tune, 5 cặp trùng). **Model học lối tắt tỉ lệ chân/thân** (§21.6) → phải lọc dữ liệu, retrain, calibrate lại.                                                                                   |
+|                                       | Triển khai cloud                                     | 🟡           | `khmt01`: trọn stack Docker Compose (db, backend, frontend, ML 2.0 GPU, cloudflared, ngrok), API key bật, calibration nạp (2026-10-27). Image ML dựng tay (có pip freeze + Dockerfile tái tạo chưa build).                                                                                      |
 |                                       | Sàng lọc → kết quả                               | ✅           | Hàng đợi bền vững, retry, phục hồi; 3 mức theo ngưỡng (calibration nếu có); chỉ số dáng đi + chất lượng. Đã chạy end-to-end với ML 2.0 cục bộ và**với GPU thật (ML 1.0) ngày 2026-10-06**. |
 |                                       | API                                                   | ✅           | Proxy ML chỉ ADMIN, ML có API key + kiểm tra subject_id.                                                                                                                                                                   |
 | **3. Bài tập & bắt chước** | Thư viện bài tập, thu skeleton, so sánh          | 🟡           | 6 bài dựng sẵn + Admin tạo mẫu từ video người lớn; imitation-v1 (DTW góc khớp, soi gương, theo bộ phận); test tổng hợp + e2e; chưa hiệu chỉnh trên video thật (C1).                                     |
@@ -596,8 +616,8 @@ Theme "Duo" (xanh đậm `#166534`…), Nunito, lucide-react, class `btn-duo*`, 
 |                                       | Xu hướng dài hạn                                  | 🟡           | Biểu đồ xu hướng 10 chỉ số dáng đi + biểu đồ điểm luyện tập theo từng bài (kèm bảng); chưa có dữ liệu thật.                                                                                          |
 | **7. Chuyên gia**              |                                                       | ⬜           |                                                                                                                                                                                                                               |
 | **Nền tảng**                  | Auth, role, knowledge, admin                          | ✅           | + sức khoẻ ML, hàng đợi.                                                                                                                                                                                                 |
-|                                       | Test tự động                                       | ✅           | Backend 331 + e2e 40, ML server 18, research 29 (trước 05/10: 0).                                                                                                                                                           |
-|                                       | Docker                                                | 🟡           | Đã sửa CMD/healthcheck/env/nginx/requirements; chưa build thử.                                                                                                                                                           |
+|                                       | Test tự động                                       | ✅           | Backend 334 + e2e 41, ML server 38, research 30 (trước 05/10: 0).                                                                                                                                                           |
+|                                       | Docker                                                | 🟡           | Backend/frontend/db chạy bằng compose của repo trên `khmt01`; ML chạy bằng compose riêng `asdr/docker-compose.yml` với image dựng tay; `API/Dockerfile` của repo vẫn chưa build thử.                                                                                                                                                           |
 |                                       | Đổi thương hiệu AIMBRACE                         | ✅           | Trên UI (2026-10-06); tên package/DB/localStorage vẫn là asdr.                                                                                                                                                            |
 
 ### 11.3 Ước lượng tổng quan (chủ quan)
@@ -614,9 +634,11 @@ Theme "Duo" (xanh đậm `#166534`…), Nunito, lucide-react, class `btn-duo*`, 
 
 Cập nhật 2026-10-14: bảng hỏi M-CHAT-R/F + Follow-Up chạy trong app (thử nội bộ); các tỉ lệ khác không đổi so với 07/10.
 
+Cập nhật 2026-10-27: "Pipeline skeleton + sàng lọc" lên ~82% về hạ tầng (ML 2.0 deploy, API key, calibration, tracking) nhưng **chất lượng mô hình bị hạ thấp**: model hiện tại dựa vào lối tắt hình dáng (§21.6), chưa dùng được để báo cáo khoa học. Các khối khác không đổi.
+
 ### 11.4 Trạng thái working tree và việc git cho người dùng
 
-Agent không dùng git (quy định của chủ dự án). Giai đoạn 1–2 đã được người dùng commit (`09d23fe`). Thay đổi phiên 2026-10-06 (Giai đoạn 3, §17), 2026-10-07 (Giai đoạn 4 + bảng hỏi, §18), 2026-10-13 (§19) và 2026-10-14 (§20) nằm trong working tree, chưa commit. Khi muốn commit, người dùng tự chạy:
+Agent không dùng git (quy định của chủ dự án). Giai đoạn 1–2 đã được người dùng commit (`09d23fe`); người dùng đã commit thêm `51fb7a4` ("update community, m-chat fuction") trước phiên 27/10. Thay đổi phiên 2026-10-27 (§21.7: `API/`, `research_src/`, `backend/src/services/openposeService.ts`, `research_src/eval_runs/`) cùng các thay đổi chưa commit trước đó nằm trong working tree. Khi muốn commit, người dùng tự chạy:
 
 ```bash
 # Nếu chưa làm ở lần commit trước: gỡ khỏi git các file không được phép nằm trong repo (file vẫn còn trên ổ đĩa; đã có trong .gitignore)
@@ -628,37 +650,39 @@ git status          # kiểm tra lại trước khi commit
 - File `.pyc` trong `API/__pycache__` bị Python tạo lại khi chạy test (rác build).
 - `backend/content/*.json` bị gitignore, trừ `mchat-rf.template.json` (chỉ có mã). Kiểm tra `git status` để chắc chắn `backend/content/mchat-rf.vi.json` (từ 2026-10-14 chứa toàn bộ phiếu) **không** bị add.
 - Video trẻ vẫn còn trong **lịch sử git** cũ; xoá khỏi lịch sử (filter-repo) là quyết định của nhóm.
+- `research_src/eval_runs/` (artifact calibration 27/10: preds, splits, calibration.json, test_results, script chẩn đoán) **chưa** nằm trong `.gitignore`; `EVALUATION.md` khuyên để artifact ngoài repo → thêm `research_src/eval_runs/` vào `.gitignore` nếu không muốn commit. `API/ASD_Model/calibration.json` đã bị ignore theo thư mục.
 
 ---
 
 ## 12. Vấn đề còn tồn tại (theo mức ưu tiên)
 
-> Đã xử lý ngày 2026-10-06: lỗi CUDA trên máy GPU (người dùng sửa), `/children` không còn là trang sàng lọc. Ngày 2026-10-07: điểm bài tập đã có trên dashboard (Giai đoạn 3 "Còn"), body JSON hỏng trả 400 thay vì 500.
+> Đã xử lý ngày 2026-10-06: lỗi CUDA trên máy GPU (người dùng sửa), `/children` không còn là trang sàng lọc. Ngày 2026-10-07: điểm bài tập đã có trên dashboard (Giai đoạn 3 "Còn"), body JSON hỏng trả 400 thay vì 500. **Ngày 2026-10-27:** P0-1 (ML 1.0) đã xong — ML 2.0 chạy trên `khmt01` với API key; P1-5 (chọn người) đã xong — ML theo dõi một người xuyên clip; P1-7 (fps) và P2-14 (`.webm`, `subject_id`) hết khi ML 2.0 chạy; P1-3 đã calibrate nhưng thay bằng P0-1 mới bên dưới.
 
 ### P0
 
-1. **ML server production vẫn là bản cũ 1.0.0:** không API key, không làm mờ, lưu video gốc, `subject_id` không kiểm tra, không trả fps. Cần triển khai các file trong "Thay đổi trong `API/`" (§13), đặt `ML_API_KEY` ở cả hai phía, `VIDEO_RETENTION=blurred`. Trước khi deploy, nội dung consent đã tự ghi rõ là máy phân tích "có thể lưu bản sao video gốc".
+1. **Model ST-GCN đang quyết định theo tỉ lệ chân/thân, không theo dáng đi** (§21.6, bằng chứng định lượng trong `research_src/eval_runs/2026-10-27_server/diagnostics/`). Video trẻ bình thường quay bằng máy khác (Pexels) bị gọi ASD > 90%; trong chính bộ calibration, Typical có tỉ lệ < 1.39 cũng bị gọi ASD. **Cập nhật 29/10 (§22):** lối tắt đến từ `Dataset_video`, nơi nhãn trùng với cách quay (cầm tay/cố định, độ phân giải, góc camera); lọc "đoạn đi" + augmentation chân là **không đủ**. Việc cần: train chính trên Kinect (gộp 7 nhóm thư mục trùng, chia theo nhóm, chọn epoch theo val, sửa/loại ASD 8), cổng kiểm tra lối tắt cho mọi model (§22.5), hỏi nguồn gốc bộ video và có dữ liệu đối chứng cùng giao thức quay cho hai nhóm trước khi fine-tune/báo cáo trên video. Code train gốc (`ULTIMATE_*.py`, `sub_phase/`) có trên máy dev tại `E:\Scientific research 2025-2026\Linux_src_2\NCKH_25-26`; checkpoint `.pth` thì không. Trong lúc chờ, UI phải giữ nguyên cảnh báo "tham khảo".
+   - *(đã xong 27/10)* ML server 1.0 → 2.0 với API key, làm mờ mặt, `VIDEO_RETENTION=blurred`.
 2. **Video cũ:**
    - `backend/uploads` còn ~58 video từ trước chính sách xoá: chạy `npm run privacy:purge-videos` để xem (dry-run), rồi `-- --yes` nếu đồng ý;
    - `API/storage` (4 video test) vẫn trong git nếu chưa chạy `git rm --cached` (§11.4).
 
 ### P1
 
-3. **Hiệu năng mô hình chưa biết; ngưỡng chưa calibrate** (UI có ghi chú). Chạy `research_src/EVALUATION.md`, đặt `calibration.json` cạnh checkpoint.
+3. **Số liệu mô hình chỉ là lạc quan:** calibration 27/10 chạy trên cùng 99 video đã fine-tune (không có split gốc), 5 cặp trùng; T = 0.441 < 1 làm xác suất rất nhọn (video biên 0.78 thô thành 0.95). Khi có dữ liệu/split sạch (P0-1) phải chạy lại toàn bộ `EVALUATION.md`; cân nhắc `--score-level subject` nếu một trẻ có nhiều video.
 4. **Lịch sử migration DB chung lệch repo** (§5.4).
-5. **Chọn người không thống nhất:** ST-GCN trên ML chọn người theo confidence từng frame; đặc trưng dáng đi theo track trẻ đang đi. Với video nhiều người, mô hình có thể phân tích nhầm người lớn (đã có cảnh báo chất lượng).
+5. *(đã xong 27/10)* Chọn người: ML giờ theo dõi một người xuyên clip (điểm track ưu tiên dài, tự tin, thấy chân) và trả `quality`/`reliable`; backend chưa hiển thị hai trường này.
 6. **Chỉ số dáng đi:** chưa có chuẩn theo tuổi; nhón gót là thử nghiệm; quay chính diện chỉ có nhịp bước.
-7. **Không biết fps khi trình duyệt không đọc được video và ML là bản 1.0** (`.avi`, có thể cả `.mov` HEVC trên Chrome/Windows): không tính được nhịp bước, thời gian bước, tốc độ, nên các lần quay đó không có điểm trên biểu đồ xu hướng. Gặp thật ngày 2026-10-06 (lượt `.avi` 245 frame: `fps: null`). Hết khi deploy ML 2.0 (probe bằng OpenCV). Phương án dự phòng: backend tự đọc header AVI/MP4.
+7. *(hết từ 27/10 với ML 2.0)* fps lấy từ probe OpenCV của ML; chỉ còn thiếu khi máy dev trỏ vào ML cũ.
 8. **Bài tập chưa thử với ML thật (G0) và chưa hiệu chỉnh (C1):** imitation-v1 chỉ được kiểm bằng khung xương tổng hợp và ML giả. Giữ `EXERCISE_MODE=admin_only` cho tới khi chạy `npm run exercises:probe-ml` (video người lớn) và `npm run exercises:calibrate`. Chưa kiểm chứng trên trẻ em; điểm chỉ để khích lệ.
 9. **Giấy phép M-CHAT-R/F (L1):** dùng điện tử cần tác giả cho phép. Từ 2026-10-14 chủ dự án quyết bật `inapp` (20 câu + Follow-Up) **chỉ để thử nội bộ**; trước khi đưa app cho người ngoài nhóm phải có thư cho phép và ghi vào `licenseRef` (hiện `chua co - chi thu noi bo`). Câu 13 bản 2025 có câu thăm dò không có trong bản tiếng Việt 2015; chủ dự án đã tự điền ô này — cần ghi lại nguồn.
 
 ### P2
 
-10. Docker/compose chưa build thử (Docker Desktop không chạy lúc sửa); container ML không có OpenPose.
+10. `API/Dockerfile` của repo chưa build thử; image ML đang chạy trên `khmt01` dựng tay (có `requirements.lock` + Dockerfile tái tạo chưa build, §7.5). Backend/frontend/db của repo đã chạy bằng compose trên `khmt01`.
 11. Job chạy trong process backend: nhiều instance thì an toàn (SKIP LOCKED) nhưng giới hạn GPU chỉ tính trong từng process.
 12. JWT giữ role trong token: hạ quyền admin chỉ có hiệu lực khi token hết hạn.
 13. **Xoá dữ liệu cần máy ML online:** khi ML không truy cập được, việc xoá bị từ chối (503 `ML_UNAVAILABLE`), không có gì bị xoá; phụ huynh phải thử lại sau. Chưa có hàng đợi xoá chạy nền. Subject do Admin Skeleton tạo không gắn với lượt sàng lọc nào nên không bị xoá theo trẻ.
-14. **ML 1.0 và bài tập:** có thể không nhận `.webm` (ghi webcam → 415, phải tải MP4) và có thể bỏ qua `subject_id` (không tạo được mẫu từ video người lớn; subject lạ bị xoá và trả 502). Hết khi deploy ML 2.0 hoặc G0 cho kết quả tốt.
+14. *(hết từ 27/10)* ML 2.0 nhận `.webm` và tôn trọng `subject_id`; G0/C1 (§12 mục 8) vẫn chưa làm.
 
 ### P3
 
@@ -1225,3 +1249,236 @@ Môi trường thử (PostgreSQL tạm :55432, ML giả :8100, backend :4100, fr
 - Chạy lệnh ghi trên máy chủ DB. Đưa lệnh cho chủ dự án tự chạy.
 - Khởi động lại backend :4000 / frontend :5173 của chủ dự án.
 - Để lại lượt trả lời thử trên DB chung: thử xong thì xoá bằng nút / API xoá của app.
+
+---
+
+## 21. Nhật ký phiên 2026-10-27 (suy luận ST-GCN, máy GPU khmt01, deploy ML 2.0, calibration, chẩn đoán model)
+
+### 21.1 Sửa suy luận ST-GCN để khớp fine-tune (không retrain)
+
+Xuất phát từ nhận xét thuật toán prediction (so `fine_tune.py` với code suy luận): preprocess chạy hai lần, khớp thiếu xử lý khác lúc train, chọn người theo từng frame, frame trống bị xoá, resample linear + normalize trước resample trong khi fine-tune dùng nearest rồi mới normalize, velocity tính trước resample. Đã sửa theo đúng thứ tự fine-tune (§7.3). Kiểm chứng: 38 test `API/`, 30 test `research_src/`, `tsc` backend không lỗi; chạy thật trên GPU (§21.3).
+
+File đã sửa trong `API/` (mô tả ngắn):
+
+- `services/stgcn_service.py`: viết lại — tracking một người, giữ frame trống, preprocess một lần với confidence, chất lượng + `reliable`, từ chối clip quá ít frame, cửa sổ trượt tuỳ chọn (trung bình logit).
+- `openpose_excel_stgcn_pipeline.py`: `_predict_sequence` thêm `preprocess`, `resample`; thêm `_resample_time_nearest`, `_build_model_input` (resample → normalize → dynamics) dùng chung cho đường API/Excel/CLI; `--resample` cho CLI; bỏ `try/except: pass`.
+- `server_openpose.py`: biến `STGCN_PREPROCESS`, `STGCN_RESAMPLE`, `STGCN_WINDOW_FRAMES`, `STGCN_WINDOW_STRIDE`, `STGCN_MIN_PERSON_FRAMES`; `model.settings` trong kết quả.
+- `tests/test_stgcn_service.py` (mới): tracking hai người đổi thứ tự, frame trống, che khuất, cổng chất lượng, cửa sổ, resample.
+
+Ngoài `API/`: `research_src/calibrate_evaluate.py` (`--score-level`), `research_src/predict_dataset.py` (đồng bộ tham số server), `research_src/EVALUATION.md`, `research_src/tests/test_calibrate_evaluate.py`, `backend/src/services/openposeService.ts` (type cho trường mới).
+
+### 21.2 Sắp xếp lại máy GPU `khmt01` (không xoá gì)
+
+Trước: `~/Luan_workspace` lẫn 3 dự án, `ASDr/` 45G trong đó 37G là bản sao Cloud Computing, 4 container `docker run` thủ công (ML, DB, cloudflared, ngrok), backend gọi ML qua URL ngrok công khai, ML không có key. Sau (mục lục đầy đủ trong `~/Luan_workspace/README.md`):
+
+```text
+~/Luan_workspace/
+  asdr/                  docker-compose.yml (asdr-infra: db, ml-api GPU, cloudflared, ngrok) + .env (600)
+    repo/                git clone (compose project asdr: backend :4000, frontend :3010; override trỏ asdr-db, asdr-ml-api)
+    ml/server/           mã ML đang chạy (= API/ của repo bản 27/10); server.bak-20261027-pre-deploy = bản 1.0 cũ
+    ml/checkpoints/      finetuned_best_model.pth + calibration.json
+    ml/storage/          subject của ML (48 cũ + 99 calib-* + smoke/debug)
+    ml/openpose/         source + build_rtx5060ti + models
+    ml/datasets/Dataset_video/{Autism,Typical}   99 video gắn nhãn (chép từ máy dev)
+    ml/calibration/      run_calibration.sh, splits.json, preds.csv, calibration.json, test_results.json, script chẩn đoán
+    docker/openpose-api/ Dockerfile.v2 (image đang chạy), Dockerfile tái tạo (chưa build), requirements.lock
+    backups/             pg_dump (asdr_pre_reorg_*.dump)
+  cloud-computing/       môn Cloud Computing (+ _copy_from_ASDr/ = bản sao 37G, chưa gộp)
+  bsl/  misc/  Luan_env/  _archive/  ASDr/ (rỗng)
+```
+
+Container cũ giữ lại, đã dừng, restart=no: `openpose_builder-old`, `asdr-db-old`, `cloudflared-aimbrace-old`, `ngrok-old`. Volume `asdr_db_data` và mạng `asdr-network` dùng lại. Downtime ~1 phút, có pg_dump trước.
+
+### 21.3 Deploy ML 2.0 và API key
+
+- Image `openpose-api:rtx5060ti-v2` (image gốc + OpenCV headless); mã `API/` chép lên `asdr/ml/server`; `ML_API_KEY` sinh bằng `openssl rand -hex 32`, ghi vào `asdr/.env` và `asdr/repo/.env`; backend recreate.
+- Kiểm chứng: `/health` → `model_loaded`, `cuda`, `openpose_available`, `auth_required`, sau calibration `calibrated: true`; không key/sai key → 401; `/pipeline/asd` trên video thật 2 giây: 64/64 frame theo dõi, `reliable: true`, video lưu bản mờ.
+- Máy dev gọi qua ngrok phải đặt `OPENPOSE_API_KEY` trong `backend/.env` bằng giá trị trên server (không có trong repo).
+
+### 21.4 Calibration lần đầu (kết quả ở §8)
+
+`run_calibration.sh {extract|manifest|predict|calibrate|evaluate|all}` trên `khmt01`; mọi bước Python chạy trong image ML (host không có numpy). Artifact chép về `research_src/eval_runs/2026-10-27_server/`.
+
+### 21.5 Hai video Typical bị gọi ASD > 90% — đã loại trừ
+
+`Data_Openpose/Typical/pexel_2_1.mp4` (0.9998) và `pexel_3_1.mp4` (0.949), 1920×1080 30fps, trẻ đi về phía camera. Không phải do: tracking/chất lượng (1 track, phủ 100%, confidence 0.84/0.79, không khớp (0,0)); góc quay; fps (nhân đôi/bỏ nửa frame không đổi); tiền xử lý mới (tắt không đổi); tay cầm đồ trước ngực (ghép tay của trẻ Typical chuẩn vào vẫn 0.99, ghép tay Pexels vào trẻ Typical vẫn Typical).
+
+### 21.6 Chẩn đoán: model dựa vào tỉ lệ chân/thân
+
+Thí nghiệm co giãn chân trên chính chuyển động của video (mọi thứ khác giữ nguyên):
+
+| Chân × | pexel_2_1 | pexel_3_1 | Typical video_22 (chuẩn) |
+|---|---|---|---|
+| 0.85 | 1.000 | 1.000 | 1.000 |
+| 1.00 | 0.9998 | 0.949 | 0.0000 |
+| 1.15 | 0.30 | 0.006 | — |
+| 1.30 | 0.0007 | 0.0000 | — |
+
+Ghép chân của trẻ Typical vào Pexels → Typical (0.0013, 0.086). Trên 98 video calibration: chân/thân Typical 1.42 [1.32, 1.60], ASD 1.28 [0.94, 1.44]; r(logit, chân/thân) = −0.67; AUC của riêng chân/thân 0.825 so với model 0.915. Nhiều video ASD có tỉ lệ < 1.0 → trẻ ngồi xổm, cúi hoặc quá gần camera, không phải đang đi: model học lối tắt "chân ngắn trên ảnh = ASD". Khuếch đại thêm bởi T = 0.44 và model bất đối xứng trái/phải (lật gương Typical_14: 0.999 → 0.088). Script: `research_src/eval_runs/2026-10-27_server/diagnostics/{diagnose,arm_swap,leg_swap,shortcut_check}.py`, kết quả `shortcut_check.out`.
+
+Hướng xử lý (cần retrain): lọc bộ ASD chỉ giữ đoạn đi, bỏ 5 cặp trùng, chuẩn hoá theo chiều dài thân hoặc augmentation co giãn chân 0.8–1.2 và lật gương, fine-tune lại, chia tập theo trẻ, calibrate lại.
+
+### 21.7 Checklist việc cần làm (thay cho §20.5)
+
+- [ ] **Git** (agent không chạy git): commit các thay đổi §21.1 + các phiên trước; trước đó `git rm -r --cached API/storage API/__pycache__ API/services/__pycache__ backend/backend.log backend/response.json` nếu chưa làm; cân nhắc thêm `research_src/eval_runs/` vào `.gitignore`; `backend/content/mchat-rf.vi.json` không được add.
+- [ ] **P0-1 model:** lọc dữ liệu ASD (chỉ đoạn đi), bỏ 5 cặp trùng, augmentation/chuẩn hoá chống lối tắt, retrain, split theo trẻ, calibrate lại; cho tới lúc đó không dùng số liệu 27/10 để báo cáo.
+- [ ] **Máy dev:** đặt `OPENPOSE_API_KEY` trong `backend/.env` (giá trị trên `khmt01`), nếu không mọi lượt sàng lọc từ máy dev qua ngrok sẽ 401.
+- [ ] **UI:** hiển thị `quality`/`reliable` của ML (backend đã có type); cân nhắc tắt ngrok nếu máy dev không cần.
+- [ ] Còn từ §20.5: L1 (giấy phép M-CHAT), sysctl chống mất cổng DB chung trên `user-KHMT02`, G0/C1 bài tập, Giai đoạn 5/6.
+
+### 21.8 Bàn giao cho chat mới
+
+**Đọc trước khi làm bất cứ việc gì:** §14 (không git, không in `.env`, không viết nội dung M-CHAT); §21; memory của agent có ghi chú máy `khmt01`.
+
+| Mạch | Trạng thái | Việc tiếp theo |
+| --- | --- | --- |
+| ML server | 2.0 chạy trên `khmt01` bằng compose, API key bật, calibration nạp | Deploy mã mới = chép `API/` vào `asdr/ml/server` + `restart ml-api`; đổi tiền xử lý thì calibrate lại |
+| Model | Dựa vào tỉ lệ chân/thân (§21.6); số liệu 27/10 lạc quan | Lọc dữ liệu + retrain (P0-1) |
+| Máy GPU `khmt01` | Đã sắp xếp, không xoá gì; README trên máy | Dọn dẹp theo §21.7 khi chủ dự án đồng ý |
+| Máy dev | Backend gọi ML qua ngrok cần `OPENPOSE_API_KEY` | Đặt key vào `backend/.env` |
+| Git | Chưa commit gì từ 51fb7a4 | Chủ dự án tự commit theo §21.7 |
+
+**Không được làm:** xoá bất cứ thứ gì trên `khmt01` khi chưa hỏi (quy định của chủ dự án ngày 27/10); in token tunnel/ngrok/API key; chạy `docker run` thủ công thay cho compose; sửa `asdr/ml/server` trực tiếp mà không sửa `API/` trong repo trước.
+
+
+### 21.9 Kế hoạch fine-tune của chủ dự án (ghi lại nguyên văn; đã được §22.5 điều chỉnh)
+
+> Đánh giá 29/10 (§22) cho thấy: lối tắt đến từ bộ video, không từ Kinect (Kinect lệch theo chiều ngược lại); "cắt đoạn ASD trẻ không đi" và augmentation chân không đủ vì nhãn của bộ video trùng với cách quay; checkpoint gốc không có trên máy dev. Hướng mới ở §22.5.
+
+"fine-tune lại từ checkpoint gốc Kinect, không retrain từ đầu, nhưng kèm một thí nghiệm 10 phút để chắc quyết định đó đúng.
+
+Lý do chọn fine-tune
+
+Dữ liệu OpenPose chỉ có 99 video, thực chất 50 ASD và 44 Typical sau khi bỏ trùng, mỗi trẻ một clip 1 đến 8 giây. Train ST-GCN từ đầu với chừng đó mẫu sẽ học thuộc ngay, lối tắt còn tệ hơn.
+Checkpoint gốc học trên bộ Kinect25 lớn hơn (bộ này có trên máy dev, Dataset_NoVideos/Kinect25_ASD_NoVideos), nên phần biểu diễn động học đáng giữ.
+Lối tắt chân/thân khớp với đặc điểm của bộ Dataset_video (ASD ngồi xổm, cúi, quá gần camera), tức là nhiều khả năng sinh ra ở bước fine-tune, không phải ở model gốc.
+
+Thí nghiệm để chốt: chạy lại leg_swap.py với checkpoint gốc trước fine-tune (file nằm ở máy cũ NCKH_25-26, trường source_checkpoint trong checkpoint hiện tại là None nên phải tìm tay). Hai kết quả có thể xảy ra:
+
+Model gốc khi co chân 0.85 / kéo 1.15	Kết luận	Việc làm
+Không lật kết quả	Lối tắt do fine-tune	Fine-tune lại từ model gốc với dữ liệu đã lọc
+Lật giống model hiện tại	Lối tắt có từ dữ liệu Kinect	Retrain base trên Kinect với augmentation co giãn chân, rồi mới fine-tune
+
+Cách fine-tune lại, dù rơi vào trường hợp nào
+
+Lọc Dataset_video: bỏ 5 cặp trùng, cắt các đoạn ASD trẻ không đi, giữ clip có tỉ lệ chân/thân hợp lý và chân thấy đủ.
+Chống lối tắt ngay trong fine_tune.py: augmentation co giãn chân ngẫu nhiên 0.8 đến 1.2 quanh hông, lật gương, co giãn thời gian; hoặc đổi chuẩn hóa từ bbox sang chiều dài thân để tỉ lệ này ít lộ hơn.
+Chia tập theo trẻ với seed cố định, giữ splits.json, chọn epoch theo val, test một lần.
+Sau khi fine-tune xong, chạy lại shortcut_check.py: nếu AUC của riêng chân/thân vẫn gần AUC model thì chưa đạt.
+Calibrate lại, đặt calibration.json mới lên khmt01.
+
+Nếu không tìm được checkpoint gốc, phương án dự phòng là retrain base bằng research_src/ST-GCN.py trên bộ Kinect có sẵn, với cùng augmentation ở bước 2, rồi fine-tune."
+
+---
+
+## 22. Nhật ký phiên 2026-10-29 (đánh giá lại dữ liệu train ST-GCN)
+
+Chỉ đọc dữ liệu: không sửa code train, không đụng `khmt01`, không chạy git. Báo cáo đầy đủ + số liệu: `research_src/eval_runs/2026-10-29_data_audit/REPORT.md`. Script `audit_data.py`, `camera_motion.py`, `domain_gap.py`, `metadata_link.py`, `domain_fix.py`; CSV `video_audit.csv`, `kinect_audit.csv`, `camera_motion.csv`, `video_audit_merged.csv`, `kinect_subject_groups.csv`, `domain_*.csv`, `metadata_linked.csv`, `orig_color_videos.csv` (chỉ số đo + tiền tố md5, không có hình ảnh). Chủ dự án xác nhận đây là **dự án thử nội bộ**: không cần lo phần trình bày cho người ngoài.
+
+### 22.1 Nguồn dữ liệu (máy dev)
+
+- Code train cũ: `E:\Scientific research 2025-2026\Linux_src_2\NCKH_25-26` (`ULTIMATE_*.py`, `sub_phase/`, `COMMANDS.md` có log fine-tune cũ). Fine-tune: `sub_phase/tools/fine_tune.py`. Visualize: `visualize_kinect_excel_to_video.py`, `generate_and_visualize_openpose.py`.
+- **Nguồn gốc:** bộ "Kinect ASD Gait" trên Dryad, [doi:10.5061/dryad.s7h44j150](https://datadryad.org/dataset/doi:10.5061/dryad.s7h44j150) (Al-Jubouri, Hadi, Rajihy 2020; paper COMPUSOFT 9(8):3791–3797). Bản đầy đủ có video: `E:\JupyterWorkspace\NCKH\Dataset\Dataset` (mỗi trẻ `video/video.avi` màu Samsung Note 9, `Svideo.avi` skeleton, `Tvideo.avi` quỹ đạo; `Autism/Severe level of ASD/case1..9` chỉ có video màu; `readme.docx` có metadata tuổi/giới/chiều cao). Cùng thư mục cha có `MMASD`, `MMASD_3D`, `NTU_pretrain_ready` (chưa đánh giá).
+- Kinect: `Datas/Kinect25_ASD/Kinect25_ASD_NoVideos` — bộ Al-Jubouri và cs. 2020 (ĐH Babylon). 50 ASD + 50 Typical; mỗi trẻ `video/8.xlsx` (3D mét) + `8_2d.xlsx` (2D pixel ảnh màu 1920×1080) + 7 augmentation. Một chu kỳ bước, 21–60 frame ở 30 fps; camera cố định cao 0,75 m, trẻ đi về phía camera.
+- Video: `Datas/Kinect25_ASD_Video/Dataset_video` (50 ASD + 49 Typical `.avi`, 60 fps, 0,75–7,9 giây) + keypoint OpenPose trong `Visualized_Results/keypoints`.
+- **Không có checkpoint `.pth` nào** trên máy dev; thư mục base `stgcn_bbox_no_head_neck_seed42_20260428_033403` (base của model đang deploy) không tồn tại, chỉ còn config/log các lần chạy 20260522. Thí nghiệm `leg_swap` với checkpoint gốc chưa làm được.
+
+### 22.2 Bộ video: nhãn trùng với cách quay
+
+- Độ phân giải: 35/50 ASD còn khung gốc 1080×1920; **0/49 Typical** (tất cả đã cắt, kích thước lẻ). Chỉ riêng chiều rộng video: AUC 0,93 (model: 0,915).
+- Chuyển động nền (optical flow, che vùng người; ngưỡng 0,2 ước lượng tự động): ASD 27 cầm tay / 23 cố định; Typical 2 / 47. Xem 10 clip: ASD quay điện thoại cầm tay, giơ cao chĩa xuống, trẻ ở gần, mỗi clip một phòng, trẻ đi lòng vòng; Typical camera cố định ngang tầm, xa, trẻ đi thẳng tới camera, vài phòng lặp lại.
+- Tỉ lệ chân/thân ASD 1,29 vs Typical 1,42 nhưng góc gối vẫn ~150–177° → **phối cảnh camera, không phải ngồi xổm** (sửa nhận định ở §21.6). Các đặc trưng khác cũng lộ cách quay: độ cao hông AUC 0,82, hông dịch ngang 0,81, độ lớn dần khi lại gần 0,77, góc gối 0,77.
+- Chỉ xét video camera cố định (23 ASD vs 47 Typical) vẫn tách được: chiều rộng 0,93, hông dịch ngang 0,82, chân/thân 0,75.
+
+### 22.3 Trùng lặp và rò rỉ
+
+- 5 cặp Typical trùng byte (9=32, 14=44, 15=33, 16=47, 18=45) → 44 trẻ Typical.
+- Fine-tune cũ (dựng lại theo seed 44): train 30% / test 70%, val bị ép 1/lớp rồi bỏ, chọn epoch theo test; 4 cặp trùng vắt qua train/test.
+- Calibration 27/10: **8/20 video test** đã nằm trong train fine-tune (6) hoặc là bản trùng của video train (2) → AUC 0,95 không dùng được.
+- Kinect: 7 nhóm thư mục trùng file (ASD 1=34, 7=18, 30=40; Typical 1=7=16=20=29, 2=26=40, 4=23=28, 13=14), không trùng giữa hai nhãn → ≈47 ASD + 41 Typical. Base chia theo thư mục: dựng lại theo code, 4/14 trẻ test có bản trùng trong train/val. ASD 8: file 2D hỏng (tỉ lệ 52,7; 3D bình thường).
+
+### 22.4 Kinect so với video
+
+- Kinect: trẻ ASD có tỉ lệ chân/thân **cao hơn** (2D 1,06 vs 0,98; 3D 1,13 vs 1,06; AUC ~0,7, cao = ASD) — ngược với bộ video → lối tắt "chân ngắn = ASD" sinh ra ở bước fine-tune trên bộ video.
+- `video_k` **không** phải trẻ Kinect số k (đã bị đánh số lại); ghép đúng qua md5 với video gốc ở §22.7 (`metadata_linked.csv`, cột `video_idx`).
+- Lệch miền: `_openpose25_to_kinect25` gán cổ OpenPose cho cả `Neck` và `SpineShoulder`; Kinect 1 chu kỳ/~1 giây/30 fps vs video 1–4 chu kỳ/1–8 giây/60 fps, cùng resample về 128; camera Kinect thấp cố định vs video ASD cầm tay cao.
+
+### 22.5 Hướng mới (thay kế hoạch §21.9)
+
+1. Không dùng `Dataset_video` nguyên trạng để fine-tune hay báo cáo ASD vs Typical; tập con "camera cố định" cũng không đủ.
+2. ~~Hỏi nguồn gốc video~~ — đã rõ (§22.7): là video màu gốc của tác giả Dryad, lệch cách quay có sẵn từ tác giả. Cách sửa thật vẫn là dữ liệu đối chứng cùng giao thức quay cho hai nhóm.
+3. Train chính trên Kinect: gộp 7 nhóm trùng, chia train/val/test theo nhóm, sửa/loại ASD 8, **cân bằng tuổi** (hoặc chỉ dùng 5–14 tuổi, bỏ 13 trẻ Typical ≤ 4 tuổi), chọn epoch theo val, test một lần, báo cáo khoảng tin cậy và AUC mốc của tuổi/giới/chiều cao (§22.7). Trước khi dùng base Kinect cho OpenPose phải sửa các lệch domain ở §22.6 và §22.8.
+4. Cổng kiểm tra lối tắt cho mọi model mới: AUC các đặc trưng cách quay (kích thước video, flow nền, chân/thân, độ cao hông, hông dịch ngang, độ lớn dần) và của tuổi/giới/chiều cao phải thấp hơn rõ AUC model; điểm model không đổi theo cách quay khi cùng nhãn; chạy lại `leg_swap.py`, `shortcut_check.py`.
+5. Số liệu trên video thật chỉ lấy từ tập ngoài, cùng giao thức cho hai nhóm, không có trẻ nào đã dùng để train.
+
+### 22.6 Kiểm tra domain Kinect ↔ video (REPORT.md mục 6)
+
+Script `domain_gap.py` import đúng hàm của code train gốc và đưa hai bộ về đầu vào model 18 khớp × 128 frame. Kinect: bỏ khớp → bbox → resample tuyến tính. Video: Excel wide → BODY_25 → Kinect25 → bỏ khớp → resample nearest → bbox, như `fine_tune.py`. Dữ liệu: 46 ASD + 41 Typical Kinect (đã bỏ trùng và ASD 8), 50 + 44 video (đã bỏ trùng). Script train trên máy dev bỏ tới 17 khớp, còn checkpoint deploy dùng 18 khớp → bản code đã train base có thể khác bản này.
+
+- **Hai domain tách nhau gần như hoàn toàn:** logistic regression trên đặc trưng tóm tắt, CV 5 fold, phân biệt Kinect/video với AUC 0,99.
+- **Kinect 2D bị lật gương** so với OpenPose: 87/87 clip Kinect có khớp "Left" bên trái ảnh, 90/94 clip video có khớp trái bên phải ảnh (trẻ đi về phía camera). Base và fine-tune học vai trò trái/phải ngược nhau; model đang bất đối xứng trái/phải (§21.6).
+- **Thang thời gian:** Kinect ~29 frame = 1 chu kỳ bước, resample tuyến tính; video ~119 frame = 2 chu kỳ (tới 17), resample nearest. Sau khi về 128 frame, vận tốc mỗi bước chênh ~10 lần.
+- **Nhiễu:** tỉ lệ gia tốc/vận tốc 0,32 (Kinect, đã làm mượt) so với 1,84 (video).
+- **Khớp thiếu = (0,0) toạ độ ảnh** trong video: trung vị 3–4% frame có, 23 clip > 20%. Khi chuẩn hoá bbox từng frame, điểm này kéo bbox ra góc ảnh. Server ML hiện cũng giữ (0,0) để khớp fine-tune (§7.3).
+- **Frame lặp do resample lệch theo lớp:** Typical 12%, ASD 0% (clip Typical ngắn hơn 128 frame, clip ASD dài hơn).
+- **Định nghĩa khớp khác nhau:** hông, cổ, SpineMid (video là trung điểm tổng hợp). Chân/thân Kinect ≈ 1,0, video ≈ 1,37; hông rộng 0,27 vs 0,38.
+- **Tín hiệu ASD không chuyển được:** đa số đặc trưng có hướng ASD–Typical ngược nhau giữa hai bộ. Học trên Kinect thử trên video: AUC 0,50; chiều ngược lại 0,51 (chỉ ở mức đặc trưng tóm tắt; chưa thử bằng ST-GCN vì không có checkpoint).
+
+**Cần sửa trước khi train/fine-tune lại:**
+- lật x Kinect 2D (hoặc đổi Left/Right) cho cùng quy ước với OpenPose, kèm augmentation lật gương;
+- thống nhất thang thời gian: cắt theo chu kỳ bước hoặc resample theo giây, cùng kiểu resample cho hai bộ;
+- nội suy khớp thiếu thay vì giữ (0,0), sửa đồng thời `fine_tune.py` và `API/services/stgcn_service.py` để train và suy luận vẫn khớp nhau;
+- cân nhắc chuẩn hoá theo chiều dài thân thay vì bbox, bỏ SpineMid tổng hợp;
+- lọc nhiễu OpenPose ngay lúc train.
+
+Dù sửa xong, §22.2 vẫn đúng: bộ video không đánh giá được ASD vs Typical.
+
+### 22.7 Dataset gốc Dryad và metadata (REPORT.md mục 7)
+
+- **Cả 99 video `Dataset_video` trùng byte với `video/video.avi` gốc** → cắt khung, độ phân giải, cầm tay/cố định đều có sẵn từ tác giả. `video_k` đã bị đánh số lại (chỉ 2/99 trùng số thư mục). Video gốc có 5 cặp Typical trùng theo thư mục (17=39, 22=5, 23=4, 24=7, 26=50); Typical 2 chỉ có `video1.avi` → 49 video. 9 trẻ ASD nặng không có trong `Dataset_video`.
+- **Metadata readme** (cột "Length": Typical là feet, ASD là mét):
+
+  | | ASD | Typical |
+  | --- | --- | --- |
+  | Tuổi trung vị (min–max) | 9 (5–15) | 6 (2–14) |
+  | ≤ 4 tuổi | 0 | 13 |
+  | Nam / nữ | 42 / 8 | 26 / 24 |
+  | Chiều cao Kinect 3D | 1,22 m | 1,04 m |
+
+- **Kinect cũng có lối tắt theo tuổi/thể trạng:** chiều cao đo từ Kinect AUC 0,85 (trong nhóm 5–10 tuổi vẫn 0,86); tuổi 0,70; giới 0,66; tuổi + giới (CV) 0,72. Tuổi tương quan với chiều cao (Typical 0,70) và chân/thân 3D (0,25–0,34) → chân/thân Kinect cao hơn ở ASD (§22.4) chủ yếu do tuổi. Ghép "Case k" ↔ thư mục k chắc với Typical (r = 0,58), chưa chắc với ASD (0,22).
+- `outlier_detection_report.txt` có sẵn cũng cho thấy vai trái nằm bên trái ảnh khi trẻ đi về phía camera → xác nhận Kinect 2D lật gương.
+- Số liệu 92–95% trong các bài báo dùng bộ này cần đọc với các lưu ý trên (trùng thư mục, augmentation cùng trẻ, tuổi).
+
+### 22.8 Domain khắc phục được tới đâu (REPORT.md mục 8, `domain_fix.py`)
+
+Áp dồn từng bước sửa lên cả hai bộ rồi đo lại độ lệch:
+
+| Cấu hình (dồn) | AUC domain, đặc trưng tóm tắt | AUC domain, tư thế từng khớp | Đặc trưng lệch mạnh (> 0,8) |
+| --- | --- | --- | --- |
+| Hiện tại | 0,99 | 1,00 | 19/30 |
+| + lật gương Kinect, nội suy khớp thiếu, lọc nhiễu | 1,00 | 0,99 | 15 |
+| + video 30 fps, cắt 1 chu kỳ bước (57/94 clip), resample tuyến tính | 0,98 | 0,99 | 11 |
+| + SpineMid tổng hợp cho Kinect, chỉnh độ dài xương Kinect theo OpenPose | **0,93** | **0,98** | **0** |
+
+- Hệ số chỉnh xương (video/Kinect): tay 1,06–1,16; hông → SpineBase ~1,5; đùi 1,26; cẳng 1,32; bàn chân 1,38.
+- **Sửa được** bằng tiền xử lý: lật gương, thang thời gian, nhiễu, khớp thiếu, độ dài xương.
+- **Không sửa được** bằng tiền xử lý: phân bố tư thế từng khớp vẫn tách 0,98, kể cả Kinect vs video Typical quay cố định (0,99) → không do cách quay mà do khác biệt skeleton cảm biến độ sâu vs skeleton suy từ ảnh màu. (Mốc: cùng bộ phân loại tách ASD/Typical trong từng domain được 0,92.)
+- Tín hiệu ASD vẫn không chuyển được giữa hai domain ở mọi cấu hình (AUC 0,41–0,64).
+- Muốn thu hẹp tiếp: **nâng OpenPose 2D lên 3D** (VideoPose3D/MotionBERT) và train trên Kinect 3D trong hệ toạ độ gắn cơ thể (gốc hông, xoay về một hướng, chia chiều cao) để loại góc camera/phối cảnh/lật gương; giới hạn: model lifting train trên người lớn, khung khớp vẫn phải ánh xạ, không sửa được nhiễu tuổi/địa điểm; tiêu chí thành công: AUC domain theo tư thế giảm rõ dưới 0,98. Rẻ hơn: chiếu Kinect 3D ra 2D theo camera ảo làm augmentation. Khác: đặc trưng góc khớp, huấn luyện đối kháng domain.
+- Giới hạn phép đo: đặc trưng tóm tắt + logistic regression, chưa phải ST-GCN (không có checkpoint).
+- Chủ dự án tạm dừng hướng này ở đây (29/10), chưa quyết làm bước 3D.
+
+### 22.9 Bàn giao cho chat mới
+
+**Đọc trước:** §14 (không git, không in `.env`, không viết nội dung M-CHAT); §22; `research_src/eval_runs/2026-10-29_data_audit/REPORT.md`.
+
+| Mạch | Trạng thái | Việc tiếp theo |
+| --- | --- | --- |
+| Dữ liệu video | Video màu gốc Dryad; nhãn trùng cách quay; không dùng nguyên trạng | Muốn số liệu thật thì cần dữ liệu đối chứng cùng giao thức |
+| Domain Kinect ↔ video | Lệch kỹ thuật sửa được; lệch từng khớp còn 0,98 (§22.8) | Chủ dự án quyết có thử 2D → 3D hay không; đổi tiền xử lý server thì calibrate lại |
+| Dữ liệu Kinect | Đã liệt kê nhóm trùng, file hỏng, lệch tuổi/giới (§22.7) | Split theo nhóm + cân bằng tuổi + loại ASD 8 khi bắt đầu train |
+| Checkpoint gốc | Không có trên máy dev | Tìm trên máy cũ `NCKH_25-26` nếu cần `leg_swap` |
+| Model đang deploy | Vẫn dựa vào lối tắt; số liệu 27/10 không dùng được | Giữ cảnh báo "tham khảo" trên UI |
+| Git | `research_src/eval_runs/` chưa có trong `.gitignore` | Chủ dự án quyết commit hay ignore artifact |
+
+**Không được làm:** lưu khung hình/video trẻ vào repo (ảnh xem tạm của phiên này đã xoá); sửa dữ liệu trong `Linux_src_2` khi chưa hỏi; dùng `Dataset_video` để báo cáo hiệu năng.

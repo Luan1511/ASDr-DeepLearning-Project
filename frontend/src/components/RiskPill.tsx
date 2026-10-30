@@ -19,6 +19,8 @@ export function RiskPill({ risk }: { risk: RiskLevel }) {
  * The ST-GCN score for the ASD class, with the decision thresholds marked.
  * Deliberately labelled "điểm sàng lọc", not a probability of having ASD.
  */
+import { Tooltip, InfoTooltip } from './Tooltip'
+
 export function ModelScoreBar({
   asdProbability,
   riskLevel,
@@ -36,29 +38,34 @@ export function ModelScoreBar({
     (t, i, all): t is number => typeof t === 'number' && t > 0 && t < 1 && all.indexOf(t) === i,
   )
 
+  const explanation =
+    'Điểm càng cao, chuyển động của trẻ càng giống nhóm trẻ có dấu hiệu ASD trong dữ liệu huấn luyện. Đây không phải xác suất chẩn đoán.'
+
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-sm font-extrabold text-duo-ink">Điểm sàng lọc của mô hình</span>
+        <span className="flex items-center gap-1.5 text-sm font-extrabold text-duo-ink">
+          <span>Điểm sàng lọc của mô hình</span>
+          <InfoTooltip content={explanation} widthClass="w-72" />
+        </span>
         <span className="text-sm font-black tabular-nums" style={{ color }}>
           {score}/100
         </span>
       </div>
-      <div className="relative h-4 w-full overflow-hidden rounded-full bg-duo-mist">
-        <div className="h-4 rounded-full" style={{ width: `${score}%`, background: color }} />
-        {markers.map((t) => (
-          <div
-            key={t}
-            className="absolute top-0 h-4 w-0.5 bg-duo-ink/40"
-            style={{ left: `${t * 100}%` }}
-            title={`Ngưỡng ${Math.round(t * 100)}`}
-          />
-        ))}
-      </div>
-      <p className="mt-1.5 text-xs font-semibold leading-relaxed text-duo-mute">
-        Điểm càng cao, chuyển động của trẻ càng giống nhóm trẻ có dấu hiệu ASD trong dữ liệu huấn luyện. Đây không phải xác
-        suất chẩn đoán.
-      </p>
+
+      <Tooltip content={explanation} className="w-full" widthClass="w-72">
+        <div className="relative h-4 w-full overflow-hidden rounded-full bg-duo-mist cursor-help">
+          <div className="h-4 rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
+          {markers.map((t) => (
+            <div
+              key={t}
+              className="absolute top-0 h-4 w-0.5 bg-duo-ink/40"
+              style={{ left: `${t * 100}%` }}
+              title={`Ngưỡng ${Math.round(t * 100)}`}
+            />
+          ))}
+        </div>
+      </Tooltip>
     </div>
   )
 }

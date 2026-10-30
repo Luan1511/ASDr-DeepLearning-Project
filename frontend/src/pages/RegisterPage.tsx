@@ -30,10 +30,8 @@ export function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-duo-green text-2xl font-black text-white shadow-brand">
-            A
-          </div>
-          <h1 className="mt-5 text-3xl font-black text-duo-ink">Tạo tài khoản</h1>
+          <img src="/logo.png" alt="AIMBRACE" className="mx-auto h-24 w-auto object-contain" />
+          <h1 className="mt-4 text-3xl font-black text-duo-ink">Tạo tài khoản</h1>
           <p className="mt-2 text-sm font-semibold text-duo-mute">Quản lý hồ sơ trẻ và lịch sử kết quả.</p>
         </div>
 

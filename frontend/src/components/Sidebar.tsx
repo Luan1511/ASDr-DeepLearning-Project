@@ -13,10 +13,19 @@ import {
   PersonStanding,
   ClipboardList,
   MessageSquareHeart,
+  LogOut,
+  Smile,
   type LucideIcon,
 } from 'lucide-react'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
 import { useQuestionnairesEnabled } from '../lib/useQuestionnairesEnabled'
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/)
+  const a = parts[0]?.[0] ?? 'U'
+  const b = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : ''
+  return (a + b).toUpperCase()
+}
 
 interface NavItem {
   to: string
@@ -27,6 +36,7 @@ interface NavItem {
 }
 
 const helpItems: NavItem[] = [
+  { to: '/buddy', label: 'Bạn Bin', icon: Smile },
   { to: '/assistant', label: 'Trợ lý AI', icon: Bot },
   { to: '/knowledge', label: 'Kiến thức', icon: BookOpen },
   { to: '/guide', label: 'Hướng dẫn', icon: HelpCircle },
@@ -37,6 +47,7 @@ const adminItems: Array<Omit<NavItem, 'icon'>> = [
   { to: '/admin', label: 'Tổng quan', end: true },
   { to: '/admin/skeleton', label: 'Skeleton' },
   { to: '/admin/exercises', label: 'Bài tập' },
+  { to: '/admin/buddy', label: 'Nhân vật Bin' },
 ]
 
 function NavRow({ item, currentPath }: { item: NavItem; currentPath: string }) {
@@ -141,10 +152,12 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full flex-col px-4 py-5">
-      <button type="button" className="mb-5 flex items-center gap-2 px-1 text-left" onClick={() => navigate('/')}>
-        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-duo-green text-lg font-black text-white shadow-brand">
-          A
-        </span>
+      <button type="button" className="mb-5 flex items-center gap-2.5 px-1 text-left group" onClick={() => navigate('/')}>
+        <img
+          src="/logo-mark.png"
+          alt="AIMBRACE"
+          className="h-10 w-10 object-contain flex-shrink-0 transition-transform group-hover:scale-105"
+        />
         <span className="text-2xl font-black tracking-tight text-duo-ink">AIMBRACE</span>
       </button>
 
@@ -208,6 +221,59 @@ export function Sidebar() {
             )}
             <NavRow item={{ to: '/settings', label: 'Cài đặt', icon: Settings }} currentPath={pathname} />
           </div>
+
+          {/* User profile card + logout */}
+          {user && (
+            <>
+              <Divider />
+              <div
+                className={[
+                  'group flex items-center gap-2 rounded-2xl p-1.5 transition-all',
+                  pathname === '/profile'
+                    ? 'bg-duo-green-soft ring-2 ring-duo-green/40 shadow-sm'
+                    : 'hover:bg-duo-mist',
+                ].join(' ')}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  title="Xem và quản lý hồ sơ tài khoản"
+                  className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+                >
+                  <div
+                    className={[
+                      'grid h-10 w-10 flex-shrink-0 place-items-center rounded-2xl bg-duo-gold text-sm font-black text-duo-ink shadow-sm transition-transform group-hover:scale-105',
+                      pathname === '/profile' ? 'ring-2 ring-duo-green-dark' : '',
+                    ].join(' ')}
+                  >
+                    {initials(user.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={[
+                        'truncate text-sm font-extrabold transition-colors',
+                        pathname === '/profile' ? 'text-duo-green-dark' : 'text-duo-ink group-hover:text-duo-green-dark',
+                      ].join(' ')}
+                    >
+                      {user.name}
+                    </div>
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-duo-mute">
+                      {user.role === 'ADMIN' ? 'Quản trị viên' : 'Hồ sơ cá nhân'}
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  title="Đăng xuất"
+                  className="flex-shrink-0 rounded-xl p-2 text-duo-mute transition-colors hover:bg-red-50 hover:text-duo-red"
+                >
+                  <LogOut className="h-4 w-4 stroke-[2.2]" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </nav>
     </aside>

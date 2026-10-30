@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Loader2, Pencil, RotateCcw, ShieldAlert, ShieldCheck, Trash2, Video } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
+import { InfoTooltip } from '../components/Tooltip'
 import { ChildAvatar } from '../components/ChildAvatar'
 import { ChildForm, type ChildFormValues } from '../components/ChildForm'
 import { GaitTrendChart } from '../components/GaitTrendChart'
@@ -368,7 +369,17 @@ function ChildDetail({ id }: { id: string }) {
               <GaitTrendChart screenings={screenings} />
             </Card>
 
-            <Card title="Các lần sàng lọc">
+            <Card
+              title={
+                <div className="flex items-center gap-1.5">
+                  Các lần sàng lọc
+                  <InfoTooltip
+                    content="Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa."
+                    position="top"
+                  />
+                </div>
+              }
+            >
               {actionError && <div className="mb-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{actionError}</div>}
               {screenings.length === 0 ? (
                 <div className="py-6 text-center text-sm font-semibold text-duo-mute">
@@ -393,7 +404,7 @@ function ChildDetail({ id }: { id: string }) {
                   ))}
                 </div>
               )}
-              <p className="mt-3 text-xs font-bold text-duo-mute">Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa.</p>
+
             </Card>
 
             {/* Each renders nothing while its feature is off for this user. */}

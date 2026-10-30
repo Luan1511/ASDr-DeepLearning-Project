@@ -1,7 +1,8 @@
-import { AlertTriangle, FlaskConical, Info } from 'lucide-react'
+import { AlertTriangle, FlaskConical } from 'lucide-react'
 import type { ScreeningResult } from '../lib/types'
 import { ModelScoreBar, RiskPill } from './RiskPill'
 import { GaitFeaturesCard } from './GaitFeaturesCard'
+import { InfoTooltip } from './Tooltip'
 
 function QualityNotice({ result }: { result: ScreeningResult }) {
   const quality = result.gaitFeatures?.quality
@@ -44,6 +45,20 @@ export function ScreeningResultView({ result, showGaitByDefault = false }: { res
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-extrabold text-duo-ink">Mức cần theo dõi:</span>
         <RiskPill risk={result.riskLevel} />
+        <InfoTooltip
+          content={
+            <span>
+              Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa.
+              {result.calibrated === false && !mock && (
+                <>
+                  {' '}— Ngưỡng phân mức hiện chưa được hiệu chỉnh trên dữ liệu kiểm định độc lập.
+                </>
+              )}
+            </span>
+          }
+          position="top"
+          widthClass="w-72"
+        />
       </div>
 
       {result.asdProbability !== null && !mock && (
@@ -63,15 +78,7 @@ export function ScreeningResultView({ result, showGaitByDefault = false }: { res
 
       {result.gaitFeatures && <GaitFeaturesCard features={result.gaitFeatures} defaultOpen={showGaitByDefault} />}
 
-      <div className="space-y-1 text-xs font-bold text-duo-mute">
-        <div>Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa.</div>
-        {result.calibrated === false && !mock && (
-          <div className="flex items-start gap-1.5">
-            <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-            <span>Ngưỡng phân mức hiện chưa được hiệu chỉnh trên dữ liệu kiểm định độc lập.</span>
-          </div>
-        )}
-      </div>
+
     </div>
   )
 }

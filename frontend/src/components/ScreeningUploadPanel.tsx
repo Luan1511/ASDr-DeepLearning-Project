@@ -178,9 +178,6 @@ export function ScreeningUploadPanel({
     pollToken.current += 1
     try {
       const meta = await readVideoMetadata(file)
-      if (meta && meta.durationMs < 4000) {
-        setHint('Video ngắn hơn 4 giây nên kết quả sẽ kém tin cậy. Nên quay 6–10 giây trẻ đi thẳng.')
-      }
 
       const fd = new FormData()
       fd.append('childId', childId)

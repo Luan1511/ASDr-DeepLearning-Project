@@ -1,0 +1,41 @@
+{
+  "neutral": {
+    "face.eyes": "open", "face.brows": "neutral", "face.mouth": "smile",
+    "face.blush": 0.5, "face.glow": 0.5, "ears.left": 0, "ears.right": 0, "head.tilt": 0
+  },
+  "happy": {
+    "face.eyes": "happy", "face.brows": "happy", "face.mouth": "grin",
+    "face.blush": 0.9, "face.glow": 0.9, "ears.left": -10, "ears.right": -10, "head.tilt": 0
+  },
+  "curious": {
+    "face.eyes": "open", "face.brows": "raised", "face.mouth": "small",
+    "face.blush": 0.5, "face.glow": 0.7, "ears.left": -18, "ears.right": 6, "head.tilt": 9,
+    "face.lookX": 0.25, "face.lookY": -0.15
+  },
+  "encourage": {
+    "face.eyes": "happy", "face.brows": "raised", "face.mouth": "smile",
+    "face.blush": 1, "face.glow": 1, "ears.left": -8, "ears.right": -8, "head.tilt": -5
+  },
+  "surprised": {
+    "face.eyes": "wide", "face.brows": "raised", "face.mouth": "o",
+    "face.blush": 0.6, "face.glow": 1, "ears.left": -28, "ears.right": -28, "head.tilt": 0
+  },
+  "listening": {
+    "face.eyes": "open", "face.brows": "neutral", "face.mouth": "smile",
+    "face.blush": 0.6, "face.glow": 0.6, "ears.left": -16, "ears.right": -16, "head.tilt": -7
+  },
+  "thinking": {
+    "face.eyes": "open", "face.brows": "focused", "face.mouth": "flat",
+    "face.blush": 0.4, "face.glow": 0.4, "ears.left": 5, "ears.right": -10, "head.tilt": 6,
+    "face.lookX": 0.55, "face.lookY": -0.7
+  },
+  "sad": {
+    "face.eyes": "sad", "face.brows": "worried", "face.mouth": "sad",
+    "face.blush": 0.2, "face.glow": 0.2, "ears.left": 50, "ears.right": 50, "head.tilt": 5,
+    "face.lookY": 0.3
+  },
+  "proud": {
+    "face.eyes": "happy", "face.brows": "raised", "face.mouth": "grin",
+    "face.blush": 1, "face.glow": 1, "ears.left": -20, "ears.right": -20, "head.tilt": -4
+  }
+}

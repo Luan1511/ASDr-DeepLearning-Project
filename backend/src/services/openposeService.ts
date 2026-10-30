@@ -50,10 +50,35 @@ export type OpenPosePrediction = {
   // Present on ML servers that load ASD_Model/calibration.json.
   high_risk_threshold?: number
   calibrated?: boolean
+  // ML server >= tracking/windowing revision.
+  T_used?: number
+  resample?: 'nearest' | 'linear'
+  n_windows?: number
+  windows?: Array<{ start: number; end: number; p_asd: number }>
+  quality?: {
+    frames_total: number
+    frames_with_person: number
+    frames_tracked: number
+    person_coverage: number
+    multi_person_frames: number
+    n_tracks: number
+    mean_keypoint_confidence: number | null
+    lower_body_coverage: number | null
+  }
+  /** ML server's own verdict on the tracked skeleton (coverage, confidence, legs visible). */
+  reliable?: boolean
   model?: {
     checkpoint?: string
     sha256?: string
     num_joints?: number
+    settings?: {
+      seq_len?: number
+      preprocess?: boolean
+      resample?: string
+      window_frames?: number
+      window_stride?: number
+      min_person_frames?: number
+    }
   }
 }
 

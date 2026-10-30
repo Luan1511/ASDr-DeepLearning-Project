@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "created_at": "2026-10-27T09:45:41+00:00",
+  "checkpoint": "/home/khmt01/Luan_workspace/asdr/ml/checkpoints/finetuned_best_model.pth",
+  "checkpoint_sha256": "5344ba2ff91678a8e54b480916e2ea5aed7cc1c5c37883021356ae4f8b1b2e40",
+  "num_joints": 18,
+  "normalization": "bbox",
+  "seq_len": 128,
+  "input_layout": "openpose",
+  "temperature": 1.0,
+  "device": "cuda",
+  "api_dir": "/home/khmt01/Luan_workspace/asdr/ml/server",
+  "source": {
+    "splits": "/home/khmt01/Luan_workspace/asdr/ml/calibration/splits.json"
+  },
+  "only_splits": [
+    "val",
+    "test"
+  ],
+  "n_rows": 40,
+  "n_errors": 0
+}

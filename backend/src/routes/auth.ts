@@ -84,6 +84,69 @@ authRouter.get(
   }),
 )
 
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, 'Họ tên không được để trống'),
+})
+
+authRouter.patch(
+  '/profile',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const input = updateProfileSchema.parse(req.body)
+    const userId = req.user!.id
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: input.name },
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
+    })
+    return res.json({ user })
+  }),
+)
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Vui lòng nhập mật khẩu hiện tại'),
+  newPassword: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
+})
+
+authRouter.post(
+  '/change-password',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const input = changePasswordSchema.parse(req.body)
+    const userId = req.user!.id
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) return res.status(404).json({ error: 'USER_NOT_FOUND' })
+
+    const ok = await bcrypt.compare(input.currentPassword, user.passwordHash)
+    if (!ok) {
+      return res.status(400).json({ error: 'WRONG_CURRENT_PASSWORD', message: 'Mật khẩu hiện tại không chính xác' })
+    }
+
+    const passwordHash = await bcrypt.hash(input.newPassword, 10)
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    })
+
+    return res.json({ ok: true, message: 'Đổi mật khẩu thành công' })
+  }),
+)
+
+authRouter.get(
+  '/stats',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id
+    const [childrenCount, screeningsCount, exercisesCount, postsCount] = await Promise.all([
+      prisma.childProfile.count({ where: { userId } }),
+      prisma.videoUpload.count({ where: { userId } }),
+      prisma.exerciseSession.count({ where: { userId } }),
+      prisma.communityPost.count({ where: { userId } }),
+    ])
+    return res.json({ stats: { childrenCount, screeningsCount, exercisesCount, postsCount } })
+  }),
+)
+
 authRouter.post('/logout', (_req, res) => {
   // JWT is stateless; client deletes token.
   return res.json({ ok: true })

@@ -1,0 +1,170 @@
+{
+  "wave": {
+    "duration": 2100,
+    "keyframes": [
+      { "t": 320, "ease": "back", "pose": { "armLeft.shoulder": 112, "armLeft.elbow": 52, "armLeft.wrist": 0, "armLeft.hand": "open", "head.tilt": 7 } },
+      { "t": 560, "pose": { "armLeft.elbow": 30, "armLeft.wrist": -12 } },
+      { "t": 800, "pose": { "armLeft.elbow": 64, "armLeft.wrist": 12 } },
+      { "t": 1040, "pose": { "armLeft.elbow": 30, "armLeft.wrist": -12 } },
+      { "t": 1280, "pose": { "armLeft.elbow": 64, "armLeft.wrist": 12 } },
+      { "t": 1520, "pose": { "armLeft.elbow": 34, "armLeft.wrist": -8 } },
+      { "t": 1800, "pose": { "armLeft.elbow": 52, "armLeft.wrist": 0, "head.tilt": 4 } }
+    ]
+  },
+  "cheer": {
+    "duration": 1900,
+    "keyframes": [
+      { "t": 300, "ease": "back", "pose": { "armLeft.shoulder": 128, "armLeft.elbow": 40, "armLeft.hand": "fist", "armRight.shoulder": 128, "armRight.elbow": 40, "armRight.hand": "fist", "body.bob": -10, "ears.left": -22, "ears.right": -22 } },
+      { "t": 560, "pose": { "armLeft.shoulder": 112, "armRight.shoulder": 112, "body.bob": 0, "ears.left": 10, "ears.right": 10 } },
+      { "t": 820, "ease": "back", "pose": { "armLeft.shoulder": 132, "armRight.shoulder": 132, "body.bob": -12, "ears.left": -24, "ears.right": -24 } },
+      { "t": 1080, "pose": { "armLeft.shoulder": 112, "armRight.shoulder": 112, "body.bob": 0, "ears.left": 10, "ears.right": 10 } },
+      { "t": 1340, "ease": "back", "pose": { "armLeft.shoulder": 130, "armRight.shoulder": 130, "body.bob": -10, "ears.left": -20, "ears.right": -20 } },
+      { "t": 1650, "pose": { "armLeft.shoulder": 120, "armRight.shoulder": 120, "body.bob": 0, "ears.left": -6, "ears.right": -6 } }
+    ]
+  },
+  "clap": {
+    "duration": 1900,
+    "keyframes": [
+      { "t": 260, "pose": { "armLeft.shoulder": 14, "armLeft.elbow": -118, "armLeft.wrist": 26, "armLeft.hand": "open", "armRight.shoulder": 14, "armRight.elbow": -118, "armRight.wrist": 26, "armRight.hand": "open" } },
+      { "t": 440, "ease": "easeIn", "pose": { "armLeft.shoulder": 2, "armLeft.elbow": -136, "armRight.shoulder": 2, "armRight.elbow": -136, "body.bob": 2 } },
+      { "t": 640, "ease": "easeOut", "pose": { "armLeft.shoulder": 14, "armLeft.elbow": -118, "armRight.shoulder": 14, "armRight.elbow": -118, "body.bob": -3 } },
+      { "t": 820, "ease": "easeIn", "pose": { "armLeft.shoulder": 2, "armLeft.elbow": -136, "armRight.shoulder": 2, "armRight.elbow": -136, "body.bob": 2 } },
+      { "t": 1020, "ease": "easeOut", "pose": { "armLeft.shoulder": 14, "armLeft.elbow": -118, "armRight.shoulder": 14, "armRight.elbow": -118, "body.bob": -3 } },
+      { "t": 1200, "ease": "easeIn", "pose": { "armLeft.shoulder": 2, "armLeft.elbow": -136, "armRight.shoulder": 2, "armRight.elbow": -136, "body.bob": 2 } },
+      { "t": 1550, "pose": { "armLeft.shoulder": 10, "armLeft.elbow": -122, "armRight.shoulder": 10, "armRight.elbow": -122, "body.bob": 0 } }
+    ]
+  },
+  "thumbs_up": {
+    "duration": 1900,
+    "keyframes": [
+      { "t": 350, "ease": "back", "pose": { "armLeft.shoulder": 34, "armLeft.elbow": 96, "armLeft.wrist": -40, "armLeft.hand": "thumbs_up", "head.tilt": -6 } },
+      { "t": 700, "pose": { "armLeft.shoulder": 40, "armLeft.elbow": 100 } },
+      { "t": 1000, "pose": { "armLeft.shoulder": 34, "armLeft.elbow": 96 } },
+      { "t": 1650, "pose": { "armLeft.shoulder": 36, "armLeft.elbow": 98 } }
+    ]
+  },
+  "think": {
+    "duration": 2600,
+    "loop": true,
+    "keyframes": [
+      { "t": 0, "pose": { "armRight.shoulder": -55, "armRight.elbow": -138, "armRight.wrist": 14, "armRight.hand": "fist", "head.tilt": 8 } },
+      { "t": 1300, "ease": "ease", "pose": { "armRight.shoulder": -52, "armRight.elbow": -140, "head.tilt": 11, "antenna.bend": 8 } },
+      { "t": 2600, "ease": "ease", "pose": { "armRight.shoulder": -55, "armRight.elbow": -138, "head.tilt": 8, "antenna.bend": 0 } }
+    ]
+  },
+  "nod": {
+    "duration": 1300,
+    "keyframes": [
+      { "t": 220, "ease": "easeOut", "pose": { "head.nod": 9 } },
+      { "t": 460, "ease": "ease", "pose": { "head.nod": -2 } },
+      { "t": 700, "ease": "easeOut", "pose": { "head.nod": 9 } },
+      { "t": 960, "ease": "ease", "pose": { "head.nod": 0 } }
+    ]
+  },
+  "shake_head": {
+    "duration": 1500,
+    "keyframes": [
+      { "t": 220, "ease": "ease", "pose": { "head.turn": -0.6, "head.tilt": -3 } },
+      { "t": 520, "ease": "ease", "pose": { "head.turn": 0.6, "head.tilt": 3 } },
+      { "t": 820, "ease": "ease", "pose": { "head.turn": -0.5, "head.tilt": -2 } },
+      { "t": 1100, "ease": "ease", "pose": { "head.turn": 0.3, "head.tilt": 1 } },
+      { "t": 1300, "ease": "ease", "pose": { "head.turn": 0, "head.tilt": 0 } }
+    ]
+  },
+  "shrug": {
+    "duration": 1700,
+    "keyframes": [
+      { "t": 380, "ease": "back", "pose": { "armLeft.shoulder": 38, "armLeft.elbow": 66, "armLeft.wrist": 20, "armLeft.hand": "open", "armRight.shoulder": 38, "armRight.elbow": 66, "armRight.wrist": 20, "armRight.hand": "open", "head.tilt": 10, "body.bob": -5 } },
+      { "t": 1300, "pose": { "armLeft.shoulder": 34, "armRight.shoulder": 34, "head.tilt": 8, "body.bob": -3 } }
+    ]
+  },
+  "peace": {
+    "duration": 1900,
+    "keyframes": [
+      { "t": 350, "ease": "back", "pose": { "armLeft.shoulder": 28, "armLeft.elbow": 118, "armLeft.wrist": -6, "armLeft.hand": "peace", "head.tilt": -8 } },
+      { "t": 900, "pose": { "armLeft.wrist": 10 } },
+      { "t": 1400, "pose": { "armLeft.wrist": -6 } }
+    ]
+  },
+  "ok": {
+    "duration": 1900,
+    "keyframes": [
+      { "t": 350, "ease": "back", "pose": { "armRight.shoulder": 28, "armRight.elbow": 118, "armRight.wrist": -6, "armRight.hand": "ok", "head.tilt": 7 } },
+      { "t": 1000, "pose": { "armRight.wrist": 6 } },
+      { "t": 1600, "pose": { "armRight.wrist": -4 } }
+    ]
+  },
+  "point": {
+    "duration": 1800,
+    "keyframes": [
+      { "t": 380, "ease": "back", "pose": { "armRight.shoulder": 84, "armRight.elbow": 8, "armRight.wrist": 0, "armRight.hand": "point", "face.lookX": 0.8, "head.tilt": 6, "body.lean": 3 } },
+      { "t": 800, "pose": { "armRight.shoulder": 90 } },
+      { "t": 1200, "pose": { "armRight.shoulder": 84 } }
+    ]
+  },
+  "hug": {
+    "duration": 2300,
+    "keyframes": [
+      { "t": 450, "ease": "ease", "pose": { "armLeft.shoulder": -28, "armLeft.elbow": -122, "armLeft.wrist": -10, "armLeft.hand": "open", "armRight.shoulder": -24, "armRight.elbow": -118, "armRight.wrist": -10, "armRight.hand": "open", "head.tilt": 8 } },
+      { "t": 1100, "ease": "ease", "pose": { "body.lean": 4, "head.tilt": 11 } },
+      { "t": 1700, "ease": "ease", "pose": { "body.lean": -4, "head.tilt": 6 } },
+      { "t": 2100, "ease": "ease", "pose": { "body.lean": 0, "head.tilt": 8 } }
+    ]
+  },
+  "dance": {
+    "duration": 2600,
+    "keyframes": [
+      { "t": 0, "pose": { "armLeft.hand": "fist", "armRight.hand": "fist" } },
+      { "t": 320, "ease": "ease", "pose": { "body.lean": 7, "body.bob": -8, "head.tilt": -10, "armLeft.shoulder": 70, "armLeft.elbow": 70, "armRight.shoulder": 22, "armRight.elbow": -40, "ears.left": -20, "ears.right": 20 } },
+      { "t": 640, "ease": "ease", "pose": { "body.lean": 0, "body.bob": 0, "head.tilt": 0 } },
+      { "t": 960, "ease": "ease", "pose": { "body.lean": -7, "body.bob": -8, "head.tilt": 10, "armLeft.shoulder": 22, "armLeft.elbow": -40, "armRight.shoulder": 70, "armRight.elbow": 70, "ears.left": 20, "ears.right": -20 } },
+      { "t": 1280, "ease": "ease", "pose": { "body.lean": 0, "body.bob": 0, "head.tilt": 0 } },
+      { "t": 1600, "ease": "ease", "pose": { "body.lean": 7, "body.bob": -8, "head.tilt": -10, "armLeft.shoulder": 70, "armLeft.elbow": 70, "armRight.shoulder": 22, "armRight.elbow": -40, "ears.left": -20, "ears.right": 20 } },
+      { "t": 1920, "ease": "ease", "pose": { "body.lean": 0, "body.bob": 0, "head.tilt": 0 } },
+      { "t": 2240, "ease": "ease", "pose": { "body.lean": -7, "body.bob": -8, "head.tilt": 10, "armLeft.shoulder": 22, "armLeft.elbow": -40, "armRight.shoulder": 70, "armRight.elbow": 70, "ears.left": 20, "ears.right": -20 } },
+      { "t": 2600, "ease": "ease", "pose": { "body.lean": 0, "body.bob": 0, "head.tilt": 0, "ears.left": 0, "ears.right": 0 } }
+    ]
+  },
+  "listen": {
+    "duration": 2000,
+    "keyframes": [
+      { "t": 400, "ease": "ease", "pose": { "armRight.shoulder": 96, "armRight.elbow": 104, "armRight.wrist": -20, "armRight.hand": "open", "head.tilt": -12, "ears.left": -26, "ears.right": -30, "face.lookX": 0.3 } },
+      { "t": 1600, "ease": "ease", "pose": { "head.tilt": -14 } }
+    ]
+  },
+  "ears_wiggle": {
+    "duration": 1500,
+    "keyframes": [
+      { "t": 180, "ease": "ease", "pose": { "ears.left": -22, "ears.right": 18 } },
+      { "t": 460, "ease": "ease", "pose": { "ears.left": 18, "ears.right": -22 } },
+      { "t": 740, "ease": "ease", "pose": { "ears.left": -22, "ears.right": 18 } },
+      { "t": 1020, "ease": "ease", "pose": { "ears.left": 18, "ears.right": -22 } },
+      { "t": 1300, "ease": "ease", "pose": { "ears.left": 0, "ears.right": 0 } }
+    ]
+  },
+  "ears_flap": {
+    "duration": 1100,
+    "keyframes": [
+      { "t": 140, "pose": { "ears.left": -24, "ears.right": -24 } },
+      { "t": 300, "pose": { "ears.left": 26, "ears.right": 26 } },
+      { "t": 460, "pose": { "ears.left": -24, "ears.right": -24 } },
+      { "t": 620, "pose": { "ears.left": 26, "ears.right": 26 } },
+      { "t": 780, "pose": { "ears.left": -24, "ears.right": -24 } },
+      { "t": 980, "ease": "ease", "pose": { "ears.left": 0, "ears.right": 0 } }
+    ]
+  },
+  "ears_perk": {
+    "duration": 1400,
+    "keyframes": [
+      { "t": 260, "ease": "back", "pose": { "ears.left": -32, "ears.right": -32, "antenna.bend": -6 } },
+      { "t": 1200, "pose": { "ears.left": -28, "ears.right": -28, "antenna.bend": 0 } }
+    ]
+  },
+  "ears_droop": {
+    "duration": 1600,
+    "keyframes": [
+      { "t": 500, "ease": "ease", "pose": { "ears.left": 58, "ears.right": 58 } },
+      { "t": 1400, "pose": { "ears.left": 54, "ears.right": 56 } }
+    ]
+  }
+}

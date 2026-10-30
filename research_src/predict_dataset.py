@@ -51,7 +51,19 @@ import calibrate_evaluate as ce  # noqa: E402  (shared manifest/splits/sha helpe
 DEFAULT_API_DIR = _THIS_DIR.parent / "API"
 
 # Keep in sync with API/server_openpose.py::startup() (device is a CLI option).
-SERVER_PREDICTOR_KWARGS = {"seq_len": 128, "input_layout": "openpose", "normalization": None}
+# These are the server DEFAULTS (no STGCN_* environment overrides); if the
+# server runs with e.g. STGCN_WINDOW_FRAMES set, mirror it here before
+# calibrating, otherwise calibration.json is fitted on different predictions.
+SERVER_PREDICTOR_KWARGS = {
+    "seq_len": 128,
+    "input_layout": "openpose",
+    "normalization": None,
+    "preprocess": True,
+    "resample": None,  # checkpoint config -> "nearest" (fine_tune.py)
+    "window_frames": 0,
+    "window_stride": 0,
+    "min_person_frames": 16,
+}
 RAW_TEMPERATURE = 1.0
 UNUSED_THRESHOLD = 0.5  # label_threshold is not used: only logits are kept
 
@@ -191,6 +203,8 @@ def predict_seq_like_server(predictor, pipeline, seq_xy, sample_id: str) -> Dict
         remove_kp=None,
         excel_removed_kp=None,
         expect_joints=None,
+        preprocess=predictor.preprocess,  # wide Excel has no confidences: cleaning without them
+        resample=predictor.resample,
     )
 
 

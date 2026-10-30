@@ -1037,6 +1037,29 @@ class PredictionSet:
     labels: np.ndarray
     logits: np.ndarray  # (n, 2) = [logit_typical, logit_asd]
     info: Dict[str, object] = field(default_factory=dict)
+    paths: List[str] = field(default_factory=list)  # one per row; "" if the CSV has no path column
+
+
+SCORE_LEVELS = ("subject", "sample")
+
+
+def aggregate_scores(
+    level: str, ps: "PredictionSet", p_sample: np.ndarray
+) -> Tuple[List[str], np.ndarray, np.ndarray, np.ndarray]:
+    """Decision scores at the chosen level -> (ids, labels, scores, n samples per id).
+
+    "subject": mean calibrated p_asd over a child's recordings (what the
+        original protocol reports).
+    "sample":  one score per recording. This is what the ML server actually
+        decides on (one uploaded video -> one risk level), so thresholds fitted
+        here apply to the deployed decision without a change of variance.
+    """
+    if level == "subject":
+        return aggregate_by_subject(ps.subject_ids, ps.labels, p_sample)
+    if level == "sample":
+        ids = [pth or f"{sid}#{i}" for i, (sid, pth) in enumerate(zip(ps.subject_ids, ps.paths))]
+        return ids, _as_1d_label(ps.labels), _as_1d_float(p_sample), np.ones(len(ids), dtype=np.int64)
+    raise ValueError(f"unknown score level {level!r} (expected one of {SCORE_LEVELS})")
 
 
 def predictions_meta_path(csv_path: Path) -> Path:
@@ -1080,6 +1103,7 @@ def load_predictions(csv_path: Path, split: str, all_rows: bool = False) -> Pred
     subject_ids: List[str] = []
     labels: List[int] = []
     logits: List[Tuple[float, float]] = []
+    paths: List[str] = []
     n_error = n_invalid = 0
     for i, r in enumerate(rows):
         if r.get("error"):
@@ -1097,6 +1121,7 @@ def load_predictions(csv_path: Path, split: str, all_rows: bool = False) -> Pred
         subject_ids.append(r["subject_id"])
         labels.append(parse_label(r["label"]))
         logits.append(z)
+        paths.append(r.get("path", ""))
     if n_error:
         _warn(f"skipped {n_error} row(s) with a prediction error in {csv_path.name}")
     if n_invalid:
@@ -1115,6 +1140,7 @@ def load_predictions(csv_path: Path, split: str, all_rows: bool = False) -> Pred
         labels=np.asarray(labels, dtype=np.int64),
         logits=np.asarray(logits, dtype=np.float64).reshape(-1, 2),
         info=info,
+        paths=paths,
     )
 
 
@@ -1132,10 +1158,16 @@ def run_calibrate(
     target_sensitivity: float = 0.9,
     high_risk_specificity: float = 0.95,
     verbose: bool = True,
+    score_level: str = "subject",
 ) -> Dict[str, object]:
-    """Fit T and thresholds on VALIDATION predictions -> calibration.json."""
+    """Fit T and thresholds on VALIDATION predictions -> calibration.json.
+
+    score_level "subject" (mean p per child) or "sample" (one recording =
+    one score, matching the server's per-video decision)."""
     if threshold_strategy not in ("youden", "sensitivity"):
         raise ValueError(f"unknown threshold strategy {threshold_strategy!r}")
+    if score_level not in SCORE_LEVELS:
+        raise ValueError(f"unknown score level {score_level!r} (expected one of {SCORE_LEVELS})")
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", EvaluationWarning)
         ps = load_predictions(Path(predictions), "val", all_rows=all_rows)
@@ -1165,10 +1197,12 @@ def run_calibrate(
         if temperature <= TEMPERATURE_BOUNDS[0] * 1.001 or temperature >= TEMPERATURE_BOUNDS[1] * 0.999:
             _warn(f"temperature {temperature:.4g} is at the search bound {TEMPERATURE_BOUNDS}")
         p_sample = calibrated_p_asd(ps.logits, temperature)
-        val_ids, y, p_subj, _ = aggregate_by_subject(ps.subject_ids, ps.labels, p_sample)
-        _check_both_classes(y, "threshold calibration on val subjects")
+        val_ids, y, p_subj, _ = aggregate_scores(score_level, ps, p_sample)
+        _check_both_classes(y, f"threshold calibration on val {score_level}s")
         if y.size < 10:
-            _warn(f"only {y.size} validation subjects: thresholds will be very noisy")
+            _warn(f"only {y.size} validation {score_level}s: thresholds will be very noisy")
+        if score_level == "sample":
+            _warn("sample-level thresholds: recordings of one child are correlated, so the val metrics are optimistic")
 
         if threshold_strategy == "youden":
             threshold = select_threshold_youden(y, p_subj)
@@ -1200,12 +1234,18 @@ def run_calibrate(
                 "threshold": f"{thr_method}_{suffix}",
                 "high_risk": f"specificity>={high_risk_specificity:g}_{suffix}",
             },
-            "aggregation": "subject_mean",
-            "val_subjects": list(val_ids),
+            "aggregation": "subject_mean" if score_level == "subject" else "sample",
+            "score_level": score_level,
+            "val_subjects": sorted(set(ps.subject_ids)),
+            "val_score_ids": list(val_ids),
             "val_metrics": val_metrics,
             "checkpoint_sha256_source": sha_source,
-            "decision_rule": "ASD flag if mean calibrated p_asd >= threshold; "
-            "tiers LOW < threshold <= MEDIUM < high_risk_threshold <= HIGH",
+            "decision_rule": (
+                "ASD flag if mean calibrated p_asd >= threshold; "
+                if score_level == "subject"
+                else "ASD flag if the recording's calibrated p_asd >= threshold; "
+            )
+            + "tiers LOW < threshold <= MEDIUM < high_risk_threshold <= HIGH",
             "temperature_fit": {
                 "objective": "sample-level NLL of softmax(logits / T)",
                 "bounds": list(TEMPERATURE_BOUNDS),
@@ -1238,7 +1278,7 @@ def _metrics_line(m: Mapping) -> str:
 
 def _print_calibration_summary(doc: Mapping) -> None:
     m, fit, data = doc["val_metrics"], doc["temperature_fit"], doc["data"]
-    print("Calibration (validation, subject-level)")
+    print(f"Calibration (validation, {doc.get('score_level', 'subject')}-level)")
     print(
         f"  rows used: {data['rows_used']} | {data['n_samples']} samples from {m['n_subjects']} subjects "
         f"(ASD {m['n_pos']} / Typical {m['n_neg']})"
@@ -1279,8 +1319,11 @@ def run_evaluate(
     seed: int = DEFAULT_SEED,
     checkpoint: Optional[Path] = None,
     verbose: bool = True,
+    score_level: Optional[str] = None,
 ) -> Dict[str, object]:
     """Apply a FROZEN calibration.json to TEST predictions.
+
+    score_level defaults to the level the calibration was fitted at.
 
     The test set must be evaluated ONCE, after every model, preprocessing,
     temperature and threshold choice has been frozen on train/val. Looking at
@@ -1289,6 +1332,9 @@ def run_evaluate(
     estimate and must be reported as such (or a fresh test set collected).
     """
     cal = load_calibration(Path(calibration))
+    level = str(score_level or cal.get("score_level") or "subject")
+    if level not in SCORE_LEVELS:
+        raise ValueError(f"unknown score level {level!r} (expected one of {SCORE_LEVELS})")
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", EvaluationWarning)
         ps = load_predictions(Path(predictions), "test", all_rows=all_rows)
@@ -1310,9 +1356,11 @@ def run_evaluate(
         threshold = float(cal["threshold"])
         high = float(cal["high_risk_threshold"])
         p_sample = calibrated_p_asd(ps.logits, temperature)
-        ids, y, p_subj, n_per = aggregate_by_subject(ps.subject_ids, ps.labels, p_sample)
+        ids, y, p_subj, n_per = aggregate_scores(level, ps, p_sample)
         if y.size < 10:
-            _warn(f"only {y.size} test subjects: confidence intervals will be very wide")
+            _warn(f"only {y.size} test {level}s: confidence intervals will be very wide")
+        if level == "sample":
+            _warn("sample-level evaluation: recordings of one child are correlated; bootstrap CIs are too narrow")
         metrics = binary_metrics(y, p_subj, threshold)
         cis = bootstrap_cis(y, p_subj, threshold, n_boot=n_bootstrap, seed=seed)
         sample_metrics = binary_metrics(ps.labels, p_sample, threshold, warn=False)
@@ -1328,7 +1376,8 @@ def run_evaluate(
             "temperature": temperature,
             "threshold": threshold,
             "high_risk_threshold": high,
-            "aggregation": "subject_mean",
+            "aggregation": "subject_mean" if level == "subject" else "sample",
+            "score_level": level,
             "n_subjects": int(y.size),
             "n_pos": int(y.sum()),
             "n_neg": int(y.size - y.sum()),
@@ -1372,7 +1421,7 @@ def run_evaluate(
 
 def _print_test_summary(doc: Mapping) -> None:
     m, ci = doc["metrics"], doc["ci_95"]
-    print("TEST evaluation (subject-level, evaluate ONCE)")
+    print(f"TEST evaluation ({doc.get('score_level', 'subject')}-level, evaluate ONCE)")
     print(
         f"  rows used: {doc['data']['rows_used']} | {doc['n_samples']} samples from {doc['n_subjects']} "
         f"subjects (ASD {doc['n_pos']} / Typical {doc['n_neg']})"
@@ -1438,6 +1487,13 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("--threshold-strategy", choices=["youden", "sensitivity"], default="youden")
     cp.add_argument("--target-sensitivity", type=float, default=0.9)
     cp.add_argument("--high-risk-specificity", type=float, default=0.95)
+    cp.add_argument(
+        "--score-level",
+        choices=list(SCORE_LEVELS),
+        default="subject",
+        help="subject: mean p per child (default); sample: one score per recording, "
+        "i.e. the per-video decision the ML server makes",
+    )
 
     ep = sub.add_parser("evaluate", help="apply calibration.json to TEST predictions, ONCE -> test_results.json")
     ep.add_argument("--predictions", type=Path, required=True)
@@ -1447,6 +1503,7 @@ def build_parser() -> argparse.ArgumentParser:
     ep.add_argument("--n-bootstrap", type=int, default=2000)
     ep.add_argument("--seed", type=int, default=DEFAULT_SEED)
     ep.add_argument("--checkpoint", type=Path, default=None, help="optional: verify sha256 against calibration.json")
+    ep.add_argument("--score-level", choices=list(SCORE_LEVELS), default=None, help="default: calibration.json's level")
     ep.add_argument(
         "--force",
         action="store_true",
@@ -1477,6 +1534,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 threshold_strategy=args.threshold_strategy,
                 target_sensitivity=args.target_sensitivity,
                 high_risk_specificity=args.high_risk_specificity,
+                score_level=args.score_level,
             )
         elif args.cmd == "evaluate":
             if args.output.exists() and not args.force:
@@ -1492,6 +1550,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 n_bootstrap=args.n_bootstrap,
                 seed=args.seed,
                 checkpoint=args.checkpoint,
+                score_level=args.score_level,
             )
     except LeakageError as e:
         print(f"ERROR (leakage): {e}", file=sys.stderr)

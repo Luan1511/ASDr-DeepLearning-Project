@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "created_at": "2026-10-27T09:45:55+00:00",
+  "checkpoint_sha256": "5344ba2ff91678a8e54b480916e2ea5aed7cc1c5c37883021356ae4f8b1b2e40",
+  "temperature": 0.44133419286697556,
+  "threshold": 0.22324698702226023,
+  "high_risk_threshold": 0.4541456672390128,
+  "high_risk_threshold_achieved": true,
+  "method": {
+    "temperature": "nll_val",
+    "threshold": "youden_j_val",
+    "high_risk": "specificity>=0.95_val"
+  },
+  "aggregation": "sample",
+  "score_level": "sample",
+  "val_subjects": [
+    "Autism/video_11",
+    "Autism/video_13",
+    "Autism/video_15",
+    "Autism/video_17",
+    "Autism/video_20",
+    "Autism/video_22",
+    "Autism/video_49",
+    "Autism/video_5",
+    "Autism/video_6",
+    "Autism/video_7",
+    "Typical/video_11",
+    "Typical/video_21",
+    "Typical/video_34",
+    "Typical/video_41",
+    "Typical/video_43",
+    "Typical/video_45",
+    "Typical/video_47",
+    "Typical/video_49",
+    "Typical/video_6",
+    "Typical/video_7"
+  ],
+  "val_score_ids": [
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_11/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_13/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_15/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_17/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_20/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_22/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_49/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_5/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_6/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Autism-video_7/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_11/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_21/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_34/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_41/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_43/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_45/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_47/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_49/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_6/keypoints_body25.json",
+    "/home/khmt01/Luan_workspace/asdr/ml/storage/asd_subjects/calib-Typical-video_7/keypoints_body25.json"
+  ],
+  "val_metrics": {
+    "auc": 0.99,
+    "sensitivity": 1.0,
+    "specificity": 0.9,
+    "ppv": 0.9090909090909091,
+    "npv": 1.0,
+    "f1": 0.9523809523809523,
+    "accuracy": 0.95,
+    "brier": 0.0720420851434366,
+    "ece": 0.14032671021077978,
+    "n_subjects": 20,
+    "n_pos": 10,
+    "n_neg": 10
+  },
+  "checkpoint_sha256_source": "--checkpoint",
+  "decision_rule": "ASD flag if the recording's calibrated p_asd >= threshold; tiers LOW < threshold <= MEDIUM < high_risk_threshold <= HIGH",
+  "temperature_fit": {
+    "objective": "sample-level NLL of softmax(logits / T)",
+    "bounds": [
+      0.05,
+      20.0
+    ],
+    "nll_t1": 0.24990055024690333,
+    "nll_calibrated": 0.20806206254101048
+  },
+  "val_metrics_sample_level": {
+    "auc": 0.99,
+    "sensitivity": 1.0,
+    "specificity": 0.9,
+    "ppv": 0.9090909090909091,
+    "npv": 1.0,
+    "f1": 0.9523809523809523,
+    "accuracy": 0.95,
+    "brier": 0.0720420851434366,
+    "ece": 0.14032671021077978,
+    "n_pos": 10,
+    "n_neg": 10,
+    "n_samples": 20
+  },
+  "data": {
+    "predictions_csv": "/home/khmt01/Luan_workspace/asdr/ml/calibration/preds.csv",
+    "rows_used": "split==val",
+    "n_samples": 20,
+    "n_skipped_error": 0,
+    "n_skipped_invalid": 0
+  },
+  "warnings": [
+    "sample-level thresholds: recordings of one child are correlated, so the val metrics are optimistic"
+  ]
+}

@@ -92,14 +92,25 @@ lớp, confusion matrix, phân bố mức rủi ro, T/ngưỡng, seed split.
 - **Kinect ≠ OpenPose**: model gốc học trên Kinect v2 2D; khi chạy thật dùng OpenPose BODY_25 map sang thứ tự Kinect
   (SpineShoulder = Neck, SpineMid = trung bình Neck–MidHip, khớp tay = 0). Vì lệch miền nên phải calibrate trên dự
   đoán OpenPose với đúng tiền xử lý deploy.
-- **Tiền xử lý fine-tune ≠ deploy**: `fine_tune.py` resample nearest *trước* chuẩn hóa, server nội suy tuyến tính
-  *sau* chuẩn hóa. Metric trong `fine_tune.py` (theo file, argmax) chỉ dùng nội bộ; việc chọn epoch vẫn chịu lệch này.
+- **Tiền xử lý deploy đã khớp fine-tune**: server resample nearest *trước* chuẩn hóa rồi mới tính đặc trưng động học,
+  đúng thứ tự `fine_tune.py` (`API/openpose_excel_stgcn_pipeline.py::_build_model_input`). Khác biệt còn lại so với
+  lúc fine-tune là bước làm sạch khớp (`API/services/preprocessing.py`: lọc spike, nội suy gap ≤ 5 frame, median 3
+  frame, chạy đúng một lần với confidence OpenPose) và việc chọn người theo track thay vì theo từng frame. Các bước
+  này chỉnh được bằng biến môi trường của server (`STGCN_PREPROCESS`, `STGCN_RESAMPLE`, `STGCN_WINDOW_FRAMES`,
+  `STGCN_WINDOW_STRIDE`, `STGCN_MIN_PERSON_FRAMES`); `predict_dataset.py` dùng giá trị mặc định (`SERVER_PREDICTOR_KWARGS`),
+  nên **đổi biến môi trường nào thì sửa ở đó rồi calibrate lại**. Muốn so sánh có/không làm sạch: chạy
+  `predict_dataset.py` hai lần với `preprocess` True/False rồi so AUC trên val.
+- **Cửa sổ trượt** (`STGCN_WINDOW_FRAMES > 0`): clip dài được cắt thành các cửa sổ cố định, logit trung bình rồi mới
+  softmax. Model fine-tune trên cả clip (có augmentation cắt đoạn), nên bật tùy chọn này **chỉ sau khi** đã kiểm tra
+  trên val bằng `predict_dataset.py`; mặc định tắt.
 - **Dữ liệu nhỏ** (~50 subject/lớp → khoảng 10 subject/lớp cho val và test): CI rất rộng, ngưỡng dao động mạnh
   (1 subject ≈ 10 điểm % độ nhạy). Luôn báo cáo kèm CI.
 - **Đổi checkpoint là phải calibrate lại** (sha256 đổi, server sẽ bỏ qua `calibration.json` cũ), kể cả khi chỉ
   fine-tune lại.
-- **Điểm subject vs 1 video**: ngưỡng chọn trên điểm trung bình theo subject; khi deploy mỗi lượt sàng lọc thường chỉ
-  có 1 video (p phân tán hơn). Xem thêm `sample_level_metrics` trong `test_results.json`.
+- **Điểm subject vs 1 video**: mặc định ngưỡng chọn trên điểm trung bình theo subject; khi deploy mỗi lượt sàng lọc
+  thường chỉ có 1 video (p phân tán hơn). Dùng `calibrate --score-level sample` để chọn ngưỡng trên từng video (đúng
+  quyết định của server); `evaluate` tự theo mức ghi trong `calibration.json`. Ở mức video các bản ghi của cùng một
+  trẻ tương quan nhau nên metric val lạc quan và CI bootstrap hẹp hơn thật; vẫn báo cáo số theo subject kèm theo.
 - **Video trùng**: cùng một video upload hai lần (ví dụ `API/storage/asd_subjects/36` và `136`, hai thư mục UUID)
   phải dùng chung `subject_id`. `predict_dataset.py` cảnh báo khi các subject khác nhau có dự đoán giống hệt nhau.
 - **Checkpoint đang deploy** (`finetuned_best_model.pth`) được chọn theo accuracy trên test (rò rỉ). Ngoài ra, bản

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, ClipboardList } from 'lucide-react'
 import { Card } from '../Card'
+import { InfoTooltip } from '../Tooltip'
 import { AgeGateNotice } from '../questionnaire/AgeGateNotice'
 import { CopyrightLine } from '../questionnaire/CopyrightLine'
 import { PendingFollowUpBanner } from '../questionnaire/PendingFollowUpBanner'
@@ -118,7 +119,14 @@ function SectionBody({
 
   return (
     <div className="space-y-4">
-      <div className="text-sm font-extrabold text-duo-ink">{QUESTIONNAIRE_TITLE}</div>
+      <div className="flex items-center gap-1.5 text-sm font-extrabold text-duo-ink">
+        {QUESTIONNAIRE_TITLE}
+        <InfoTooltip
+          content={`${QUESTIONNAIRE_DASHBOARD_NOTE} Kết quả bảng hỏi chỉ là sàng lọc tham khảo.`}
+          widthClass="w-80"
+          position="top"
+        />
+      </div>
 
       {!enabled ? (
         <div className="rounded-2xl bg-duo-mist px-4 py-3 text-sm font-semibold text-duo-ink">{QUESTIONNAIRE_DISABLED_MESSAGE}</div>
@@ -178,7 +186,7 @@ function SectionBody({
         </ul>
       )}
 
-      <p className="text-xs font-bold text-duo-mute">{QUESTIONNAIRE_DASHBOARD_NOTE} Kết quả bảng hỏi chỉ là sàng lọc tham khảo.</p>
+
       <CopyrightLine officialFormUrl={links.officialFormUrl} />
     </div>
   )

@@ -371,6 +371,35 @@ class TestEndToEnd(unittest.TestCase):
             self.assertGreaterEqual(sens["val_metrics"]["sensitivity"], 0.9)
             self.assertEqual(sens["method"]["threshold"], "sensitivity>=0.9_val")
 
+    def test_sample_level_calibration_matches_server_decision(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rows = _synthetic_prediction_rows(t_true=3.0)
+            _write_predictions(tmp / "preds.csv", rows)
+            n_val_rows = sum(1 for r in rows if r["split"] == "val")
+            n_test_rows = sum(1 for r in rows if r["split"] == "test")
+            cal = ce.run_calibrate(tmp / "preds.csv", tmp / "calibration.json", score_level="sample", verbose=False)
+            self.assertEqual(cal["score_level"], "sample")
+            self.assertEqual(cal["aggregation"], "sample")
+            self.assertEqual(cal["val_metrics"]["n_subjects"], n_val_rows)  # one score per recording
+            self.assertEqual(len(cal["val_score_ids"]), n_val_rows)
+            # Leakage check still works on SUBJECT ids, not recording paths.
+            val_subjects = {r["subject_id"] for r in rows if r["split"] == "val"}
+            self.assertEqual(set(cal["val_subjects"]), val_subjects)
+            self.assertTrue(any("sample-level" in w for w in cal["warnings"]))
+            # Temperature does not depend on the level (fitted on sample NLL).
+            subj = ce.run_calibrate(tmp / "preds.csv", None, verbose=False)
+            self.assertAlmostEqual(subj["temperature"], cal["temperature"], places=9)
+            res = ce.run_evaluate(tmp / "preds.csv", tmp / "calibration.json", None, n_bootstrap=50, verbose=False)
+            self.assertEqual(res["score_level"], "sample")  # inherited from calibration.json
+            self.assertEqual(res["n_subjects"], n_test_rows)
+            self.assertTrue(all(e["n_samples"] == 1 for e in res["per_subject"]))
+            res2 = ce.run_evaluate(tmp / "preds.csv", tmp / "calibration.json", None, n_bootstrap=50,
+                                   verbose=False, score_level="subject")
+            self.assertLess(res2["n_subjects"], n_test_rows)
+            with self.assertRaises(ValueError):
+                ce.run_calibrate(tmp / "preds.csv", None, score_level="video", verbose=False)
+
 
 if __name__ == "__main__":
     unittest.main()

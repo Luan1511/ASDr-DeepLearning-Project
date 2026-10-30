@@ -6,7 +6,7 @@ export function Card({
   children,
   className,
 }: {
-  title?: string
+  title?: React.ReactNode
   right?: React.ReactNode
   children: React.ReactNode
   className?: string
