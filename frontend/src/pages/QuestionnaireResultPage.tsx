@@ -295,7 +295,9 @@ function FollowUpOptions({
           {FOLLOW_UP_TITLE}
         </h2>
       </div>
-      <p className="text-sm font-semibold leading-relaxed text-duo-ink">{FOLLOW_UP_WHY}</p>
+      <p className="text-sm font-semibold leading-relaxed text-duo-ink">{f.needsReview
+        ? 'Mang bản tóm tắt tới buổi trao đổi với nhân viên y tế. Sau khi được xác nhận, bạn có thể lưu kết quả hỏi thêm tại đây.'
+        : FOLLOW_UP_WHY}</p>
 
       {inApp && (
         <div className="space-y-3 rounded-2xl bg-duo-mist px-4 py-3">
@@ -303,9 +305,10 @@ function FollowUpOptions({
             {FOLLOW_UP_DURATION} {FOLLOW_UP_RESUME}
           </p>
           {f.inAppStarted && f.itemsTotal > 0 && (
-            <p className="text-sm font-bold text-duo-ink">
-              Đã làm {f.itemsDone}/{f.itemsTotal} mục.
-            </p>
+            <div className="space-y-1.5">
+              <p className="text-sm font-bold text-duo-ink">Đã làm {f.itemsDone}/{f.itemsTotal} mục</p>
+              <progress aria-label="Tiến độ phần hỏi thêm" value={f.itemsDone} max={f.itemsTotal} className="h-2 w-full accent-green-700" />
+            </div>
           )}
           <Link to={followUpPath(response.id)} className={`btn-duo ${Q_NAV_BUTTON}`}>
             {followUpActionLabel(f.inAppStarted)}

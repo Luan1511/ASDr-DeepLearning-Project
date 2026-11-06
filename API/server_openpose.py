@@ -421,7 +421,21 @@ def resolve_decision_params(threshold: Optional[float], temperature: Optional[fl
     return {"threshold": use_threshold, "temperature": use_temperature, "high_risk_threshold": high, "calibrated": calibrated}
 
 
-def predict_frames(subject_id: str, frames: list[dict], threshold: Optional[float], temperature: Optional[float]) -> dict:
+def _video_fps(video_info: Optional[dict]) -> Optional[float]:
+    fps = (video_info or {}).get("fps")
+    try:
+        return float(fps) if fps else None
+    except (TypeError, ValueError):
+        return None
+
+
+def predict_frames(
+    subject_id: str,
+    frames: list[dict],
+    threshold: Optional[float],
+    temperature: Optional[float],
+    fps: Optional[float] = None,
+) -> dict:
     if stgcn_predictor is None:
         raise HTTPException(
             status_code=500,
@@ -435,6 +449,7 @@ def predict_frames(subject_id: str, frames: list[dict], threshold: Optional[floa
             sample_id=subject_id,
             threshold=params["threshold"],
             temperature=params["temperature"],
+            fps=fps,
         )
     except ValueError as exc:
         # e.g. no frame with a complete BODY_25 skeleton
@@ -472,17 +487,18 @@ def run_prediction_for_subject(
             detail=f"No frames found in keypoints for subject: {subject_id}",
         )
 
+    prediction_path = subject_dir / "prediction.json"
+    metadata_path = subject_dir / "metadata.json"
+    stored_video = load_json(metadata_path).get("video") if metadata_path.exists() else None
+
     with gpu_slots:
-        prediction = predict_frames(subject_id, frames, threshold, temperature)
+        prediction = predict_frames(subject_id, frames, threshold, temperature, fps=_video_fps(stored_video))
 
     prediction_payload = {
         "subject_id": subject_id,
         "created_at": datetime.now().isoformat(),
         "prediction": prediction,
     }
-
-    prediction_path = subject_dir / "prediction.json"
-    metadata_path = subject_dir / "metadata.json"
 
     save_json(prediction_path, prediction_payload)
 
@@ -661,7 +677,7 @@ def pipeline_asd(
         frames, video_info, retention = extract_keypoints(video, subject_dir, subject_id)
 
         with gpu_slots:
-            prediction = predict_frames(subject_id, frames, threshold, temperature)
+            prediction = predict_frames(subject_id, frames, threshold, temperature, fps=_video_fps(video_info))
 
         prediction_payload = {
             "subject_id": subject_id,

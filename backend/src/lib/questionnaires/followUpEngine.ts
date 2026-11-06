@@ -261,6 +261,7 @@ export type FollowUpItemRecord = { path: Step[]; score?: Score; needsReview?: bo
 export type FollowUpAnswers = {
   engine: typeof STRUCTURE_VERSION
   structureHash: string
+  contentVersion?: string
   /** Stage-1 items that scored 1, ascending: the items to go through. */
   order: number[]
   /** Keyed by item number; `score`/`needsReview` are written for the audit trail once the item is done. */
@@ -428,7 +429,9 @@ export function parseFollowUpAnswers(raw: unknown, failedItems: readonly number[
     if (!Array.isArray(path) || !path.every(isStepLike)) return null
     items[key] = { path: path.map((s) => ({ ...s })) }
   }
-  const answers: FollowUpAnswers = { engine: STRUCTURE_VERSION, structureHash: structureHash(), order: expected, items }
+  const answers: FollowUpAnswers = { engine: STRUCTURE_VERSION, structureHash: structureHash(), order: expected, items,
+    ...(typeof r.contentVersion === 'string' ? { contentVersion: r.contentVersion } : {}),
+  }
   try {
     return withDerived(answers)
   } catch (error) {

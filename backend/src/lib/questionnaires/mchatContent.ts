@@ -11,6 +11,7 @@
  * Nothing in this module logs or returns the text except getReadyContent()
  * and getStage1Content(); validation errors name key paths only.
  */
+import { createHash } from 'node:crypto'
 import fs from 'fs'
 import path from 'path'
 import {
@@ -340,9 +341,10 @@ export function getStage1Content(absPath: string): McHatContentFile | null {
   return entry.status.stage1Ready ? entry.content : null
 }
 
-/** Value stored on an IN_APP response: "<contentVersion>@<structureHash>". */
+/** Stable identifier for the exact validated content shown to the parent. */
 export function storedContentVersion(content: McHatContentFile): string {
-  return `${content.contentVersion}@${structureHash()}`
+  const digest = createHash('sha256').update(JSON.stringify(content)).digest('hex').slice(0, 24)
+  return `${content.contentVersion}@${structureHash()}@${digest}`
 }
 
 /** Test helper: forget the cached file. */

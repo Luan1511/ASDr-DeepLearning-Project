@@ -1,0 +1,6552 @@
+{
+  "metadata": {
+    "created_at": "2026-10-30T22:10:06.514503",
+    "source_dataset": "Datas/Kinect25_ASD/Kinect25_ASD_NoVideos",
+    "age_filter": "ge5",
+    "seed": 42,
+    "train_ratio": 0.7,
+    "val_ratio": 0.15,
+    "test_ratio": 0.15,
+    "dropped_duplicates": [
+      "ASD_18",
+      "ASD_34",
+      "ASD_40",
+      "Typical_7",
+      "Typical_14",
+      "Typical_16",
+      "Typical_20",
+      "Typical_23",
+      "Typical_26",
+      "Typical_28",
+      "Typical_29",
+      "Typical_40"
+    ],
+    "dropped_broken": [
+      "ASD_8"
+    ],
+    "demographics": {
+      "train": {
+        "n_subjects": 56,
+        "n_samples": 448,
+        "asd_subjects": 32,
+        "asd_samples": 256,
+        "typical_subjects": 24,
+        "typical_samples": 192,
+        "asd_age_mean": 8.78,
+        "typical_age_mean": 8.33
+      },
+      "val": {
+        "n_subjects": 12,
+        "n_samples": 96,
+        "asd_subjects": 7,
+        "asd_samples": 56,
+        "typical_subjects": 5,
+        "typical_samples": 40,
+        "asd_age_mean": 7.57,
+        "typical_age_mean": 6.6
+      },
+      "test": {
+        "n_subjects": 12,
+        "n_samples": 96,
+        "asd_subjects": 7,
+        "asd_samples": 56,
+        "typical_subjects": 5,
+        "typical_samples": 40,
+        "asd_age_mean": 8.71,
+        "typical_age_mean": 7.2
+      }
+    }
+  },
+  "subjects": {
+    "train": [
+      "ASD_1",
+      "ASD_11",
+      "ASD_12",
+      "ASD_13",
+      "ASD_14",
+      "ASD_15",
+      "ASD_19",
+      "ASD_21",
+      "ASD_22",
+      "ASD_23",
+      "ASD_24",
+      "ASD_25",
+      "ASD_26",
+      "ASD_27",
+      "ASD_28",
+      "ASD_29",
+      "ASD_31",
+      "ASD_32",
+      "ASD_33",
+      "ASD_35",
+      "ASD_36",
+      "ASD_37",
+      "ASD_39",
+      "ASD_4",
+      "ASD_42",
+      "ASD_43",
+      "ASD_44",
+      "ASD_46",
+      "ASD_47",
+      "ASD_49",
+      "ASD_5",
+      "ASD_50",
+      "Typical_1",
+      "Typical_11",
+      "Typical_12",
+      "Typical_15",
+      "Typical_17",
+      "Typical_18",
+      "Typical_24",
+      "Typical_25",
+      "Typical_3",
+      "Typical_30",
+      "Typical_31",
+      "Typical_33",
+      "Typical_34",
+      "Typical_35",
+      "Typical_37",
+      "Typical_41",
+      "Typical_42",
+      "Typical_43",
+      "Typical_45",
+      "Typical_46",
+      "Typical_48",
+      "Typical_49",
+      "Typical_8",
+      "Typical_9"
+    ],
+    "val": [
+      "ASD_3",
+      "ASD_30",
+      "ASD_38",
+      "ASD_41",
+      "ASD_48",
+      "ASD_6",
+      "ASD_7",
+      "Typical_36",
+      "Typical_39",
+      "Typical_4",
+      "Typical_44",
+      "Typical_6"
+    ],
+    "test": [
+      "ASD_10",
+      "ASD_16",
+      "ASD_17",
+      "ASD_2",
+      "ASD_20",
+      "ASD_45",
+      "ASD_9",
+      "Typical_10",
+      "Typical_2",
+      "Typical_32",
+      "Typical_47",
+      "Typical_50"
+    ]
+  },
+  "subject_info": {
+    "ASD_1": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 1,
+      "sex": "F",
+      "age": 13.0,
+      "height_m": 1.344999998807907
+    },
+    "ASD_2": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 2,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.1500000432133677
+    },
+    "ASD_3": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 3,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.0499999886378646
+    },
+    "ASD_4": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 4,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.1500000432133677
+    },
+    "ASD_5": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 5,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.2500000298023224
+    },
+    "ASD_6": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 6,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2200000323355198
+    },
+    "ASD_7": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 7,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2300000190734863
+    },
+    "ASD_9": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 9,
+      "sex": "M",
+      "age": 11.0,
+      "height_m": 1.2400000095367432
+    },
+    "ASD_10": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 10,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.11999998614192
+    },
+    "ASD_11": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 11,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2550000101327896
+    },
+    "ASD_12": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 12,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.2199999690055847
+    },
+    "ASD_13": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 13,
+      "sex": "F",
+      "age": 10.0,
+      "height_m": 1.1999999955296516
+    },
+    "ASD_14": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 14,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 1.1299999728798866
+    },
+    "ASD_15": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 15,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.1650000140070915
+    },
+    "ASD_16": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 16,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 0.9799999743700027
+    },
+    "ASD_17": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 17,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2499999701976776
+    },
+    "ASD_19": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 19,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.220000021159649
+    },
+    "ASD_20": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 20,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.2400000095367432
+    },
+    "ASD_21": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 21,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.1800000071525574
+    },
+    "ASD_22": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 22,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2000000178813934
+    },
+    "ASD_23": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 23,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2400000393390656
+    },
+    "ASD_24": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 24,
+      "sex": "F",
+      "age": 9.0,
+      "height_m": 1.2500000298023224
+    },
+    "ASD_25": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 25,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2599999904632568
+    },
+    "ASD_26": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 26,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.2300000190734863
+    },
+    "ASD_27": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 27,
+      "sex": "F",
+      "age": 9.0,
+      "height_m": 1.1800000071525574
+    },
+    "ASD_28": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 28,
+      "sex": "M",
+      "age": 13.0,
+      "height_m": 1.209999993443489
+    },
+    "ASD_29": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 29,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.0099999606609344
+    },
+    "ASD_30": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 30,
+      "sex": "F",
+      "age": 8.0,
+      "height_m": 1.409999966621399
+    },
+    "ASD_31": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 31,
+      "sex": "M",
+      "age": 13.0,
+      "height_m": 1.2200000137090683
+    },
+    "ASD_32": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 32,
+      "sex": "M",
+      "age": 15.0,
+      "height_m": 1.4449999630451202
+    },
+    "ASD_33": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 33,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 0.9899999722838402
+    },
+    "ASD_35": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 35,
+      "sex": "M",
+      "age": 12.0,
+      "height_m": 1.2300000190734863
+    },
+    "ASD_36": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 36,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.2300000190734863
+    },
+    "ASD_37": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 37,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.2449999898672104
+    },
+    "ASD_38": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 38,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 1.229999989271164
+    },
+    "ASD_39": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 39,
+      "sex": "F",
+      "age": 5.0,
+      "height_m": 1.25
+    },
+    "ASD_41": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 41,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.1700000297278166
+    },
+    "ASD_42": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 42,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.2699999809265137
+    },
+    "ASD_43": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 43,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.2100000008940697
+    },
+    "ASD_44": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 44,
+      "sex": "F",
+      "age": 10.0,
+      "height_m": 1.2599999904632568
+    },
+    "ASD_45": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 45,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.2450000047683716
+    },
+    "ASD_46": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 46,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.209999993443489
+    },
+    "ASD_47": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 47,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.189999982714653
+    },
+    "ASD_48": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 48,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.2300000041723251
+    },
+    "ASD_49": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 49,
+      "sex": "F",
+      "age": 6.0,
+      "height_m": 1.229999989271164
+    },
+    "ASD_50": {
+      "label_name": "ASD",
+      "label": 1,
+      "raw_id": 50,
+      "sex": "M",
+      "age": 8.0,
+      "height_m": 1.2200000286102295
+    },
+    "Typical_1": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 1,
+      "sex": "F",
+      "age": 10.0,
+      "height_m": 1.2300000190734863
+    },
+    "Typical_2": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 2,
+      "sex": "F",
+      "age": 7.0,
+      "height_m": 1.090000007301569
+    },
+    "Typical_3": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 3,
+      "sex": "M",
+      "age": 11.0,
+      "height_m": 1.089999996125698
+    },
+    "Typical_4": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 4,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 0.9699999690055848
+    },
+    "Typical_6": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 6,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.200000018812716
+    },
+    "Typical_8": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 8,
+      "sex": "F",
+      "age": 6.0,
+      "height_m": 1.0300000309944153
+    },
+    "Typical_9": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 9,
+      "sex": "M",
+      "age": 11.0,
+      "height_m": 1.1700000390410423
+    },
+    "Typical_10": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 10,
+      "sex": "F",
+      "age": 5.0,
+      "height_m": 0.9100000262260436
+    },
+    "Typical_11": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 11,
+      "sex": "F",
+      "age": 7.0,
+      "height_m": 1.0850000083446505
+    },
+    "Typical_12": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 12,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 0.9549999833106996
+    },
+    "Typical_15": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 15,
+      "sex": "F",
+      "age": 5.0,
+      "height_m": 0.9299999549984932
+    },
+    "Typical_17": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 17,
+      "sex": "F",
+      "age": 5.0,
+      "height_m": 0.960000053048134
+    },
+    "Typical_18": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 18,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 1.040000032633543
+    },
+    "Typical_24": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 24,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.0500000528991222
+    },
+    "Typical_25": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 25,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.0000000149011612
+    },
+    "Typical_30": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 30,
+      "sex": "F",
+      "age": 11.0,
+      "height_m": 1.155000022612512
+    },
+    "Typical_31": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 31,
+      "sex": "M",
+      "age": 11.0,
+      "height_m": 1.185000028461218
+    },
+    "Typical_32": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 32,
+      "sex": "M",
+      "age": 7.0,
+      "height_m": 1.0999999782070518
+    },
+    "Typical_33": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 33,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.200000025331974
+    },
+    "Typical_34": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 34,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 0.980000041425228
+    },
+    "Typical_35": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 35,
+      "sex": "M",
+      "age": 5.0,
+      "height_m": 0.9300000369548798
+    },
+    "Typical_36": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 36,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.0300000021234157
+    },
+    "Typical_37": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 37,
+      "sex": "M",
+      "age": 10.0,
+      "height_m": 1.0799999423325062
+    },
+    "Typical_39": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 39,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 0.949999950826168
+    },
+    "Typical_41": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 41,
+      "sex": "F",
+      "age": 6.0,
+      "height_m": 0.9699999541044236
+    },
+    "Typical_42": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 42,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 0.9999999478459358
+    },
+    "Typical_43": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 43,
+      "sex": "M",
+      "age": 9.0,
+      "height_m": 1.110000042244792
+    },
+    "Typical_44": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 44,
+      "sex": "F",
+      "age": 6.0,
+      "height_m": 0.910000056028366
+    },
+    "Typical_45": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 45,
+      "sex": "F",
+      "age": 9.0,
+      "height_m": 1.1300000324845314
+    },
+    "Typical_46": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 46,
+      "sex": "M",
+      "age": 14.0,
+      "height_m": 1.2100000232458117
+    },
+    "Typical_47": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 47,
+      "sex": "M",
+      "age": 11.0,
+      "height_m": 1.25
+    },
+    "Typical_48": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 48,
+      "sex": "M",
+      "age": 13.0,
+      "height_m": 1.2800000458955765
+    },
+    "Typical_49": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 49,
+      "sex": "M",
+      "age": 12.0,
+      "height_m": 1.1899999976158142
+    },
+    "Typical_50": {
+      "label_name": "Typical",
+      "label": 0,
+      "raw_id": 50,
+      "sex": "M",
+      "age": 6.0,
+      "height_m": 1.0500000528991222
+    }
+  },
+  "samples": [
+    {
+      "path": "Autism/children with ASD/1/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/video/8.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/1/1.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/2/2.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/3/3.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/4/4.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/5/5.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/6/6.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/1/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/1/augmentation/7/7.xlsx",
+      "subject_id": "ASD_1",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/video/8.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/1/1.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/2/2.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/3/3.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/4/4.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/5/5.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/6/6.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/11/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/11/augmentation/7/7.xlsx",
+      "subject_id": "ASD_11",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/video/8.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/1/1.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/2/2.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/3/3.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/4/4.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/5/5.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/6/6.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/12/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/12/augmentation/7/7.xlsx",
+      "subject_id": "ASD_12",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/video/8.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/1/1.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/2/2.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/3/3.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/4/4.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/5/5.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/6/6.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/13/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/13/augmentation/7/7.xlsx",
+      "subject_id": "ASD_13",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/video/8.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/1/1.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/2/2.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/3/3.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/4/4.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/5/5.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/6/6.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/14/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/14/augmentation/7/7.xlsx",
+      "subject_id": "ASD_14",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/video/8.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/1/1.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/2/2.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/3/3.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/4/4.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/5/5.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/6/6.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/15/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/15/augmentation/7/7.xlsx",
+      "subject_id": "ASD_15",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/video/8.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/1/1.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/2/2.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/3/3.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/4/4.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/5/5.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/6/6.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/19/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/19/augmentation/7/7.xlsx",
+      "subject_id": "ASD_19",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/video/8.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/1/1.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/2/2.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/3/3.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/4/4.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/5/5.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/6/6.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/21/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/21/augmentation/7/7.xlsx",
+      "subject_id": "ASD_21",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/video/8.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/1/1.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/2/2.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/3/3.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/4/4.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/5/5.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/6/6.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/22/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/22/augmentation/7/7.xlsx",
+      "subject_id": "ASD_22",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/video/8.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/1/1.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/2/2.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/3/3.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/4/4.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/5/5.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/6/6.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/23/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/23/augmentation/7/7.xlsx",
+      "subject_id": "ASD_23",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/video/8.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/1/1.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/2/2.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/3/3.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/4/4.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/5/5.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/6/6.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/24/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/24/augmentation/7/7.xlsx",
+      "subject_id": "ASD_24",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/video/8.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/1/1.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/2/2.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/3/3.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/4/4.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/5/5.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/6/6.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/25/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/25/augmentation/7/7.xlsx",
+      "subject_id": "ASD_25",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/video/8.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/1/1.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/2/2.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/3/3.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/4/4.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/5/5.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/6/6.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/26/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/26/augmentation/7/7.xlsx",
+      "subject_id": "ASD_26",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/video/8.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/1/1.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/2/2.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/3/3.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/4/4.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/5/5.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/6/6.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/27/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/27/augmentation/7/7.xlsx",
+      "subject_id": "ASD_27",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/video/8.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/1/1.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/2/2.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/3/3.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/4/4.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/5/5.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/6/6.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/28/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/28/augmentation/7/7.xlsx",
+      "subject_id": "ASD_28",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/video/8.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/1/1.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/2/2.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/3/3.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/4/4.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/5/5.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/6/6.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/29/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/29/augmentation/7/7.xlsx",
+      "subject_id": "ASD_29",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/video/8.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/1/1.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/2/2.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/3/3.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/4/4.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/5/5.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/6/6.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/31/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/31/augmentation/7/7.xlsx",
+      "subject_id": "ASD_31",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/video/8.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/1/1.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/2/2.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/3/3.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/4/4.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/5/5.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/6/6.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/32/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/32/augmentation/7/7.xlsx",
+      "subject_id": "ASD_32",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/video/8.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/1/1.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/2/2.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/3/3.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/4/4.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/5/5.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/6/6.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/33/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/33/augmentation/7/7.xlsx",
+      "subject_id": "ASD_33",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/video/8.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/1/1.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/2/2.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/3/3.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/4/4.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/5/5.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/6/6.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/35/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/35/augmentation/7/7.xlsx",
+      "subject_id": "ASD_35",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/video/8.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/1/1.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/2/2.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/3/3.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/4/4.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/5/5.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/6/6.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/36/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/36/augmentation/7/7.xlsx",
+      "subject_id": "ASD_36",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/video/8.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/1/1.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/2/2.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/3/3.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/4/4.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/5/5.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/6/6.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/37/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/37/augmentation/7/7.xlsx",
+      "subject_id": "ASD_37",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/video/8.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/1/1.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/2/2.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/3/3.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/4/4.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/5/5.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/6/6.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/39/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/39/augmentation/7/7.xlsx",
+      "subject_id": "ASD_39",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/video/8.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/1/1.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/2/2.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/3/3.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/4/4.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/5/5.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/6/6.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/4/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/4/augmentation/7/7.xlsx",
+      "subject_id": "ASD_4",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/video/8.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/1/1.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/2/2.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/3/3.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/4/4.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/5/5.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/6/6.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/42/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/42/augmentation/7/7.xlsx",
+      "subject_id": "ASD_42",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/video/8.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/1/1.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/2/2.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/3/3.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/4/4.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/5/5.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/6/6.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/43/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/43/augmentation/7/7.xlsx",
+      "subject_id": "ASD_43",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/video/8.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/1/1.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/2/2.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/3/3.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/4/4.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/5/5.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/6/6.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/44/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/44/augmentation/7/7.xlsx",
+      "subject_id": "ASD_44",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/video/8.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/1/1.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/2/2.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/3/3.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/4/4.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/5/5.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/6/6.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/46/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/46/augmentation/7/7.xlsx",
+      "subject_id": "ASD_46",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/video/8.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/1/1.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/2/2.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/3/3.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/4/4.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/5/5.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/6/6.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/47/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/47/augmentation/7/7.xlsx",
+      "subject_id": "ASD_47",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/video/8.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/1/1.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/2/2.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/3/3.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/4/4.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/5/5.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/6/6.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/49/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/49/augmentation/7/7.xlsx",
+      "subject_id": "ASD_49",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/video/8.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/1/1.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/2/2.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/3/3.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/4/4.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/5/5.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/6/6.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/5/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/5/augmentation/7/7.xlsx",
+      "subject_id": "ASD_5",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/video/8.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/1/1.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/2/2.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/3/3.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/4/4.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/5/5.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/6/6.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/50/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/50/augmentation/7/7.xlsx",
+      "subject_id": "ASD_50",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/video/8_2d.xlsx",
+      "path_3d": "Typical/1/video/8.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/1/1.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/2/2.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/3/3.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/4/4.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/5/5.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/6/6.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/1/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/1/augmentation/7/7.xlsx",
+      "subject_id": "Typical_1",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/video/8_2d.xlsx",
+      "path_3d": "Typical/11/video/8.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/1/1.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/2/2.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/3/3.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/4/4.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/5/5.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/6/6.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/11/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/11/augmentation/7/7.xlsx",
+      "subject_id": "Typical_11",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/video/8_2d.xlsx",
+      "path_3d": "Typical/12/video/8.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/1/1.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/2/2.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/3/3.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/4/4.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/5/5.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/6/6.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/12/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/12/augmentation/7/7.xlsx",
+      "subject_id": "Typical_12",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/video/8_2d.xlsx",
+      "path_3d": "Typical/15/video/8.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/1/1.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/2/2.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/3/3.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/4/4.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/5/5.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/6/6.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/15/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/15/augmentation/7/7.xlsx",
+      "subject_id": "Typical_15",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/video/8_2d.xlsx",
+      "path_3d": "Typical/17/video/8.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/1/1.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/2/2.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/3/3.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/4/4.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/5/5.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/6/6.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/17/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/17/augmentation/7/7.xlsx",
+      "subject_id": "Typical_17",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/video/8_2d.xlsx",
+      "path_3d": "Typical/18/video/8.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/1/1.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/2/2.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/3/3.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/4/4.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/5/5.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/6/6.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/18/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/18/augmentation/7/7.xlsx",
+      "subject_id": "Typical_18",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/video/8_2d.xlsx",
+      "path_3d": "Typical/24/video/8.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/1/1.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/2/2.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/3/3.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/4/4.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/5/5.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/6/6.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/24/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/24/augmentation/7/7.xlsx",
+      "subject_id": "Typical_24",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/video/8_2d.xlsx",
+      "path_3d": "Typical/25/video/8.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/1/1.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/2/2.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/3/3.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/4/4.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/5/5.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/6/6.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/25/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/25/augmentation/7/7.xlsx",
+      "subject_id": "Typical_25",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/video/8_2d.xlsx",
+      "path_3d": "Typical/3/video/8.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/1/1.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/2/2.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/3/3.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/4/4.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/5/5.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/6/6.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/3/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/3/augmentation/7/7.xlsx",
+      "subject_id": "Typical_3",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/video/8_2d.xlsx",
+      "path_3d": "Typical/30/video/8.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/1/1.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/2/2.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/3/3.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/4/4.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/5/5.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/6/6.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/30/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/30/augmentation/7/7.xlsx",
+      "subject_id": "Typical_30",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/video/8_2d.xlsx",
+      "path_3d": "Typical/31/video/8.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/1/1.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/2/2.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/3/3.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/4/4.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/5/5.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/6/6.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/31/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/31/augmentation/7/7.xlsx",
+      "subject_id": "Typical_31",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/video/8_2d.xlsx",
+      "path_3d": "Typical/33/video/8.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/1/1.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/2/2.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/3/3.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/4/4.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/5/5.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/6/6.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/33/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/33/augmentation/7/7.xlsx",
+      "subject_id": "Typical_33",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/video/8_2d.xlsx",
+      "path_3d": "Typical/34/video/8.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/1/1.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/2/2.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/3/3.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/4/4.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/5/5.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/6/6.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/34/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/34/augmentation/7/7.xlsx",
+      "subject_id": "Typical_34",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/video/8_2d.xlsx",
+      "path_3d": "Typical/35/video/8.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/1/1.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/2/2.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/3/3.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/4/4.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/5/5.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/6/6.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/35/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/35/augmentation/7/7.xlsx",
+      "subject_id": "Typical_35",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/video/8_2d.xlsx",
+      "path_3d": "Typical/37/video/8.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/1/1.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/2/2.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/3/3.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/4/4.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/5/5.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/6/6.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/37/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/37/augmentation/7/7.xlsx",
+      "subject_id": "Typical_37",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/video/8_2d.xlsx",
+      "path_3d": "Typical/41/video/8.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/1/1.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/2/2.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/3/3.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/4/4.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/5/5.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/6/6.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/41/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/41/augmentation/7/7.xlsx",
+      "subject_id": "Typical_41",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/video/8_2d.xlsx",
+      "path_3d": "Typical/42/video/8.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/1/1.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/2/2.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/3/3.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/4/4.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/5/5.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/6/6.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/42/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/42/augmentation/7/7.xlsx",
+      "subject_id": "Typical_42",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/video/8_2d.xlsx",
+      "path_3d": "Typical/43/video/8.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/1/1.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/2/2.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/3/3.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/4/4.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/5/5.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/6/6.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/43/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/43/augmentation/7/7.xlsx",
+      "subject_id": "Typical_43",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/video/8_2d.xlsx",
+      "path_3d": "Typical/45/video/8.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/1/1.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/2/2.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/3/3.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/4/4.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/5/5.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/6/6.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/45/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/45/augmentation/7/7.xlsx",
+      "subject_id": "Typical_45",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/video/8_2d.xlsx",
+      "path_3d": "Typical/46/video/8.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/1/1.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/2/2.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/3/3.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/4/4.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/5/5.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/6/6.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/46/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/46/augmentation/7/7.xlsx",
+      "subject_id": "Typical_46",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/video/8_2d.xlsx",
+      "path_3d": "Typical/48/video/8.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/1/1.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/2/2.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/3/3.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/4/4.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/5/5.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/6/6.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/48/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/48/augmentation/7/7.xlsx",
+      "subject_id": "Typical_48",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/video/8_2d.xlsx",
+      "path_3d": "Typical/49/video/8.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/1/1.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/2/2.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/3/3.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/4/4.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/5/5.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/6/6.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/49/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/49/augmentation/7/7.xlsx",
+      "subject_id": "Typical_49",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/video/8_2d.xlsx",
+      "path_3d": "Typical/8/video/8.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/1/1.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/2/2.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/3/3.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/4/4.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/5/5.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/6/6.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/8/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/8/augmentation/7/7.xlsx",
+      "subject_id": "Typical_8",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/video/8_2d.xlsx",
+      "path_3d": "Typical/9/video/8.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/1/1.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/2/2.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/3/3.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/4/4.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/5/5.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/6/6.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "train"
+    },
+    {
+      "path": "Typical/9/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/9/augmentation/7/7.xlsx",
+      "subject_id": "Typical_9",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "train"
+    },
+    {
+      "path": "Autism/children with ASD/3/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/video/8.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/1/1.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/2/2.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/3/3.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/4/4.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/5/5.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/6/6.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/3/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/3/augmentation/7/7.xlsx",
+      "subject_id": "ASD_3",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/video/8.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/1/1.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/2/2.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/3/3.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/4/4.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/5/5.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/6/6.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/30/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/30/augmentation/7/7.xlsx",
+      "subject_id": "ASD_30",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/video/8.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/1/1.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/2/2.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/3/3.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/4/4.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/5/5.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/6/6.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/38/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/38/augmentation/7/7.xlsx",
+      "subject_id": "ASD_38",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/video/8.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/1/1.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/2/2.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/3/3.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/4/4.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/5/5.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/6/6.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/41/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/41/augmentation/7/7.xlsx",
+      "subject_id": "ASD_41",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/video/8.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/1/1.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/2/2.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/3/3.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/4/4.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/5/5.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/6/6.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/48/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/48/augmentation/7/7.xlsx",
+      "subject_id": "ASD_48",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/video/8.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/1/1.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/2/2.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/3/3.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/4/4.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/5/5.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/6/6.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/6/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/6/augmentation/7/7.xlsx",
+      "subject_id": "ASD_6",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/video/8.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/1/1.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/2/2.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/3/3.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/4/4.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/5/5.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/6/6.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/7/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/7/augmentation/7/7.xlsx",
+      "subject_id": "ASD_7",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/video/8_2d.xlsx",
+      "path_3d": "Typical/36/video/8.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/1/1.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/2/2.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/3/3.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/4/4.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/5/5.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/6/6.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Typical/36/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/36/augmentation/7/7.xlsx",
+      "subject_id": "Typical_36",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/video/8_2d.xlsx",
+      "path_3d": "Typical/39/video/8.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/1/1.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/2/2.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/3/3.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/4/4.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/5/5.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/6/6.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Typical/39/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/39/augmentation/7/7.xlsx",
+      "subject_id": "Typical_39",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/video/8_2d.xlsx",
+      "path_3d": "Typical/4/video/8.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/1/1.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/2/2.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/3/3.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/4/4.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/5/5.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/6/6.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Typical/4/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/4/augmentation/7/7.xlsx",
+      "subject_id": "Typical_4",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/video/8_2d.xlsx",
+      "path_3d": "Typical/44/video/8.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/1/1.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/2/2.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/3/3.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/4/4.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/5/5.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/6/6.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Typical/44/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/44/augmentation/7/7.xlsx",
+      "subject_id": "Typical_44",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/video/8_2d.xlsx",
+      "path_3d": "Typical/6/video/8.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/1/1.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/2/2.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/3/3.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/4/4.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/5/5.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/6/6.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "val"
+    },
+    {
+      "path": "Typical/6/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/6/augmentation/7/7.xlsx",
+      "subject_id": "Typical_6",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "val"
+    },
+    {
+      "path": "Autism/children with ASD/10/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/video/8.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/1/1.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/2/2.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/3/3.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/4/4.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/5/5.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/6/6.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/10/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/10/augmentation/7/7.xlsx",
+      "subject_id": "ASD_10",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/video/8.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/1/1.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/2/2.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/3/3.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/4/4.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/5/5.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/6/6.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/16/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/16/augmentation/7/7.xlsx",
+      "subject_id": "ASD_16",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/video/8.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/1/1.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/2/2.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/3/3.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/4/4.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/5/5.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/6/6.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/17/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/17/augmentation/7/7.xlsx",
+      "subject_id": "ASD_17",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/video/8.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/1/1.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/2/2.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/3/3.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/4/4.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/5/5.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/6/6.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/2/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/2/augmentation/7/7.xlsx",
+      "subject_id": "ASD_2",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/video/8.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/1/1.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/2/2.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/3/3.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/4/4.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/5/5.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/6/6.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/20/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/20/augmentation/7/7.xlsx",
+      "subject_id": "ASD_20",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/video/8.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/1/1.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/2/2.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/3/3.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/4/4.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/5/5.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/6/6.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/45/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/45/augmentation/7/7.xlsx",
+      "subject_id": "ASD_45",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/video/8_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/video/8.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/1/1_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/1/1.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/2/2_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/2/2.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/3/3_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/3/3.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/4/4_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/4/4.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/5/5_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/5/5.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/6/6_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/6/6.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Autism/children with ASD/9/augmentation/7/7_2d.xlsx",
+      "path_3d": "Autism/children with ASD/9/augmentation/7/7.xlsx",
+      "subject_id": "ASD_9",
+      "label": 1,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/video/8_2d.xlsx",
+      "path_3d": "Typical/10/video/8.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/1/1.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/2/2.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/3/3.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/4/4.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/5/5.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/6/6.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Typical/10/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/10/augmentation/7/7.xlsx",
+      "subject_id": "Typical_10",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/video/8_2d.xlsx",
+      "path_3d": "Typical/2/video/8.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/1/1.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/2/2.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/3/3.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/4/4.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/5/5.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/6/6.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Typical/2/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/2/augmentation/7/7.xlsx",
+      "subject_id": "Typical_2",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/video/8_2d.xlsx",
+      "path_3d": "Typical/32/video/8.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/1/1.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/2/2.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/3/3.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/4/4.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/5/5.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/6/6.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Typical/32/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/32/augmentation/7/7.xlsx",
+      "subject_id": "Typical_32",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/video/8_2d.xlsx",
+      "path_3d": "Typical/47/video/8.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/1/1.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/2/2.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/3/3.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/4/4.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/5/5.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/6/6.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Typical/47/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/47/augmentation/7/7.xlsx",
+      "subject_id": "Typical_47",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/video/8_2d.xlsx",
+      "path_3d": "Typical/50/video/8.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "video",
+      "variant_id": "8",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/1/1_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/1/1.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "1",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/2/2_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/2/2.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "2",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/3/3_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/3/3.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "3",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/4/4_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/4/4.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "4",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/5/5_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/5/5.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "5",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/6/6_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/6/6.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "6",
+      "split": "test"
+    },
+    {
+      "path": "Typical/50/augmentation/7/7_2d.xlsx",
+      "path_3d": "Typical/50/augmentation/7/7.xlsx",
+      "subject_id": "Typical_50",
+      "label": 0,
+      "variant_kind": "augmentation",
+      "variant_id": "7",
+      "split": "test"
+    }
+  ]
+}

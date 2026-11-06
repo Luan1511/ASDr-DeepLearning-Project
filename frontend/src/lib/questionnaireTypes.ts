@@ -43,6 +43,7 @@ export type QuestionnairesDto = {
  */
 export type McHatContentDto = {
   contentVersion: string
+  revision: string
   copyrightNotice: string
   /** Credit line of the content file (translation/licence), shown IN ADDITION to the official line when it differs. */
   contentCopyrightNotice?: string | null
@@ -91,7 +92,7 @@ export type QuestionnaireResponseDto = {
   structureVersion: string
   scoringVersion: string
   mode: QuestionnaireResponseMode
-  /** `${contentVersion}@${structureHash}` for IN_APP responses, else null. */
+  /** Content version and revision for IN_APP responses, else null. */
   contentVersion: string | null
   respondent: Respondent
   childAgeMonths: number
@@ -159,6 +160,7 @@ export type FollowUpItemState = {
 }
 
 export type FollowUpStateDto = {
+  revision: string
   responseId: string
   status: FollowUpStatus
   copyrightNotice: string
@@ -181,6 +183,7 @@ export type FollowUpStateDto = {
 
 /** Body of POST /questionnaire-responses/:id/follow-up/answer. */
 export type FollowUpAnswerInput = {
+  revision: string
   item: number
   node: string
   /** Opaque position id of the example (EXAMPLE rows and their MAYBE_RESOLVE). */

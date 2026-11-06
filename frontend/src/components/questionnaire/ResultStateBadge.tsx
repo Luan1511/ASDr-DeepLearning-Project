@@ -18,7 +18,7 @@ export function ResultStateBadge({
   response,
   size = 'sm',
 }: {
-  response: Pick<QuestionnaireResponseDto, 'outcome' | 'followUpStatus'>
+  response: Pick<QuestionnaireResponseDto, 'outcome' | 'followUpStatus' | 'followUp'>
   size?: 'sm' | 'lg'
 }) {
   const state = resultStateOf(response)
@@ -32,7 +32,7 @@ export function ResultStateBadge({
       ].join(' ')}
     >
       <Icon className={size === 'lg' ? 'h-4 w-4 flex-shrink-0 stroke-[2.5]' : 'h-3.5 w-3.5 flex-shrink-0 stroke-[2.5]'} aria-hidden="true" />
-      {RESULT_STATE_LABEL[state]}
+      {state === 'PENDING' && response.followUp.needsReview ? 'Cần xác nhận phần hỏi thêm' : RESULT_STATE_LABEL[state]}
     </span>
   )
 }

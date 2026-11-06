@@ -26,7 +26,9 @@ export function PendingFollowUpBanner({ response: r, compact = false }: { respon
       >
         <Info className="h-4 w-4 flex-shrink-0 stroke-[2.5]" aria-hidden="true" />
         <span className="flex-1">
-          Lần trả lời ngày {date} cần làm phần hỏi thêm. Làm xong, hãy quay lại ghi kết quả.
+          {r.followUp.needsReview
+            ? `Lần trả lời ngày ${date} cần xác nhận. Xem kết quả để biết bước tiếp theo.`
+            : `Lần trả lời ngày ${date} cần làm phần hỏi thêm. Làm xong, hãy quay lại ghi kết quả.`}
         </span>
         <ChevronRight className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
       </Link>

@@ -105,6 +105,20 @@ export function questionnaireContentStatus(): { mode: typeof env.MCHAT_MODE; con
   return { mode: env.MCHAT_MODE, content: getContentStatus(resolveContentPath(env.MCHAT_CONTENT_PATH)) }
 }
 
+function matchesFollowUpContent(row: QuestionnaireResponse, content: McHatContentFile): boolean {
+  const saved = parseFollowUpAnswers(row.followUpAnswers, row.failedItems)
+  if (row.followUpAnswers !== null && !saved) return false
+  const revision = storedContentVersion(content)
+  if (saved?.contentVersion) return saved.contentVersion === revision
+  // Old records predate content digests. They still require the same version and structure.
+  return row.contentVersion === null || row.contentVersion === revision ||
+    row.contentVersion === revision.slice(0, revision.lastIndexOf('@'))
+}
+
+function canResumeWithContent(row: QuestionnaireResponse, content: McHatContentFile | null): boolean {
+  return content !== null && row.followUpStatus === 'PENDING' && matchesFollowUpContent(row, content)
+}
+
 function contentUnavailable(res: Response, status: 409 | 503) {
   return res.status(status).json({ error: 'QUESTIONNAIRE_CONTENT_UNAVAILABLE', message: CONTENT_UNAVAILABLE_MESSAGE })
 }
@@ -175,10 +189,10 @@ childQuestionnairesRouter.get(
       where: { childId },
       orderBy: { completedAt: 'desc' },
     })
-    const inAppAvailable = inAppContent() !== null
+    const currentContent = inAppContent()
     return res.json({
       eligibility: { MCHAT_RF: serializeEligibility(mchatEligibility(child.dateOfBirth, new Date())) },
-      responses: responses.map((r) => serializeQuestionnaireResponse(r, { inAppAvailable })),
+      responses: responses.map((r) => serializeQuestionnaireResponse(r, { inAppAvailable: canResumeWithContent(r, currentContent) })),
     })
   }),
 )
@@ -190,6 +204,7 @@ const submitSchema = z.object({
   answers: z.unknown(),
   consentAccepted: z.boolean().optional(),
   consentVersion: z.string().max(100).optional(),
+  revision: z.string().max(128).optional(),
   mode: z.enum(RESPONSE_MODES).optional(),
 })
 
@@ -214,6 +229,9 @@ childQuestionnairesRouter.post(
     // The automated Follow-Up needs the whole file; otherwise a MODERATE result goes to the assisted entry.
     const followUpInApp = content !== null && inAppContent() !== null
     if (mode === IN_APP_MODE && !content) return contentUnavailable(res, 409)
+    if (content && input.revision !== storedContentVersion(content)) {
+      return res.status(409).json({ error: 'QUESTIONNAIRE_CONTENT_CHANGED' })
+    }
 
     const now = new Date()
     const eligibility = mchatEligibility(child.dateOfBirth, now)
@@ -271,7 +289,7 @@ childQuestionnairesRouter.post(
       },
     })
 
-    return res.status(201).json({ response: serializeQuestionnaireResponse(response, { inAppAvailable: inAppContent() !== null }) })
+    return res.status(201).json({ response: serializeQuestionnaireResponse(response, { inAppAvailable: canResumeWithContent(response, inAppContent()) }) })
   }),
 )
 
@@ -289,7 +307,7 @@ questionnaireResponsesRouter.get(
     const id = z.string().uuid().parse(req.params.id)
     const response = await findOwnedResponse(id, req.user!.id)
     if (!response) return res.status(404).json({ error: 'RESPONSE_NOT_FOUND' })
-    return res.json({ response: serializeQuestionnaireResponse(response, { inAppAvailable: inAppContent() !== null }) })
+    return res.json({ response: serializeQuestionnaireResponse(response, { inAppAvailable: canResumeWithContent(response, inAppContent()) }) })
   }),
 )
 
@@ -345,7 +363,7 @@ questionnaireResponsesRouter.post(
 
     const fresh = await findOwnedResponse(id, req.user!.id)
     if (!fresh) return res.status(404).json({ error: 'RESPONSE_NOT_FOUND' })
-    return res.json({ response: serializeQuestionnaireResponse(fresh, { inAppAvailable: inAppContent() !== null }) })
+    return res.json({ response: serializeQuestionnaireResponse(fresh, { inAppAvailable: canResumeWithContent(fresh, inAppContent()) }) })
   }),
 )
 
@@ -360,13 +378,15 @@ questionnaireResponsesRouter.get(
     const content = inAppContent()
     if (!content) return contentUnavailable(res, 503)
 
+    if (!matchesFollowUpContent(row, content)) return contentUnavailable(res, 409)
     const answers = parseFollowUpAnswers(row.followUpAnswers, row.failedItems) ?? initFollowUpAnswers(row.failedItems)
     res.setHeader('Cache-Control', 'private, no-store')
     return res.json(serializeFollowUpState(row, answers, content, { inAppAvailable: true }))
   }),
 )
 
-const followUpAnswerSchema = z.object({
+const revisionSchema = z.object({ revision: z.string().max(128).optional() })
+const followUpAnswerSchema = revisionSchema.extend({
   item: z.number().int().min(1).max(MCHAT_RF.itemCount),
   node: z.string().min(1).max(32),
   example: z.string().min(1).max(32).optional(),
@@ -403,6 +423,8 @@ async function followUpRescreenAfter(
 async function withLockedFollowUp(
   id: string,
   userId: string,
+  content: McHatContentFile,
+  revision: string | undefined,
   change: (answers: FollowUpAnswers) => { answers: FollowUpAnswers | null; maybe?: MaybeAt },
 ): Promise<LockedOutcome> {
   return prisma.$transaction(async (tx) => {
@@ -412,7 +434,17 @@ async function withLockedFollowUp(
     if (row.band !== 'MODERATE' || row.followUpStatus !== 'PENDING') {
       return { ok: false as const, status: 409, error: 'FOLLOW_UP_NOT_APPLICABLE' }
     }
-    const current = parseFollowUpAnswers(row.followUpAnswers, row.failedItems) ?? initFollowUpAnswers(row.failedItems)
+    const expectedRevision = storedContentVersion(content)
+    if (!matchesFollowUpContent(row, content)) {
+      return { ok: false as const, status: 409, error: 'QUESTIONNAIRE_CONTENT_UNAVAILABLE' }
+    }
+    if (revision !== expectedRevision) {
+      return { ok: false as const, status: 409, error: 'QUESTIONNAIRE_CONTENT_CHANGED' }
+    }
+    const current = {
+      ...(parseFollowUpAnswers(row.followUpAnswers, row.failedItems) ?? initFollowUpAnswers(row.failedItems)),
+      contentVersion: expectedRevision,
+    }
 
     let result
     try {
@@ -426,7 +458,7 @@ async function withLockedFollowUp(
 
     const next = result.answers
     const progress = followUpProgress(next)
-    if (!progress.complete) {
+    if (!progress.complete || progress.reviewItems.length > 0) {
       const updated = await tx.questionnaireResponse.update({ where: { id }, data: { followUpAnswers: asJson(next) } })
       return { ok: true as const, row: updated, answers: next }
     }
@@ -465,7 +497,7 @@ questionnaireResponsesRouter.post(
     const content = inAppContent()
     if (!content) return contentUnavailable(res, 503)
 
-    const result = await withLockedFollowUp(id, userId, (answers) => {
+    const result = await withLockedFollowUp(id, userId, content, input.revision, (answers) => {
       // Views carry position ids ("e3"); the engine works on structure ids.
       const answer = toStructureAnswer(input)
       if (answer.value === 'MAYBE') {
@@ -494,7 +526,8 @@ questionnaireResponsesRouter.post(
     const content = inAppContent()
     if (!content) return contentUnavailable(res, 503)
 
-    const result = await withLockedFollowUp(id, userId, (answers) => ({ answers: undoFollowUpStep(answers) }))
+    const { revision } = revisionSchema.parse(req.body ?? {})
+    const result = await withLockedFollowUp(id, userId, content, revision, (answers) => ({ answers: undoFollowUpStep(answers) }))
     if (!result.ok) return res.status(result.status).json({ error: result.error })
     res.setHeader('Cache-Control', 'private, no-store')
     return res.json(serializeFollowUpState(result.row, result.answers, content, { inAppAvailable: true }))

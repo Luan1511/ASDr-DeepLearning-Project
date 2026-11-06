@@ -121,6 +121,11 @@ function FollowUp({ id }: { id: string }) {
 
   async function handleError(e: unknown, fallback: string) {
     const code = apiErrorCode(e)
+    if (code === 'QUESTIONNAIRE_CONTENT_CHANGED') {
+      setNotice(questionnaireApiErrorMessage(e, fallback))
+      await refresh()
+      return
+    }
     if (code === 'STEP_MISMATCH') {
       // The server moved on (another tab/device): show where it is now.
       setNotice(STEP_MISMATCH_MESSAGE)
@@ -174,7 +179,7 @@ function FollowUp({ id }: { id: string }) {
     void run(async () => {
       try {
         const body = withPendingOther(current.item, current.step.node, input)
-        apply(await answerFollowUp(id, { item: current.item, node: current.step.node, ...body }))
+        apply(await answerFollowUp(id, { item: current.item, node: current.step.node, revision: state.revision, ...body }))
       } catch (e) {
         await handleError(e, 'Không lưu được câu trả lời. Vui lòng thử lại.')
       }
@@ -190,7 +195,7 @@ function FollowUp({ id }: { id: string }) {
         return
       }
       try {
-        apply(await followUpBack(id))
+        apply(await followUpBack(id, state.revision))
       } catch (e) {
         await handleError(e, 'Không quay lại được câu trước. Vui lòng thử lại.')
       }

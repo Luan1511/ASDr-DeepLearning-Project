@@ -5,7 +5,7 @@ import type { FollowUpAnswerInput, FollowUpStepView as StepView } from '../../li
 import { AnswerButton } from './AnswerButton'
 
 /** What the page adds to `{ item, node }` when posting the answer. */
-export type StepAnswer = Omit<FollowUpAnswerInput, 'item' | 'node'>
+export type StepAnswer = Omit<FollowUpAnswerInput, 'item' | 'node' | 'revision'>
 
 const OTHER_TEXT_MAX = 200
 

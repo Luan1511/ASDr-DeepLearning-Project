@@ -1,9 +1,9 @@
 # AIMBRACE — Master Prompt (Handoff cho AI agent và thành viên nhóm)
 
-> **Cập nhật:** 2026-10-29, phiên 29/10. **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. **Chat mới: bắt đầu từ §22.9.** Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
+> **Cập nhật:** 2026-11-02, phiên 02/11: domain v2.2 + nhiễu camera ảo hiệu chỉnh theo OpenPose (§23.9) — hết dấu hiệu lệch đơn lẻ mạnh, nhưng kết hợp nhiều đặc trưng vẫn tách domain (RF ≈ 0,98). Trước đó: **domain v2** — một module tiền xử lý dùng chung cho train và ML server (`gait_domain.py`), lệch kỹ thuật đã sửa nhưng Kinect ↔ video vẫn tách được (AUC domain ≈ 1,0), chưa train, chưa deploy (§23.8). Trước đó cùng ngày: kiểm tra chiều cao (§23.7): **model không chỉ học chiều cao** — trong cùng dải chiều cao (chiều cao AUC 0,505) P vẫn đạt AUC 0,87–0,88; spinebase_acc thêm +0,10 AUC ngoài chiều cao (KTC > 0 ở cả 3 seed), bbox +0,055 (KTC chứa 0). **Chat mới: bắt đầu từ §23.9.** Phiên 31/10: cross-validation theo trẻ (`cv_stgcn.py`) trên split Kinect sạch — spinebase_acc AUC cấp trẻ 0,921 ± 0,008, bbox 0,884 ± 0,024, accuracy ≈ 0,83 (thấp hơn 8–10 điểm so với hai bài đã đăng); chưa loại được lối tắt chiều cao (§23.5–23.6). Phiên 30/10: nhân vật 2D "Bạn Bin" chat bằng văn bản qua Groq (§23.1), deploy lên `khmt01` (§23.2), **hướng 1 camera ảo + hướng 2 kênh bất biến** trong `NCKH_25-26` — giảm lệch domain mà không dùng 3D lúc suy luận, có hướng dẫn (§23.3). (Bàn giao cũ của phiên 30/10 ở §23.4.) Phiên 29/10: **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
 > **Nguồn:** đề cương "AIMBRACE – AI for Life 2026" (25/09/2026), khảo sát repo tại commit `c6b011e`, Giai đoạn 1–2 (người dùng đã commit trong `09d23fe`) và thay đổi chưa commit của phiên 2026-10-06 (Giai đoạn 3, §17), 2026-10-07 (Giai đoạn 4 + bảng hỏi, §18), 2026-10-13 (§19) và 2026-10-14 (§20).
 > **Vai trò:** nguồn sự thật (source of truth) khi tiếp quản repo. Đọc file liên quan trước khi sửa, giữ nguyên thay đổi đang có của người dùng, sửa hẹp và có kiểm chứng.
-> **Quy định của chủ dự án:** không dùng git trong project này (xem §13, §14). Mọi lệnh git để người dùng tự chạy.
+> **Quy định của chủ dự án:** không dùng git trong project này (xem §13, §14). Mọi lệnh git để người dùng tự chạy, không được lưu bất cứ nội dung gì liên quan đến project này vào memory.
 
 ## Mục lục
 
@@ -29,6 +29,7 @@
 20. [Nhật ký phiên 2026-10-14 (M-CHAT-R/F: bật và kiểm chứng Follow-Up trong app) và checklist mới](#20-nhật-ký-phiên-2026-10-14-m-chat-rf-bật-và-kiểm-chứng-follow-up-trong-app-và-checklist-mới)
 21. [Nhật ký phiên 2026-10-27 (suy luận ST-GCN, máy GPU khmt01, deploy ML 2.0, calibration, chẩn đoán model)](#21-nhật-ký-phiên-2026-10-27-suy-luận-st-gcn-máy-gpu-khmt01-deploy-ml-20-calibration-chẩn-đoán-model)
 22. [Nhật ký phiên 2026-10-29 (đánh giá lại dữ liệu train ST-GCN, kiểm tra domain, Dryad) — bàn giao ở §22.9](#22-nhật-ký-phiên-2026-10-29-đánh-giá-lại-dữ-liệu-train-st-gcn)
+23. [Nhật ký phiên 2026-10-30 (nhân vật Bạn Bin, deploy, hướng 1 camera ảo + hướng 2 kênh bất biến; 31/10 cross-validation theo trẻ) — bàn giao ở §23.6](#23-nhật-ký-phiên-2026-10-30-nhân-vật-bạn-bin-deploy-hướng-1-camera-ảo--hướng-2-kênh-bất-biến)
 
 ---
 
@@ -68,18 +69,18 @@ Trẻ có dấu hiệu rối loạn phổ tự kỷ (ASD) có thể có khác bi
 
 Ký hiệu: ✅ đã có, chạy được · 🟡 có một phần / chờ triển khai / chưa kiểm chứng thật · ⬜ chưa bắt đầu
 
-| #   | Tính năng (theo đề cương)                                                             | Module kỹ thuật                                                                                                                                                                                                                                                                            | Trạng thái                                                                                                                               |
-| --- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| F1  | AI hỗ trợ sàng lọc ASD từ chuỗi skeleton                                              | ML`server_openpose.py` (ST-GCN + calibration), backend `screeningProcessor.ts` (hàng đợi), `screeningResult.ts`, UI `ScreeningUploadPanel`                                                                                                                                        | 🟡 (luồng hoàn chỉnh, đã chạy thật trên GPU ngày 2026-10-06; mô hình chưa được đánh giá lại; ML 2.0 chưa triển khai)  |
-| F2  | Phân tích chuyển động không xâm lấn (camera thường + OpenPose 2D)                 | OpenPose BODY_25; đặc trưng dáng đi`gaitFeatures.ts`; làm mờ mặt `API/services/anonymize.py`                                                                                                                                                                                     | ✅ code (ML mới chưa triển khai lên máy GPU)                                                                                          |
-| F3  | Bài tập tương tác: nhân vật hướng dẫn động tác                                 | Thư viện bài tập (`Exercise`/`ExerciseTemplate`, 6 bài dựng sẵn), nhân vật **bạn Mầm** (`GuidePuppet`, vẽ từ khung xương của mẫu, tốc độ 1×/chậm), ghi webcam (`WebcamRecorder`, MediaRecorder) hoặc tải video, Admin tạo mẫu từ video người lớn | 🟡 (code xong, e2e + UI với ML giả; chưa thử với ML thật — G0;`EXERCISE_MODE=admin_only`)                                         |
-| F4  | Đánh giá mức độ bắt chước                                                          | `services/imitation/` (imitation-v1: góc khớp, DTW con, chế độ soi gương, điểm theo bộ phận, sao, phản hồi tiếng Việt), hàng đợi `exerciseProcessor.ts`                                                                                                                | 🟡 (hằng số cố định + test tổng hợp;**chưa hiệu chỉnh trên video thật** — C1)                                           |
-| F5  | AI Agent: trợ lý phụ huynh, kiến thức ASD có nguồn                                   | `chatMock.ts` (regex); `server_llama.py` (chưa nối)                                                                                                                                                                                                                                    | 🟡 (mock)                                                                                                                                  |
-| F6  | Nhân vật LLM + Speech-to-Speech                                                           | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                         |
-| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác                                        | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                         |
-| F8  | Theo dõi tiến trình qua các phiên                                                      | `ChildDetailPage`: `GaitTrendChart` (dáng đi) + `ChildExercisesSection` (`ExerciseProgressChart`: điểm luyện tập theo từng bài) + `ChildQuestionnairesSection` (lịch sử bảng hỏi)                                                                                      | 🟡 (đủ 3 nguồn dữ liệu; chưa có dữ liệu thật)                                                                                    |
-| F9  | Dashboard người chăm sóc                                                                | `HomePage`, `ChildrenPage`/`ChildDetailPage`, `HistoryPage` (lọc theo trẻ, xoá), `AdminPage` (thống kê, hàng đợi, sức khoẻ ML)                                                                                                                                           | 🟡                                                                                                                                         |
-| F10 | Kết nối cơ sở chuyên gia                                                               | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                         |
+| #   | Tính năng (theo đề cương)                                                             | Module kỹ thuật                                                                                                                                                                                                                                                                            | Trạng thái                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | AI hỗ trợ sàng lọc ASD từ chuỗi skeleton                                              | ML`server_openpose.py` (ST-GCN + calibration), backend `screeningProcessor.ts` (hàng đợi), `screeningResult.ts`, UI `ScreeningUploadPanel`                                                                                                                                        | 🟡 (luồng hoàn chỉnh, đã chạy thật trên GPU ngày 2026-10-06; mô hình chưa được đánh giá lại; ML 2.0 chưa triển khai)                        |
+| F2  | Phân tích chuyển động không xâm lấn (camera thường + OpenPose 2D)                 | OpenPose BODY_25; đặc trưng dáng đi`gaitFeatures.ts`; làm mờ mặt `API/services/anonymize.py`                                                                                                                                                                                     | ✅ code (ML mới chưa triển khai lên máy GPU)                                                                                                                |
+| F3  | Bài tập tương tác: nhân vật hướng dẫn động tác                                 | Thư viện bài tập (`Exercise`/`ExerciseTemplate`, 6 bài dựng sẵn), nhân vật **bạn Mầm** (`GuidePuppet`, vẽ từ khung xương của mẫu, tốc độ 1×/chậm), ghi webcam (`WebcamRecorder`, MediaRecorder) hoặc tải video, Admin tạo mẫu từ video người lớn | 🟡 (code xong, e2e + UI với ML giả; chưa thử với ML thật — G0;`EXERCISE_MODE=admin_only`)                                                               |
+| F4  | Đánh giá mức độ bắt chước                                                          | `services/imitation/` (imitation-v1: góc khớp, DTW con, chế độ soi gương, điểm theo bộ phận, sao, phản hồi tiếng Việt), hàng đợi `exerciseProcessor.ts`                                                                                                                | 🟡 (hằng số cố định + test tổng hợp;**chưa hiệu chỉnh trên video thật** — C1)                                                                 |
+| F5  | AI Agent: trợ lý phụ huynh, kiến thức ASD có nguồn                                   | `chatMock.ts` (regex); `server_llama.py` (chưa nối)                                                                                                                                                                                                                                    | 🟡 (mock)                                                                                                                                                        |
+| F6  | Nhân vật LLM + Speech-to-Speech                                                           | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
+| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác                                        | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
+| F8  | Theo dõi tiến trình qua các phiên                                                      | `ChildDetailPage`: `GaitTrendChart` (dáng đi) + `ChildExercisesSection` (`ExerciseProgressChart`: điểm luyện tập theo từng bài) + `ChildQuestionnairesSection` (lịch sử bảng hỏi)                                                                                      | 🟡 (đủ 3 nguồn dữ liệu; chưa có dữ liệu thật)                                                                                                          |
+| F9  | Dashboard người chăm sóc                                                                | `HomePage`, `ChildrenPage`/`ChildDetailPage`, `HistoryPage` (lọc theo trẻ, xoá), `AdminPage` (thống kê, hàng đợi, sức khoẻ ML)                                                                                                                                           | 🟡                                                                                                                                                               |
+| F10 | Kết nối cơ sở chuyên gia                                                               | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
 | +   | (Bổ sung) Bảng hỏi phụ huynh M-CHAT-R/F (16–30 tháng), đánh giá thêm ngoài video | `lib/questionnaires/*` (chấm điểm, tuổi, engine Follow-Up bản 2025), `routes/questionnaires.ts`, trang `/questionnaires`                                                                                                                                                          | ✅ thử nội bộ (`MCHAT_MODE=inapp` từ 2026-10-14: 20 câu + Follow-Up trong app, đã kiểm chứng; đưa ra ngoài nhóm cần giấy phép tác giả — L1) |
 
 ---
@@ -481,13 +482,13 @@ Llama-3.2-3B-Instruct 4-bit + LoRA `asd_lora_1`, `asd_lora_2`. Thư mục adapte
 
 ## 8. Nghiên cứu và đánh giá mô hình (`research_src/`)
 
-| Script                                                                             | Nội dung                                                                                                                                                                                                                                                                                                                                                                    |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Script                                                                             | Nội dung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `calibrate_evaluate.py` (mới)                                                   | `split` (chia train/val/test theo subject, phân tầng, seed), `calibrate` (temperature scaling NLL trên val, ngưỡng Youden hoặc theo độ nhạy, ngưỡng HIGH theo độ đặc hiệu → `calibration.json` kèm sha256 checkpoint), `evaluate` (chỉ chạy 1 lần trên test, chặn rò rỉ val→test, bootstrap CI 95% theo subject → `test_results.json`). **2026-10-27:** thêm `--score-level sample` (một điểm cho mỗi video = đúng quyết định của server; `evaluate` tự theo mức ghi trong calibration.json). |
-| `predict_dataset.py` (mới)                                                      | chạy đúng tiền xử lý của server (`STGCNPredictor`) trên keypoints JSON / thư mục OpenPose JSON / Excel → CSV logits để calibrate/evaluate.                                                                                                                                                                                                                    |
-| `fine_tune.py` (đã sửa)                                                       | thêm`--splits`; nếu không có thì tách val từ subject train (`--val-ratio`); chọn epoch theo **val** macro-F1; test 1 lần cuối; lưu `num_joints` và `test_results.json`. Sửa thêm lỗi: bản cũ lưu `state_dict()` theo tham chiếu nên "best" thực ra là epoch cuối. Vẫn phụ thuộc 2 module chỉ có trên server.                    |
-| `EVALUATION.md` (mới)                                                           | quy trình + lệnh cho máy GPU.                                                                                                                                                                                                                                                                                                                                             |
-| `ST-GCN.py`, `BiLSTM.py`, `SRM.py`, `training_llama.py`, `test_llama.py` | như trước (split subject-level 70/15/15, SRM có 5-fold theo subject).                                                                                                                                                                                                                                                                                                    |
+| `predict_dataset.py` (mới)                                                      | chạy đúng tiền xử lý của server (`STGCNPredictor`) trên keypoints JSON / thư mục OpenPose JSON / Excel → CSV logits để calibrate/evaluate.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `fine_tune.py` (đã sửa)                                                       | thêm`--splits`; nếu không có thì tách val từ subject train (`--val-ratio`); chọn epoch theo **val** macro-F1; test 1 lần cuối; lưu `num_joints` và `test_results.json`. Sửa thêm lỗi: bản cũ lưu `state_dict()` theo tham chiếu nên "best" thực ra là epoch cuối. Vẫn phụ thuộc 2 module chỉ có trên server.                                                                                                                                                                                                 |
+| `EVALUATION.md` (mới)                                                           | quy trình + lệnh cho máy GPU.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `ST-GCN.py`, `BiLSTM.py`, `SRM.py`, `training_llama.py`, `test_llama.py` | như trước (split subject-level 70/15/15, SRM có 5-fold theo subject).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 Lần chạy thật đầu tiên (2026-10-27, trên `khmt01`, artifact tại `research_src/eval_runs/2026-10-27_server/` và `~/Luan_workspace/asdr/ml/calibration/`): 99 video `Dataset_video` → trích keypoint qua chính ML server → split seed 42 (59/20/20) → `calibrate --score-level sample`: **T = 0.441, threshold = 0.223, high_risk = 0.454**; test 20 video: AUC 0.95 [0.84, 1.00], sens 1.0, spec 0.8. `calibration.json` đang chạy trên server. **Số liệu lạc quan**: cùng bộ video đã fine-tune, không có `splits.json` gốc để chắc val/test không dính train; thêm 5 cặp video trùng (bên dưới). Chẩn đoán model ở §21.6.
 
@@ -578,47 +579,47 @@ Theme "Duo" (xanh đậm `#166534`…), Nunito, lucide-react, class `btn-duo*`, 
 
 ### 11.1 Mốc thời gian
 
-| Ngày                | Mốc                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-05-21/22        | Initial commit web ASDr +`API/` (OpenPose/ST-GCN, Llama).                                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-05-23           | `research_src/` (ST-GCN, BiLSTM, SRM, fine-tune, Llama training).                                                                                                                                                                                                                                                                                                                                                                                    |
-| 2026-07-13           | Gọi API thật trong`screeningProcessor`; gỡ proxy Llama, chat về mock.                                                                                                                                                                                                                                                                                                                                                                            |
-| 2026-09-25           | Nộp đề cương AIMBRACE (AI for Life 2026).                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 2026-09-26           | Docker, migration`errorMessage`, theme xanh đậm + Lucide.                                                                                                                                                                                                                                                                                                                                                                                          |
-| 2026-10-03           | `openposeService.ts`, router `/subjects`, `/pipeline`.                                                                                                                                                                                                                                                                                                                                                                                           |
-| 2026-10-04           | Admin Skeleton (route + trang + ZIP/WebM).                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **2026-10-05** | **Giai đoạn 1–2**: bảo mật proxy ML, gỡ `/uploads` công khai, consent, hàng đợi bền vững, đặc trưng dáng đi + chất lượng video, sửa hiển thị điểm ASD, ML server 2.0 (API key, làm mờ mặt, `/health`, calibration, probe video), công cụ đánh giá/calibration, sửa `fine_tune.py`, Docker/compose, test tự động (77 test), áp migration mới lên DB chung. Người dùng đã commit (`09d23fe`). |
-| **2026-10-06** | GPU đã sửa CUDA, lượt sàng lọc thật chạy xong trên GPU.**Giai đoạn 3** (chưa commit): CRUD hồ sơ trẻ, dashboard theo trẻ + biểu đồ xu hướng chỉ số dáng đi, xoá dữ liệu theo yêu cầu phụ huynh (DB + video + ML), lọc/xoá ở Lịch sử, gia cố worker, đổi tên UI sang AIMBRACE; 18 test mới (95 test tự động). Không đổi schema DB, không sửa `API/`.                                          |
-| **2026-10-07** | **Giai đoạn 4** (chưa commit): thư viện bài tập + bạn Mầm + ghi webcam, chấm bắt chước imitation-v1, hàng đợi bài tập, Admin tạo mẫu, tiến độ trên dashboard. **Bảng hỏi M-CHAT-R/F**: nhập theo phiếu (đang bật `entry`) + hỏi trong app với Follow-Up tự động (chờ giấy phép). 2 migration chỉ-thêm đã áp lên DB chung. 331 test đơn vị + 40 test e2e. Không sửa `API/`.            |
-| **2026-10-13/14** | DB chung mất kết nối sau khi máy chủ reboot (đã nối lại), sidebar gọn lại. **Bảng hỏi M-CHAT-R/F chạy trọn trong app** (20 câu + Follow-Up tự động; nội dung do chủ dự án điền), kiểm chứng trên màn hình thật; chỉ thử nội bộ, chưa có giấy phép (§19, §20). |
-| **2026-10-29** | **Đánh giá lại dữ liệu train** (chỉ đọc, §22): `Dataset_video` có nhãn trùng với cách quay; lối tắt chân/thân là phối cảnh; rò rỉ 8/20 video test 27/10; Kinect có 7 nhóm thư mục trùng (≈47 ASD + 41 Typical). Không sửa code. |
-| **2026-10-27** | Sửa suy luận ST-GCN khớp fine-tune (tracking một người, preprocess một lần, resample nearest, cổng chất lượng; không retrain). Máy GPU `khmt01` sắp xếp lại thành stack Docker Compose (không xoá gì). **Deploy ML 2.0 + API key**, backend gọi ML nội bộ. **Calibration lần đầu** trên 99 video (T 0.441, ngưỡng 0.223/0.454). **Chẩn đoán model dựa vào tỉ lệ chân/thân** → cần lọc dữ liệu + retrain (§21). Chưa commit. |
+| Ngày                   | Mốc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-21/22           | Initial commit web ASDr +`API/` (OpenPose/ST-GCN, Llama).                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-05-23              | `research_src/` (ST-GCN, BiLSTM, SRM, fine-tune, Llama training).                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-07-13              | Gọi API thật trong`screeningProcessor`; gỡ proxy Llama, chat về mock.                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-09-25              | Nộp đề cương AIMBRACE (AI for Life 2026).                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-09-26              | Docker, migration`errorMessage`, theme xanh đậm + Lucide.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-10-03              | `openposeService.ts`, router `/subjects`, `/pipeline`.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 2026-10-04              | Admin Skeleton (route + trang + ZIP/WebM).                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **2026-10-05**    | **Giai đoạn 1–2**: bảo mật proxy ML, gỡ `/uploads` công khai, consent, hàng đợi bền vững, đặc trưng dáng đi + chất lượng video, sửa hiển thị điểm ASD, ML server 2.0 (API key, làm mờ mặt, `/health`, calibration, probe video), công cụ đánh giá/calibration, sửa `fine_tune.py`, Docker/compose, test tự động (77 test), áp migration mới lên DB chung. Người dùng đã commit (`09d23fe`).                                        |
+| **2026-10-06**    | GPU đã sửa CUDA, lượt sàng lọc thật chạy xong trên GPU.**Giai đoạn 3** (chưa commit): CRUD hồ sơ trẻ, dashboard theo trẻ + biểu đồ xu hướng chỉ số dáng đi, xoá dữ liệu theo yêu cầu phụ huynh (DB + video + ML), lọc/xoá ở Lịch sử, gia cố worker, đổi tên UI sang AIMBRACE; 18 test mới (95 test tự động). Không đổi schema DB, không sửa `API/`.                                                                                 |
+| **2026-10-07**    | **Giai đoạn 4** (chưa commit): thư viện bài tập + bạn Mầm + ghi webcam, chấm bắt chước imitation-v1, hàng đợi bài tập, Admin tạo mẫu, tiến độ trên dashboard. **Bảng hỏi M-CHAT-R/F**: nhập theo phiếu (đang bật `entry`) + hỏi trong app với Follow-Up tự động (chờ giấy phép). 2 migration chỉ-thêm đã áp lên DB chung. 331 test đơn vị + 40 test e2e. Không sửa `API/`.                                                   |
+| **2026-10-13/14** | DB chung mất kết nối sau khi máy chủ reboot (đã nối lại), sidebar gọn lại. **Bảng hỏi M-CHAT-R/F chạy trọn trong app** (20 câu + Follow-Up tự động; nội dung do chủ dự án điền), kiểm chứng trên màn hình thật; chỉ thử nội bộ, chưa có giấy phép (§19, §20).                                                                                                                                                                                  |
+| **2026-10-29**    | **Đánh giá lại dữ liệu train** (chỉ đọc, §22): `Dataset_video` có nhãn trùng với cách quay; lối tắt chân/thân là phối cảnh; rò rỉ 8/20 video test 27/10; Kinect có 7 nhóm thư mục trùng (≈47 ASD + 41 Typical). Không sửa code.                                                                                                                                                                                                                       |
+| **2026-10-27**    | Sửa suy luận ST-GCN khớp fine-tune (tracking một người, preprocess một lần, resample nearest, cổng chất lượng; không retrain). Máy GPU `khmt01` sắp xếp lại thành stack Docker Compose (không xoá gì). **Deploy ML 2.0 + API key**, backend gọi ML nội bộ. **Calibration lần đầu** trên 99 video (T 0.441, ngưỡng 0.223/0.454). **Chẩn đoán model dựa vào tỉ lệ chân/thân** → cần lọc dữ liệu + retrain (§21). Chưa commit. |
 
 ### 11.2 Tiến độ theo "Nội dung thực hiện" của đề cương
 
-| Hạng mục                            | Việc                                                 | Trạng thái | Bằng chứng / ghi chú                                                                                                                                                                                                       |
-| ------------------------------------- | ----------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **0. Khảo sát**               | ASD, skeleton action recognition, imitation           | 🟡           | 3 họ model đã thử; phần bắt chước chưa có.                                                                                                                                                                          |
-| **1. Thu thập & xử lý**      | Video đi thẳng → skeleton                          | ✅           | OpenPose BODY_25 + probe fps/kích thước.                                                                                                                                                                                   |
-|                                       | Ghi hoạt động khi tập bài tập                   | 🟡           | Webcam (MediaRecorder`.webm`) hoặc tải video → ML trích khung xương; chưa thử với ML thật (G0).                                                                                                                   |
-|                                       | Lưu trữ riêng tư (che mặt, consent)              | 🟡           | Code xong: consent + làm mờ mặt + xoá video gốc +**xoá vĩnh viễn theo yêu cầu** (từng lượt / cả hồ sơ, kể cả trên ML). Chờ triển khai ML 2.0 và dọn video cũ (§12).                            |
-|                                       | Tiền xử lý skeleton                                | ✅           | Như trước + theo dõi trẻ/chuẩn hoá cho đặc trưng dáng đi.                                                                                                                                                         |
-| **2. AI sàng lọc**            | Huấn luyện + đánh giá                            | 🟡           | Calibration đã chạy thật (2026-10-27): T 0.441, ngưỡng 0.223/0.454, test AUC 0.95 nhưng lạc quan (cùng video fine-tune, 5 cặp trùng). **Model học lối tắt tỉ lệ chân/thân** (§21.6) → phải lọc dữ liệu, retrain, calibrate lại.                                                                                   |
-|                                       | Triển khai cloud                                     | 🟡           | `khmt01`: trọn stack Docker Compose (db, backend, frontend, ML 2.0 GPU, cloudflared, ngrok), API key bật, calibration nạp (2026-10-27). Image ML dựng tay (có pip freeze + Dockerfile tái tạo chưa build).                                                                                      |
-|                                       | Sàng lọc → kết quả                               | ✅           | Hàng đợi bền vững, retry, phục hồi; 3 mức theo ngưỡng (calibration nếu có); chỉ số dáng đi + chất lượng. Đã chạy end-to-end với ML 2.0 cục bộ và**với GPU thật (ML 1.0) ngày 2026-10-06**. |
-|                                       | API                                                   | ✅           | Proxy ML chỉ ADMIN, ML có API key + kiểm tra subject_id.                                                                                                                                                                   |
-| **3. Bài tập & bắt chước** | Thư viện bài tập, thu skeleton, so sánh          | 🟡           | 6 bài dựng sẵn + Admin tạo mẫu từ video người lớn; imitation-v1 (DTW góc khớp, soi gương, theo bộ phận); test tổng hợp + e2e; chưa hiệu chỉnh trên video thật (C1).                                     |
-| **4. AI Agent**                 | RAG, hỏi đáp về trẻ, guardrail, nhân vật + S2S | ⬜/🟡        | Chat vẫn mock; guardrail mới ở mức system prompt Llama.                                                                                                                                                                   |
-| **5. Cá nhân hóa**           |                                                       | ⬜           |                                                                                                                                                                                                                               |
-| **6. Quản lý & theo dõi**    | Lưu skeleton/kết quả/lịch sử                     | ✅           | +`gaitFeatures`, `modelVersion`, ngưỡng, consent, job.                                                                                                                                                                  |
-|                                       | Web theo dõi từng trẻ                              | ✅           | `/children` + `/children/:id`: CRUD hồ sơ, đồng ý, lịch sử từng trẻ, thử lại/xoá lượt, xoá hồ sơ.                                                                                                        |
-|                                       | Bảng hỏi phụ huynh (M-CHAT-R/F, bổ sung)          | ✅           | Từ 2026-10-14 hỏi 20 câu + Follow-Up trong app (`inapp`), đã kiểm chứng trên màn hình thật (§20); chỉ thử nội bộ — đưa ra ngoài nhóm cần giấy phép tác giả (L1).                                                                                          |
-|                                       | Xu hướng dài hạn                                  | 🟡           | Biểu đồ xu hướng 10 chỉ số dáng đi + biểu đồ điểm luyện tập theo từng bài (kèm bảng); chưa có dữ liệu thật.                                                                                          |
-| **7. Chuyên gia**              |                                                       | ⬜           |                                                                                                                                                                                                                               |
-| **Nền tảng**                  | Auth, role, knowledge, admin                          | ✅           | + sức khoẻ ML, hàng đợi.                                                                                                                                                                                                 |
-|                                       | Test tự động                                       | ✅           | Backend 334 + e2e 41, ML server 38, research 30 (trước 05/10: 0).                                                                                                                                                           |
-|                                       | Docker                                                | 🟡           | Backend/frontend/db chạy bằng compose của repo trên `khmt01`; ML chạy bằng compose riêng `asdr/docker-compose.yml` với image dựng tay; `API/Dockerfile` của repo vẫn chưa build thử.                                                                                                                                                           |
-|                                       | Đổi thương hiệu AIMBRACE                         | ✅           | Trên UI (2026-10-06); tên package/DB/localStorage vẫn là asdr.                                                                                                                                                            |
+| Hạng mục                            | Việc                                                 | Trạng thái | Bằng chứng / ghi chú                                                                                                                                                                                                                                        |
+| ------------------------------------- | ----------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0. Khảo sát**               | ASD, skeleton action recognition, imitation           | 🟡           | 3 họ model đã thử; phần bắt chước chưa có.                                                                                                                                                                                                           |
+| **1. Thu thập & xử lý**      | Video đi thẳng → skeleton                          | ✅           | OpenPose BODY_25 + probe fps/kích thước.                                                                                                                                                                                                                    |
+|                                       | Ghi hoạt động khi tập bài tập                   | 🟡           | Webcam (MediaRecorder`.webm`) hoặc tải video → ML trích khung xương; chưa thử với ML thật (G0).                                                                                                                                                    |
+|                                       | Lưu trữ riêng tư (che mặt, consent)              | 🟡           | Code xong: consent + làm mờ mặt + xoá video gốc +**xoá vĩnh viễn theo yêu cầu** (từng lượt / cả hồ sơ, kể cả trên ML). Chờ triển khai ML 2.0 và dọn video cũ (§12).                                                             |
+|                                       | Tiền xử lý skeleton                                | ✅           | Như trước + theo dõi trẻ/chuẩn hoá cho đặc trưng dáng đi.                                                                                                                                                                                          |
+| **2. AI sàng lọc**            | Huấn luyện + đánh giá                            | 🟡           | Calibration đã chạy thật (2026-10-27): T 0.441, ngưỡng 0.223/0.454, test AUC 0.95 nhưng lạc quan (cùng video fine-tune, 5 cặp trùng). **Model học lối tắt tỉ lệ chân/thân** (§21.6) → phải lọc dữ liệu, retrain, calibrate lại. |
+|                                       | Triển khai cloud                                     | 🟡           | `khmt01`: trọn stack Docker Compose (db, backend, frontend, ML 2.0 GPU, cloudflared, ngrok), API key bật, calibration nạp (2026-10-27). Image ML dựng tay (có pip freeze + Dockerfile tái tạo chưa build).                                           |
+|                                       | Sàng lọc → kết quả                               | ✅           | Hàng đợi bền vững, retry, phục hồi; 3 mức theo ngưỡng (calibration nếu có); chỉ số dáng đi + chất lượng. Đã chạy end-to-end với ML 2.0 cục bộ và**với GPU thật (ML 1.0) ngày 2026-10-06**.                                  |
+|                                       | API                                                   | ✅           | Proxy ML chỉ ADMIN, ML có API key + kiểm tra subject_id.                                                                                                                                                                                                    |
+| **3. Bài tập & bắt chước** | Thư viện bài tập, thu skeleton, so sánh          | 🟡           | 6 bài dựng sẵn + Admin tạo mẫu từ video người lớn; imitation-v1 (DTW góc khớp, soi gương, theo bộ phận); test tổng hợp + e2e; chưa hiệu chỉnh trên video thật (C1).                                                                      |
+| **4. AI Agent**                 | RAG, hỏi đáp về trẻ, guardrail, nhân vật + S2S | ⬜/🟡        | Chat vẫn mock; guardrail mới ở mức system prompt Llama.                                                                                                                                                                                                    |
+| **5. Cá nhân hóa**           |                                                       | ⬜           |                                                                                                                                                                                                                                                                |
+| **6. Quản lý & theo dõi**    | Lưu skeleton/kết quả/lịch sử                     | ✅           | +`gaitFeatures`, `modelVersion`, ngưỡng, consent, job.                                                                                                                                                                                                   |
+|                                       | Web theo dõi từng trẻ                              | ✅           | `/children` + `/children/:id`: CRUD hồ sơ, đồng ý, lịch sử từng trẻ, thử lại/xoá lượt, xoá hồ sơ.                                                                                                                                         |
+|                                       | Bảng hỏi phụ huynh (M-CHAT-R/F, bổ sung)          | ✅           | Từ 2026-10-14 hỏi 20 câu + Follow-Up trong app (`inapp`), đã kiểm chứng trên màn hình thật (§20); chỉ thử nội bộ — đưa ra ngoài nhóm cần giấy phép tác giả (L1).                                                                   |
+|                                       | Xu hướng dài hạn                                  | 🟡           | Biểu đồ xu hướng 10 chỉ số dáng đi + biểu đồ điểm luyện tập theo từng bài (kèm bảng); chưa có dữ liệu thật.                                                                                                                           |
+| **7. Chuyên gia**              |                                                       | ⬜           |                                                                                                                                                                                                                                                                |
+| **Nền tảng**                  | Auth, role, knowledge, admin                          | ✅           | + sức khoẻ ML, hàng đợi.                                                                                                                                                                                                                                  |
+|                                       | Test tự động                                       | ✅           | Backend 334 + e2e 41, ML server 38, research 30 (trước 05/10: 0).                                                                                                                                                                                            |
+|                                       | Docker                                                | 🟡           | Backend/frontend/db chạy bằng compose của repo trên `khmt01`; ML chạy bằng compose riêng `asdr/docker-compose.yml` với image dựng tay; `API/Dockerfile` của repo vẫn chưa build thử.                                                        |
+|                                       | Đổi thương hiệu AIMBRACE                         | ✅           | Trên UI (2026-10-06); tên package/DB/localStorage vẫn là asdr.                                                                                                                                                                                             |
 
 ### 11.3 Ước lượng tổng quan (chủ quan)
 
@@ -794,7 +795,7 @@ Còn: gửi email xin phép (L1); khi được phép, điền file nội dung, `
 - RAG có trích nguồn (pgvector).
 - Guardrail 2 lớp.
 - Tool đọc dữ liệu trẻ đúng `userId`.
-- Nhân vật + STT/TTS tiếng Việt.
+- Nhân vật + STT/TTS tiếng Việt. *(Nhân vật 2D chat bằng văn bản đã có — §23.1; còn STT/TTS.)*
 
 ### Giai đoạn 6 — Cá nhân hóa (F7)
 
@@ -1188,17 +1189,17 @@ Môi trường thử (PostgreSQL tạm :55432, ML giả :8100, backend :4100, fr
 
 ### 20.3 Kiểm chứng
 
-| Hạng mục | Kết quả |
-| --- | --- |
-| `questionnaires:validate-content` | `State: ready`, `Stage 1 in app: ready`, 0 lỗi, mã cấu trúc `ee0604d6660a38d0` |
-| Rà file nội dung (script chỉ in tên ô và độ dài) | 287 ô chữ. Trống đúng 5 ô `stage1.{2,11,13,14,16}.examples` (thiết kế). Không có ô điền tạm, không lỗi mã hoá, không Unicode NFD; câu dẫn các danh sách không trùng ghi chú. `stage1.19.text`, `stage1.20.text` có khoảng trắng đầu/cuối (không ảnh hưởng hiển thị) |
-| Backend `npm test` + `npm run typecheck` | 334/334; sạch (phiên này không sửa backend) |
-| Backend `npm run test:e2e` | 41/41; dọn sạch |
-| Frontend `tsc -b` + ESLint 2 file sửa | sạch |
-| Màn hình thật — phần 1 (:5173, phụ huynh seed, Bé An 28 tháng, DB chung) | 20 câu đều có chữ, đúng 5 câu không có ví dụ, phím C/K, màn "Xem lại và gửi" |
+| Hạng mục                                                                                           | Kết quả                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `questionnaires:validate-content`                                                                  | `State: ready`, `Stage 1 in app: ready`, 0 lỗi, mã cấu trúc `ee0604d6660a38d0`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Rà file nội dung (script chỉ in tên ô và độ dài)                                            | 287 ô chữ. Trống đúng 5 ô `stage1.{2,11,13,14,16}.examples` (thiết kế). Không có ô điền tạm, không lỗi mã hoá, không Unicode NFD; câu dẫn các danh sách không trùng ghi chú. `stage1.19.text`, `stage1.20.text` có khoảng trắng đầu/cuối (không ảnh hưởng hiển thị)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Backend `npm test` + `npm run typecheck`                                                         | 334/334; sạch (phiên này không sửa backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Backend `npm run test:e2e`                                                                         | 41/41; dọn sạch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Frontend `tsc -b` + ESLint 2 file sửa                                                             | sạch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Màn hình thật — phần 1 (:5173, phụ huynh seed, Bé An 28 tháng, DB chung)                     | 20 câu đều có chữ, đúng 5 câu không có ví dụ, phím C/K, màn "Xem lại và gửi"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Màn hình thật — Follow-Up: 3 lượt thử cho Bé An, **đã xoá** bằng API xoá của app | **Lượt 1** trượt {1, 2, 5, 6, 7, 13, 14}, đi bằng giao diện: câu mở, ví dụ từng dòng, "thường xuyên hơn" (câu 1), phần phụ câu 2 (Có/Không + lựa chọn), ô "Khác" có mô tả (câu 5 → cờ cần xem lại), "Không chắc" → màn "thường là Có hay Không", lời dẫn sau câu 6 ở câu 7, lựa chọn câu 7, câu 13, đếm + tần suất câu 14. Điểm đúng theo nhánh; còn 3 mục → "Khả năng cao"; tóm tắt bác sĩ có "Mục cần xem lại: câu 5". **Lượt 2** trượt {3, 4, 8, 9, 10, 11, 12}: điểm đúng (3, 9, 10, 12 còn 1; câu 3 có cờ) → REFER; nhật ký từng bước bị mất vì công cụ hết giờ, chỉ còn điểm. **Lượt 3** trượt {15–20}: câu 18 dừng ở "Có" đầu tiên, "Không chắc" ở câu 19; còn 1 mục → "Khả năng thấp sau phần hỏi thêm". Ở mọi bước đã ghi nhật ký, chữ server trả về đều hiện trên màn (so khớp tự động, không in chữ) |
-| `/questionnaires` sau khi sửa | câu giới thiệu có "và phần hỏi thêm" (`followUpAvailable=true`) |
-| Chưa kiểm chứng | bố cục Follow-Up trên mobile; thẻ Admin → Bảng hỏi trên giao diện (chỉ xem qua API: `ready`); nút "Tạm dừng, làm tiếp sau" / "Quay lại" trên màn thật (e2e đã phủ) |
+| `/questionnaires` sau khi sửa                                                                     | câu giới thiệu có "và phần hỏi thêm" (`followUpAvailable=true`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Chưa kiểm chứng                                                                                   | bố cục Follow-Up trên mobile; thẻ Admin → Bảng hỏi trên giao diện (chỉ xem qua API: `ready`); nút "Tạm dừng, làm tiếp sau" / "Quay lại" trên màn thật (e2e đã phủ)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ### 20.4 Đã xử lý theo yêu cầu chủ dự án (14/10)
 
@@ -1235,13 +1236,13 @@ Môi trường thử (PostgreSQL tạm :55432, ML giả :8100, backend :4100, fr
 
 **Trạng thái các mạch việc:**
 
-| Mạch | Trạng thái | Việc tiếp theo |
-| --- | --- | --- |
-| M-CHAT-R/F UI & Sidebar | Đã xong (ẩn chữ phỏng vấn, sidebar sáng đúng route bảng hỏi và bài tập) | Sẵn sàng sử dụng |
-| Giấy phép L1 | Chưa có (`licenseRef` ghi rõ "chưa có") | Xin phép trước khi đưa app ra ngoài nhóm; ghi nguồn chữ câu 13 |
-| DB chung (`asdr-db` trên `user-KHMT02`) | Đang chạy; chưa chống tái diễn | Chủ dự án chạy lệnh sysctl ở §20.5 (cần sudo). Nếu lại báo "Can't reach database server" → §15 mục 24 |
-| Git | Chưa commit gì từ 07/10 | Chủ dự án tự commit theo §20.5; `mchat-rf.vi.json` không được add |
-| Bài tập / ML | G0, C1 chưa làm | §20.5 |
+| Mạch                                        | Trạng thái                                                                          | Việc tiếp theo                                                                                                    |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| M-CHAT-R/F UI & Sidebar                      | Đã xong (ẩn chữ phỏng vấn, sidebar sáng đúng route bảng hỏi và bài tập) | Sẵn sàng sử dụng                                                                                                |
+| Giấy phép L1                               | Chưa có (`licenseRef` ghi rõ "chưa có")                                        | Xin phép trước khi đưa app ra ngoài nhóm; ghi nguồn chữ câu 13                                            |
+| DB chung (`asdr-db` trên `user-KHMT02`) | Đang chạy; chưa chống tái diễn                                                  | Chủ dự án chạy lệnh sysctl ở §20.5 (cần sudo). Nếu lại báo "Can't reach database server" → §15 mục 24 |
+| Git                                          | Chưa commit gì từ 07/10                                                            | Chủ dự án tự commit theo §20.5; `mchat-rf.vi.json` không được add                                        |
+| Bài tập / ML                               | G0, C1 chưa làm                                                                     | §20.5                                                                                                              |
 
 **Không được làm:**
 
@@ -1308,11 +1309,11 @@ Container cũ giữ lại, đã dừng, restart=no: `openpose_builder-old`, `asd
 Thí nghiệm co giãn chân trên chính chuyển động của video (mọi thứ khác giữ nguyên):
 
 | Chân × | pexel_2_1 | pexel_3_1 | Typical video_22 (chuẩn) |
-|---|---|---|---|
-| 0.85 | 1.000 | 1.000 | 1.000 |
-| 1.00 | 0.9998 | 0.949 | 0.0000 |
-| 1.15 | 0.30 | 0.006 | — |
-| 1.30 | 0.0007 | 0.0000 | — |
+| -------- | --------- | --------- | ------------------------- |
+| 0.85     | 1.000     | 1.000     | 1.000                     |
+| 1.00     | 0.9998    | 0.949     | 0.0000                    |
+| 1.15     | 0.30      | 0.006     | —                        |
+| 1.30     | 0.0007    | 0.0000    | —                        |
 
 Ghép chân của trẻ Typical vào Pexels → Typical (0.0013, 0.086). Trên 98 video calibration: chân/thân Typical 1.42 [1.32, 1.60], ASD 1.28 [0.94, 1.44]; r(logit, chân/thân) = −0.67; AUC của riêng chân/thân 0.825 so với model 0.915. Nhiều video ASD có tỉ lệ < 1.0 → trẻ ngồi xổm, cúi hoặc quá gần camera, không phải đang đi: model học lối tắt "chân ngắn trên ảnh = ASD". Khuếch đại thêm bởi T = 0.44 và model bất đối xứng trái/phải (lật gương Typical_14: 0.999 → 0.088). Script: `research_src/eval_runs/2026-10-27_server/diagnostics/{diagnose,arm_swap,leg_swap,shortcut_check}.py`, kết quả `shortcut_check.out`.
 
@@ -1330,16 +1331,15 @@ Hướng xử lý (cần retrain): lọc bộ ASD chỉ giữ đoạn đi, bỏ 
 
 **Đọc trước khi làm bất cứ việc gì:** §14 (không git, không in `.env`, không viết nội dung M-CHAT); §21; memory của agent có ghi chú máy `khmt01`.
 
-| Mạch | Trạng thái | Việc tiếp theo |
-| --- | --- | --- |
-| ML server | 2.0 chạy trên `khmt01` bằng compose, API key bật, calibration nạp | Deploy mã mới = chép `API/` vào `asdr/ml/server` + `restart ml-api`; đổi tiền xử lý thì calibrate lại |
-| Model | Dựa vào tỉ lệ chân/thân (§21.6); số liệu 27/10 lạc quan | Lọc dữ liệu + retrain (P0-1) |
-| Máy GPU `khmt01` | Đã sắp xếp, không xoá gì; README trên máy | Dọn dẹp theo §21.7 khi chủ dự án đồng ý |
-| Máy dev | Backend gọi ML qua ngrok cần `OPENPOSE_API_KEY` | Đặt key vào `backend/.env` |
-| Git | Chưa commit gì từ 51fb7a4 | Chủ dự án tự commit theo §21.7 |
+| Mạch               | Trạng thái                                                             | Việc tiếp theo                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| ML server           | 2.0 chạy trên `khmt01` bằng compose, API key bật, calibration nạp | Deploy mã mới = chép `API/` vào `asdr/ml/server` + `restart ml-api`; đổi tiền xử lý thì calibrate lại |
+| Model               | Dựa vào tỉ lệ chân/thân (§21.6); số liệu 27/10 lạc quan        | Lọc dữ liệu + retrain (P0-1)                                                                                        |
+| Máy GPU `khmt01` | Đã sắp xếp, không xoá gì; README trên máy                       | Dọn dẹp theo §21.7 khi chủ dự án đồng ý                                                                       |
+| Máy dev            | Backend gọi ML qua ngrok cần `OPENPOSE_API_KEY`                      | Đặt key vào `backend/.env`                                                                                        |
+| Git                 | Chưa commit gì từ 51fb7a4                                             | Chủ dự án tự commit theo §21.7                                                                                    |
 
 **Không được làm:** xoá bất cứ thứ gì trên `khmt01` khi chưa hỏi (quy định của chủ dự án ngày 27/10); in token tunnel/ngrok/API key; chạy `docker run` thủ công thay cho compose; sửa `asdr/ml/server` trực tiếp mà không sửa `API/` trong repo trước.
-
 
 ### 21.9 Kế hoạch fine-tune của chủ dự án (ghi lại nguyên văn; đã được §22.5 điều chỉnh)
 
@@ -1425,6 +1425,7 @@ Script `domain_gap.py` import đúng hàm của code train gốc và đưa hai b
 - **Tín hiệu ASD không chuyển được:** đa số đặc trưng có hướng ASD–Typical ngược nhau giữa hai bộ. Học trên Kinect thử trên video: AUC 0,50; chiều ngược lại 0,51 (chỉ ở mức đặc trưng tóm tắt; chưa thử bằng ST-GCN vì không có checkpoint).
 
 **Cần sửa trước khi train/fine-tune lại:**
+
 - lật x Kinect 2D (hoặc đổi Left/Right) cho cùng quy ước với OpenPose, kèm augmentation lật gương;
 - thống nhất thang thời gian: cắt theo chu kỳ bước hoặc resample theo giây, cùng kiểu resample cho hai bộ;
 - nội suy khớp thiếu thay vì giữ (0,0), sửa đồng thời `fine_tune.py` và `API/services/stgcn_service.py` để train và suy luận vẫn khớp nhau;
@@ -1437,14 +1438,12 @@ Dù sửa xong, §22.2 vẫn đúng: bộ video không đánh giá được ASD 
 
 - **Cả 99 video `Dataset_video` trùng byte với `video/video.avi` gốc** → cắt khung, độ phân giải, cầm tay/cố định đều có sẵn từ tác giả. `video_k` đã bị đánh số lại (chỉ 2/99 trùng số thư mục). Video gốc có 5 cặp Typical trùng theo thư mục (17=39, 22=5, 23=4, 24=7, 26=50); Typical 2 chỉ có `video1.avi` → 49 video. 9 trẻ ASD nặng không có trong `Dataset_video`.
 - **Metadata readme** (cột "Length": Typical là feet, ASD là mét):
-
-  | | ASD | Typical |
-  | --- | --- | --- |
+  |                            | ASD       | Typical   |
+  | -------------------------- | --------- | --------- |
   | Tuổi trung vị (min–max) | 9 (5–15) | 6 (2–14) |
-  | ≤ 4 tuổi | 0 | 13 |
-  | Nam / nữ | 42 / 8 | 26 / 24 |
-  | Chiều cao Kinect 3D | 1,22 m | 1,04 m |
-
+  | ≤ 4 tuổi                 | 0         | 13        |
+  | Nam / nữ                  | 42 / 8    | 26 / 24   |
+  | Chiều cao Kinect 3D       | 1,22 m    | 1,04 m    |
 - **Kinect cũng có lối tắt theo tuổi/thể trạng:** chiều cao đo từ Kinect AUC 0,85 (trong nhóm 5–10 tuổi vẫn 0,86); tuổi 0,70; giới 0,66; tuổi + giới (CV) 0,72. Tuổi tương quan với chiều cao (Typical 0,70) và chân/thân 3D (0,25–0,34) → chân/thân Kinect cao hơn ở ASD (§22.4) chủ yếu do tuổi. Ghép "Case k" ↔ thư mục k chắc với Typical (r = 0,58), chưa chắc với ASD (0,22).
 - `outlier_detection_report.txt` có sẵn cũng cho thấy vai trái nằm bên trái ảnh khi trẻ đi về phía camera → xác nhận Kinect 2D lật gương.
 - Số liệu 92–95% trong các bài báo dùng bộ này cần đọc với các lưu ý trên (trùng thư mục, augmentation cùng trẻ, tuổi).
@@ -1453,12 +1452,12 @@ Dù sửa xong, §22.2 vẫn đúng: bộ video không đánh giá được ASD 
 
 Áp dồn từng bước sửa lên cả hai bộ rồi đo lại độ lệch:
 
-| Cấu hình (dồn) | AUC domain, đặc trưng tóm tắt | AUC domain, tư thế từng khớp | Đặc trưng lệch mạnh (> 0,8) |
-| --- | --- | --- | --- |
-| Hiện tại | 0,99 | 1,00 | 19/30 |
-| + lật gương Kinect, nội suy khớp thiếu, lọc nhiễu | 1,00 | 0,99 | 15 |
-| + video 30 fps, cắt 1 chu kỳ bước (57/94 clip), resample tuyến tính | 0,98 | 0,99 | 11 |
-| + SpineMid tổng hợp cho Kinect, chỉnh độ dài xương Kinect theo OpenPose | **0,93** | **0,98** | **0** |
+| Cấu hình (dồn)                                                               | AUC domain, đặc trưng tóm tắt | AUC domain, tư thế từng khớp | Đặc trưng lệch mạnh (> 0,8) |
+| ------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------- | -------------------------------- |
+| Hiện tại                                                                      | 0,99                               | 1,00                             | 19/30                            |
+| + lật gương Kinect, nội suy khớp thiếu, lọc nhiễu                       | 1,00                               | 0,99                             | 15                               |
+| + video 30 fps, cắt 1 chu kỳ bước (57/94 clip), resample tuyến tính       | 0,98                               | 0,99                             | 11                               |
+| + SpineMid tổng hợp cho Kinect, chỉnh độ dài xương Kinect theo OpenPose | **0,93**                     | **0,98**                   | **0**                      |
 
 - Hệ số chỉnh xương (video/Kinect): tay 1,06–1,16; hông → SpineBase ~1,5; đùi 1,26; cẳng 1,32; bàn chân 1,38.
 - **Sửa được** bằng tiền xử lý: lật gương, thang thời gian, nhiễu, khớp thiếu, độ dài xương.
@@ -1472,13 +1471,326 @@ Dù sửa xong, §22.2 vẫn đúng: bộ video không đánh giá được ASD 
 
 **Đọc trước:** §14 (không git, không in `.env`, không viết nội dung M-CHAT); §22; `research_src/eval_runs/2026-10-29_data_audit/REPORT.md`.
 
-| Mạch | Trạng thái | Việc tiếp theo |
-| --- | --- | --- |
-| Dữ liệu video | Video màu gốc Dryad; nhãn trùng cách quay; không dùng nguyên trạng | Muốn số liệu thật thì cần dữ liệu đối chứng cùng giao thức |
-| Domain Kinect ↔ video | Lệch kỹ thuật sửa được; lệch từng khớp còn 0,98 (§22.8) | Chủ dự án quyết có thử 2D → 3D hay không; đổi tiền xử lý server thì calibrate lại |
-| Dữ liệu Kinect | Đã liệt kê nhóm trùng, file hỏng, lệch tuổi/giới (§22.7) | Split theo nhóm + cân bằng tuổi + loại ASD 8 khi bắt đầu train |
-| Checkpoint gốc | Không có trên máy dev | Tìm trên máy cũ `NCKH_25-26` nếu cần `leg_swap` |
-| Model đang deploy | Vẫn dựa vào lối tắt; số liệu 27/10 không dùng được | Giữ cảnh báo "tham khảo" trên UI |
-| Git | `research_src/eval_runs/` chưa có trong `.gitignore` | Chủ dự án quyết commit hay ignore artifact |
+| Mạch                  | Trạng thái                                                                                                                       | Việc tiếp theo                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Dữ liệu video        | Video màu gốc Dryad; nhãn trùng cách quay; không dùng nguyên trạng                                                        | Muốn số liệu thật thì cần dữ liệu đối chứng cùng giao thức             |
+| Domain Kinect ↔ video | Lệch kỹ thuật sửa được; lệch từng khớp còn 0,98 (§22.8). **30/10: thử camera ảo thay cho 3D → 0,94 (§23.3)** | Train ST-GCN với cờ mới (§23.4); đổi tiền xử lý server thì calibrate lại |
+| Dữ liệu Kinect       | Đã liệt kê nhóm trùng, file hỏng, lệch tuổi/giới (§22.7)                                                                | Split theo nhóm + cân bằng tuổi + loại ASD 8 khi bắt đầu train              |
+| Checkpoint gốc        | Không có trên máy dev                                                                                                          | Tìm trên máy cũ `NCKH_25-26` nếu cần `leg_swap`                           |
+| Model đang deploy     | Vẫn dựa vào lối tắt; số liệu 27/10 không dùng được                                                                     | Giữ cảnh báo "tham khảo" trên UI                                               |
+| Git                    | `research_src/eval_runs/` chưa có trong `.gitignore`                                                                         | Chủ dự án quyết commit hay ignore artifact                                      |
 
 **Không được làm:** lưu khung hình/video trẻ vào repo (ảnh xem tạm của phiên này đã xoá); sửa dữ liệu trong `Linux_src_2` khi chưa hỏi; dùng `Dataset_video` để báo cáo hiệu năng.
+
+---
+
+## 23. Nhật ký phiên 2026-10-30 (nhân vật Bạn Bin, deploy, hướng 1 camera ảo + hướng 2 kênh bất biến)
+
+Ba mạch việc. Không chạy git; không đụng DB chung (lúc làm DB không kết nối được). Chưa commit gì.
+
+### 23.1 Nhân vật 2D "Bạn Bin" trò chuyện bằng văn bản (Giai đoạn 5, F5/F6 — phần nhân vật)
+
+- **Nhân vật:** robot nửa thân trên màu xanh đậm, điểm vàng; tai thỏ vẫy được; cánh tay/cẳng tay là hai đoạn bo tròn nối bằng khớp cầu (gập góc nào cũng liền); 7 kiểu bàn tay, 6 mắt, 5 lông mày, 7 miệng, 9 biểu cảm, 14 cử chỉ + 4 kiểu tai; miệng mấp máy khi chữ đang hiện. Vẽ bằng SVG theo từng part (`components/buddy/BuddyParts.tsx`), ghép trong `BuddyCharacter.tsx`.
+- **JSON điều khiển** (`frontend/src/lib/buddy/`): 3 lớp — *Pose* (kênh phẳng `"armLeft.shoulder": 90`, `"face.mouth": "grin"`; số được nội suy và kẹp khoảng), *Clip* (keyframe; thư viện `clips.json`, `expressions.json`, hoặc viết inline), *Script* (chuỗi bước `{say, expression, gesture, ears, look, pose, hold}` — đây là thứ LLM trả về). `engine.ts`: `BuddyDirector` trộn neutral → biểu cảm (cross-fade) → các lớp clip → idle (thở, tai đung đưa, chớp mắt) → miệng nói. Quy ước góc tay ghi ở đầu `types.ts`.
+- **Backend:** `POST /api/buddy/chat` (`routes/buddy.ts`, `requireAuth`, giới hạn 20 lượt/phút/tài khoản, **không lưu hội thoại**). `services/buddyChat.ts` gọi Groq (OpenAI-compatible, JSON mode, `openai/gpt-oss-120b`, thử lại 1 lần, hết thì trả script dự phòng `fallback: true`). `lib/buddyScript.ts`: prompt hệ thống (an toàn cho trẻ: không hỏi thông tin riêng, không chẩn đoán, bé gặp nguy hiểm → bảo người lớn) + `sanitizeBuddyScript` (tên lạ → mặc định an toàn, tối đa 4 bước, 160 ký tự). Env mới: `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BASE_URL`, `GROQ_TIMEOUT_MS` (đã thêm vào `env.ts`, `.env.example`, `docker-compose.yml`). Test: `backend/test/buddyChat.test.ts` (6 test, đã thêm vào `npm test`).
+- **Frontend:** `/buddy` (chế độ trẻ, toàn màn hình, chọn bé, gợi ý trả lời, ô gõ) và `/admin/buddy` (Studio: bảng part, biểu cảm, cử chỉ, playground JSON). Sidebar: "Bạn Bin" (mục trợ giúp), "Nhân vật Bin" (trong Quản trị).
+- **Video demo:** `docs/demo/buddy-bin-demo.mp4` (~2 phút 10 giây). Quay bằng Playwright với token test ký bằng `JWT_SECRET` local và giả lập `/auth/me`, `/children` (DB chung lúc đó không kết nối được); phần chat qua Groq là thật (5/5 lượt không dùng dự phòng).
+- **Xem prompt:** trong `backend/` chạy `npx tsx -e "console.log(require('./src/lib/buddyScript').buildSystemPrompt('An', 5))"` (PowerShell: đặt `[Console]::OutputEncoding = [Text.Encoding]::UTF8` trước).
+- **Chưa có:** giọng nói (STT/TTS), RAG, nhớ hội thoại phía server. LLM đôi khi ra câu đố vô lý → nên siết prompt hoặc dùng kho câu đố soạn sẵn.
+
+### 23.2 Deploy lên `khmt01` (người dùng tự chạy theo hướng dẫn)
+
+- `git pull` trên server từng thất bại vì `repo/docker-compose.yml` có sửa tay (cổng frontend `3000` → `3010`) → lần build đầu chỉ build lại code cũ, backend không được tạo lại. Cách làm: `git stash && git pull && git stash pop` (giữ cổng 3010 vì `ports` của override bị **cộng dồn** với file gốc). Về lâu dài: trả `docker-compose.yml` về bản gốc và dùng `ports: !override ["3010:5173"]` trong override (Compose ≥ 2.24).
+- `GROQ_API_KEY`/`GROQ_MODEL` thêm vào `repo/.env`. Kiểm tra không in key: `docker compose exec backend sh -c 'test -n "$GROQ_API_KEY" && echo key-ok'`.
+- Build frontend trên server hỏng vì 7 lỗi TypeScript có sẵn → đã sửa: `App.tsx` (bỏ import `SettingsPage`), `Sidebar.tsx` (lấy `logout` từ `useAuth()` — trước đó bấm Đăng xuất bị lỗi), `ProfilePage.tsx` (`await apiErrorMessage`), `lib/types.ts` (`User.createdAt?`), `QuestionnairesPage.tsx` (bỏ import `Info`). `npm run build` của frontend đạt.
+- **Chưa xác nhận** kết quả cuối trên server (agent không có quyền đọc production).
+
+### 23.3 Hướng 1 + hướng 2: giảm lệch domain Kinect ↔ video mà không dùng 3D lúc suy luận
+
+Làm trong `E:\Scientific research 2025-2026\Linux_src_2\NCKH_25-26` (không có git; bản sao lưu `ULTIMATE_FINAL_TRAINING_ROUND.py.bak-20261030`). Chỉ sửa code, không đụng dữ liệu. Hướng dẫn đầy đủ: `NCKH_25-26/HUONG_DAN_CAMERA_AO_BAT_BIEN.md`.
+
+**Ý tưởng.** Thay vì nâng OpenPose 2D lên 3D lúc suy luận (§22.8), làm ngược lại lúc train: lấy skeleton Kinect 3D thật (`<k>.xlsx`, mét, cạnh mỗi `<k>_2d.xlsx`, kể cả augmentation) và "quay lại" bằng camera ảo kiểu điện thoại (hướng 1); thêm kênh ít phụ thuộc camera (hướng 2). Server vẫn chạy OpenPose 2D.
+
+**File (đều mới trừ dòng cuối):**
+
+| File                                        | Nội dung                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `virtual_camera.py`                       | Đọc 3D; camera ảo (độ cao, khoảng cách, lệch hướng, FOV, khung dọc/ngang, lia theo, rung tay; preset `phone`/`static`/`handheld_high`/`kinect`); chiếu lỗ kim; định nghĩa khớp như `_openpose25_to_kinect25` (SpineShoulder = Neck = giữa hai vai, Head ≈ mũi, SpineBase = giữa hông, hông nới ×1,4, SpineMid/Neck tính lại trên ảnh **sau** nhiễu); nhiễu rung, điểm nhảy, đoạn mất khớp |
+| `invariant_features.py`                   | Kênh `angle` (2), `bone_dir` (2), `angle_vel` (1) theo khớp, tính trên toạ độ ảnh **trước** chuẩn hoá; `gait_summary_features` (nhịp bước, độ đều bước, biên độ gối/khuỷu, lệch tay). Chỉ numpy                                                                                                                                                                                                        |
+| `sub_phase/tools/vcam_domain_check.py`    | Đo AUC domain theo pipeline audit 29/10 (import `domain_gap.py`, `domain_fix.py` qua `--audit-dir`); ghi `Training_logs/vcam_domain_check/` (gồm `bone_scale.json`)                                                                                                                                                                                                                                                                  |
+| `tests/` (3 file, 32 test)                | Hình học (khớp trái của trẻ nằm bên phải ảnh như OpenPose, v hướng xuống, trong khung, camera cao làm ngắn chân), bất biến tịnh tiến/phóng/xoay, **tắt cả hai = y hệt bản cũ** (so với file sao lưu), số kênh khớp model, cờ CLI                                                                                                                                                                          |
+| `HUONG_DAN_CAMERA_AO_BAT_BIEN.md`         | Hướng dẫn dùng (cờ, lệnh, kết quả, giới hạn)                                                                                                                                                                                                                                                                                                                                                                                           |
+| `ULTIMATE_FINAL_TRAINING_ROUND.py` (sửa) | Thêm cờ; `Kinect2DNormalizedDataset` đọc 3D / thêm `invariant` khi bật; `Config.get_effective_in_channels` và `DynamicFeaturesProcessor` cộng kênh; tên thí nghiệm có hậu tố `_vcam-…`/`_inv-…`; `__main__` có tham số → `main()`, không tham số → `run_sweep()` như cũ (trước đây `run_sweep()` ghi đè `sys.argv` nên cờ dòng lệnh bị bỏ qua)                                        |
+
+**Hướng dẫn dùng (chạy trong `NCKH_25-26`; hai công tắc độc lập, mặc định tắt):**
+
+```bash
+# Hướng 1 — camera ảo (val/test: camera cố định theo clip; --vcam-eval original = file 2D gốc)
+python ULTIMATE_FINAL_TRAINING_ROUND.py --data-root Datas/Kinect25_ASD/Kinect25_ASD_NoVideos \
+  --normalization bbox --remove-head-neck --virtual-camera --vcam-preset phone \
+  --vcam-bone-scale "$(tr -d '\n ' < Training_logs/vcam_domain_check/bone_scale.json)"
+
+# Hướng 2 — kênh bất biến (concat: thêm vào x,y; replace: chỉ dùng kênh bất biến)
+python ULTIMATE_FINAL_TRAINING_ROUND.py --data-root Datas/Kinect25_ASD/Kinect25_ASD_NoVideos \
+  --normalization bbox --remove-head-neck --invariant-features angle bone_dir --invariant-mode concat
+
+# Cả hai: ghép hai nhóm cờ trên.
+
+# Đo lệch domain (không train) và test
+python sub_phase/tools/vcam_domain_check.py \
+  --audit-dir "E:/JupyterWorkspace/NCKH/Main/research_src/eval_runs/2026-10-29_data_audit"
+python -m pytest tests -q
+```
+
+Cờ phụ của hướng 1: `--vcam-hip-width` (1,4), `--vcam-noise` (0,008), `--vcam-missing` (0,012), `--vcam-missing-fill interp|zero`, `--vcam-no-openpose-joints` (chỉ để so sánh). Train: camera mới mỗi lần lấy mẫu. `config.json`/checkpoint lưu `vcam_config`, `invariant_features`, `invariant_mode`.
+
+**Kết quả đo (AUC domain Kinect ↔ video; 0,5 = không phân biệt được; 87 clip Kinect × 5 camera, 94 video qua tiền xử lý cấu hình 8):**
+
+| Cấu hình                                                   | Đặc trưng tóm tắt | Tư thế từng khớp | Kênh bất biến (hướng 2) | Gait tóm tắt (hướng 2) | Đặc trưng lệch > 0,8 |
+| ------------------------------------------------------------ | ---------------------- | -------------------- | ---------------------------- | -------------------------- | ------------------------ |
+| A mốc §22.8 (Kinect 2D, cấu hình 8)                      | 0,926                  | 0,984                | 0,993                        | 0,922                      | 0                        |
+| C camera ảo `phone`                                       | 0,967                  | 0,963                | 0,977                        | 0,821                      | 8                        |
+| E camera ảo, giữ định nghĩa khớp Kinect                | 0,997                  | 0,993                | 1,000                        | 0,820                      | 13                       |
+| F = C + chỉnh xương trên ảnh 2D                         | 0,873                  | 0,953                | 0,977                        | 0,847                      | 0                        |
+| **G = C + `bone_scale` trong 3D (cái train dùng)** | **0,854**        | **0,939**      | 0,972                        | 0,856                      | 0                        |
+
+- G giảm lệch hơn mốc ở đặc trưng tóm tắt (0,93 → 0,85) và tư thế từng khớp (0,98 → 0,94) — lần đầu xuống dưới 0,98 (tiêu chí §22.8), nhưng **vẫn còn xa 0,5**.
+- Đổi định nghĩa khớp sang cách OpenPose là bắt buộc (E tệ nhất). Lần đo đầu kênh bất biến tách domain gần 1,0 vì SpineMid/Neck tổng hợp bị thêm nhiễu (ở video thì thẳng hàng tuyệt đối) và SpineShoulder Kinect cao hơn đường vai → đã sửa trong `virtual_camera.py`.
+- Gait tóm tắt (hướng 2) giảm lệch 0,92 → 0,82. Kênh bất biến từng khớp chỉ giảm nhẹ (0,99 → 0,97): phần lệch còn lại chủ yếu là nhiễu/làm mượt (`jitter_ratio`, `acc_mean` đứng đầu danh sách lệch).
+- Học ASD trên Kinect thử trên video vẫn ~0,43–0,63, nhưng nhãn `Dataset_video` trùng cách quay (§22.2) nên con số này **không** dùng làm tiêu chí.
+- Chỉ là đo bằng logistic trên đặc trưng; **chưa train ST-GCN đầy đủ** với các cờ mới (mới chạy thử 1 epoch trên CPU để kiểm pipeline).
+
+**Deploy model train bằng các cờ này:** hướng 1 không cần đổi server (chỉ calibrate lại). Hướng 2 bắt buộc tính cùng kênh ở `API/services/stgcn_service.py` (chép `invariant_features.py`, áp trên toạ độ ảnh trước chuẩn hoá, cùng tên khớp và fps); `fine_tune.py`, `stgcn18_predict_openpose_excel.py` cũng chưa có.
+
+**Giới hạn:** không sinh được trẻ đi lòng vòng; không sửa lối tắt tuổi/chiều cao Kinect; không thêm trẻ mới; `bone_scale` fit theo phân bố video (không dùng nhãn) là căn chỉnh domain, không phải giải phẫu.
+
+### 23.4 Bàn giao cho chat mới
+
+| Mạch         | Trạng thái                                                                                                                                                                                                   | Việc tiếp theo                                                                                                                                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bạn Bin      | Chạy được (văn bản), có video demo                                                                                                                                                                      | Giọng nói; siết prompt / kho câu đố; quyết có lưu hội thoại không (cần consent)                                                                                                                                            |
+| Deploy 30/10  | Đã hướng dẫn, chưa xác nhận kết quả cuối                                                                                                                                                            | Người dùng kiểm `key-ok`, `200`, `/buddy`; chuyển cổng 3010 sang override                                                                                                                                                   |
+| Hướng 1 + 2 | Code + 32 test + đo domain xong trong `NCKH_25-26`; chạy thử 1 epoch CPU với cả hai cờ đạt (6 kênh vào, lưu checkpoint + `config.json` đủ cấu hình; số liệu 1 epoch không có ý nghĩa) | Train ST-GCN trên GPU với cấu hình G và G + `--invariant-features angle bone_dir`, split theo nhóm trẻ + cân bằng tuổi (§22.5), chạy lại cổng lối tắt; giảm lệch nhiễu (làm mượt cùng một kiểu cho hai bên) |
+| Git           | Nhiều thay đổi chưa commit (frontend, backend, `docs/demo/`)                                                                                                                                             | Người dùng tự commit; video 9 MB nên để ngoài git                                                                                                                                                                               |
+
+**Không được làm:** lưu hội thoại của trẻ khi chưa có consent; dùng `Dataset_video` để báo cáo hiệu năng; deploy model hướng 2 khi server chưa tính cùng kênh.
+
+### 23.5 Phiên 2026-10-31: cross-validation theo trẻ
+
+- Kết quả bbox trên split sạch `splits_kinect_clean_ge5_seed42.json` (do chủ dự án chạy): AUC test 0,86 theo clip, **0,89 theo trẻ**, 10/12 trẻ đúng; ASD_2, ASD_20 sai cả 8/8 clip. Val 0,99 vì val chỉ có 12 trẻ và được dùng để chọn epoch. Một split 12 trẻ không đủ để so cấu hình.
+- Lối tắt đo trên 80 trẻ của split sạch: chiều cao trong metadata AUC 0,84; **độ dài clip gốc 0,76**; chân/thân 0,64. Đặc trưng động (`velocity`/`acceleration`) được tính **sau** khi resample về 128 frame với `fps=30` → độ lớn mang theo độ dài clip gốc; `spine_base` chỉ dịch gốc, giữ thang pixel. Vì vậy SpineBase + Acceleration phải qua cổng lối tắt.
+- Mới: `NCKH_25-26/cv_stgcn.py` + `tests/test_cv_folds.py`. Chia K fold theo trẻ, phân tầng theo nhãn, lặp theo seed (val 7 ASD + 5 Typical lấy từ phần còn lại); gọi script train nguyên trạng cho từng fold; suy luận lại val/test bằng đúng `_direction_kwargs`; tổng hợp AUC cấp trẻ gộp out-of-fold, ngưỡng Youden từ val, cổng lối tắt (độ dài clip, chiều cao, tuổi; Spearman trong từng nhãn), so sánh theo cặp giữa các tag. Kết quả nằm trong `Training_logs/cv/` (`folds/`, `runs/<tag>/r<seed>_f<k>/`, `summary_*`).
+- Lưu ý: dataset trả `subject_id` là số thư mục ("13") → ASD_13 trùng khoá với Typical_13; `cv_stgcn.py` đã ghép thêm nhãn. Code nào khác gom theo `batch["subject_id"]` cũng phải làm vậy.
+- Đã chạy thử end-to-end (1 seed × 5 fold × 1 epoch, CPU; khoảng 2,5 phút/fold, chủ yếu là đọc xlsx).
+- **Chạy trên `khmt01`:** chép `cv_stgcn.py` vào `~/Luan_workspace/NCKH_25-26/`. Script mặc định đọc `splits_kinect_clean_ge5_seed42.json` nằm cạnh nó; kết quả ở `Training_logs/cv/` trên server.
+
+### 23.6 Kết quả CV thật (31/10, `khmt01`, GPU) — bàn giao cho chat mới
+
+Cấu hình: split sạch ge5 (80 trẻ: 46 ASD, 34 Typical), 5 fold × 3 seed (41, 42, 43), 80 epoch, `--remove-head-neck`. Hai tag: `bbox` (`--normalization bbox`) và `spinebase_acc` (`--normalization spine_base --include-dynamics --dynamic-features acceleration`). Tổng hợp: `Training_logs/cv/summary_bbox_vs_spinebase_acc/` (`per_seed.csv`, `shortcut_gate.csv`, `subjects_<tag>.csv`).
+
+| Tag           | AUC cấp trẻ (gộp out-of-fold) | AUC clip       | Độ nhạy @0,5 | Độ đặc hiệu @0,5 | Balanced acc @0,5 | Balanced acc @ngưỡng val |
+| ------------- | -------------------------------- | -------------- | --------------- | --------------------- | ----------------- | -------------------------- |
+| bbox          | 0,884 ± 0,024                   | 0,873 ± 0,023 | 0,891 ± 0,038  | 0,775 ± 0,061        | 0,833 ± 0,013    | 0,826 ± 0,024             |
+| spinebase_acc | **0,921 ± 0,008**         | 0,886 ± 0,013 | 0,833 ± 0,025  | 0,814 ± 0,017        | 0,824 ± 0,011    | 0,840 ± 0,029             |
+
+- **So theo cặp:** spinebase_acc hơn bbox ở cả 3 seed (ΔAUC +0,010 / +0,043 / +0,058, trung bình +0,037). Mức hơn nhỏ, nhưng cùng dấu ở mọi seed. Hơn ở **khả năng xếp hạng** (AUC), không hơn ở quyết định @0,5: balanced accuracy gần như bằng nhau. bbox nhạy hơn nhưng kém đặc hiệu; spinebase_acc cân bằng hơn. Ở mức trẻ (P trung bình qua seed, ngưỡng 0,5): 6 trẻ chỉ spinebase_acc đúng, 4 trẻ chỉ bbox đúng.
+- **Ổn định:** spinebase_acc ở seed 42 có độ lệch giữa các fold 0,117 và best epoch trung vị 5 → có fold chọn epoch rất sớm (val 12 trẻ, chọn theo val accuracy clip). bbox: best epoch trung vị 23–31.
+- **Cổng lối tắt:**
+  - Lo ngại "gia tốc mang theo độ dài clip" **không xảy ra**: Spearman giữa P và độ dài clip trong từng nhãn ≈ 0 (spinebase_acc −0,01 / 0,05).
+  - Chiều cao: Spearman trong từng nhãn 0,26 (Typical) / 0,22 (ASD) với spinebase_acc, so với 0,23 / 0,11 với bbox — thấp hơn mức đáng lo (0,4), nhưng spinebase_acc bám chiều cao hơn một chút.
+  - **Chưa trả lời được câu hỏi chính:** chỉ riêng chiều cao đã đạt AUC 0,84 trên 80 trẻ này, model đạt 0,88–0,92. Spearman trong từng nhãn không phát hiện được lối tắt nằm *giữa* hai nhãn. Cần đo xem model có thêm thông tin ngoài chiều cao không (việc 1 bên dưới).
+  - `auc_model` trong bảng cổng lối tắt (0,921 / 0,942) tính trên P trung bình 3 seed (tương đương ensemble) → **không** dùng làm số hiệu năng; số hiệu năng là `auc_subject` theo từng seed.
+- **So với hai bài đã đăng** (IEA/AIE 2026: SpineBase + Acceleration accuracy 93,9%, bbox + full DMF 92,3%; IUKM 2026: bbox 91,4%): accuracy @0,5 suy từ độ nhạy/đặc hiệu ở đây ≈ 0,83 (spinebase_acc) và ≈ 0,84 (bbox) → thấp hơn khoảng 8–10 điểm. Không so tuyệt đối được, vì bài dùng mọi lứa tuổi, chia theo thư mục (trẻ trùng vắt qua train/test), một split. Nhưng **thứ tự "SpineBase + Acc tốt nhất" vẫn giữ** trên split sạch, xét theo AUC.
+- Chủ dự án đã được giải thích: đây là lỗi phương pháp (trùng thư mục có sẵn trong bộ Dryad, lệch tuổi/chiều cao, một split), không phải vi phạm liêm chính. Khi có số sạch thì báo GVHD (TS. Lê Thị Thu Nga, tác giả liên hệ của cả hai bài) và các đồng tác giả; nhóm quyết định có xin *Correction* với Springer hay không; không dùng 93,9% / 91,4% mà không kèm lưu ý trong hồ sơ AI for Life hay bài mới.
+
+**Việc tiếp theo (theo thứ tự):**
+
+1. **Kiểm tra chiều cao (quan trọng nhất):** thêm vào `cv_stgcn.py summarize` phép đo out-of-fold: logistic chỉ có chiều cao so với chiều cao + P của model (cùng fold); AUC của P trong từng nhóm chiều cao (chia tertile) hoặc trên các cặp ASD–Typical ghép theo chiều cao. Nếu P không thêm gì ngoài chiều cao thì model đang học kích thước cơ thể. Chiều cao lấy từ `subject_info.height_m` (đo từ Kinect 3D).
+2. **Thêm seed** (44, 45) cho cả hai tag để chốt mức +0,037. Fold cũ được giữ nguyên, chỉ chạy phần mới: `python cv_stgcn.py run --tag <tag> --seeds 41 42 43 44 45 -- <đúng tham số cũ>`.
+3. **Chạy trên split mọi lứa tuổi** (`make_clean_kinect_splits.py --age-filter all` → `splits_kinect_clean_all_seed42.json`, dùng `--base-splits` + tag mới) để đo ảnh hưởng của tuổi và để có số gần với quần thể trong hai bài đã đăng.
+4. **Sửa đặc trưng động:** tính velocity/acceleration trên chuỗi gốc theo fps thật rồi mới resample; thử thêm spine_base + chuẩn hoá tỉ lệ thân (`--normalization scale`/`combined`). Mục đích: dùng được trên video điện thoại (thang pixel và fps khác Kinect). Đổi tiền xử lý thì phải sửa đồng thời `API/services/stgcn_service.py` và calibrate lại.
+5. Chọn best epoch theo val AUC cấp trẻ hoặc val loss thay cho val accuracy clip (giảm trường hợp best epoch = 5).
+6. Báo GVHD sau khi có kết quả việc 1–3.
+
+### 23.7 Phiên 2026-11-02: kiểm tra chiều cao (việc 1 của §23.6) — đã chạy trên số thật
+
+Sửa trong `NCKH_25-26` (không có git): `cv_stgcn.py` (hàm mới `height_check_seed`, `height_check`, `match_by_height`; `summarize` in thêm mục "KIỂM TRA CHIỀU CAO" và có cờ `--height-caliper` (mặc định 0,03 m), `--n-boot` (2000)); test mới `tests/test_cv_height_check.py` (5 test, dữ liệu giả có đáp án: P chỉ từ chiều cao → ΔAUC ≈ 0 và KTC chứa 0; P có tín hiệu nhãn → ΔAUC > 0, KTC > 0). Cả thư mục `tests/` đạt 41/41. Không đổi phần train/suy luận, không cần train lại.
+
+Ba phép đo, cấp trẻ, từng seed (chiều cao từ `subject_info.height_m`):
+
+1. **Stacking theo đúng fold CV:** logistic(chiều cao) so với logistic(chiều cao + logit P), fit trên 4 fold, chấm fold còn lại → `auc_height_cv`, `auc_height_p_cv`, `d_auc` + KTC 95% bootstrap theo trẻ (`d_auc_lo/hi`); kèm kiểm định tỉ số hợp lý trong mẫu (`lr_p`).
+2. **Tertile chiều cao:** AUC của P trong từng tertile và AUC gộp chỉ trên cặp ASD–Typical cùng tertile (`auc_p_within_tertile`), đặt cạnh mức chiều cao tự đạt trong cùng tertile (`auc_h_within_tertile`).
+3. **Cặp ghép chiều cao** (ghép 1-1 tối ưu, |Δh| ≤ caliper): tỉ lệ cặp P(ASD) > P(Typical) so với tỉ lệ cặp ASD cao hơn (`matched_frac_p_asd_higher` / `matched_frac_h_asd_higher`), sign test.
+
+**Cách đọc:** P thêm thông tin ngoài chiều cao khi `d_auc_lo > 0` ở mọi seed **và** trong tertile/cặp ghép P vẫn hơn rõ cột chiều cao tương ứng. So với cột `*_h_*` chứ không so với 0,5: trên dữ liệu giả ASD cao hơn, cặp ghép vẫn còn ~90% cặp ASD cao hơn. Khi đó thử `--height-caliper 0.015`. Nếu P ≈ cột chiều cao và `d_auc` quanh 0 thì model đang học kích thước cơ thể → báo GVHD theo hướng đó và ưu tiên việc 4 (chuẩn hoá tỉ lệ thân).
+
+**Chạy trên `khmt01`** (người dùng): chép `cv_stgcn.py` và `tests/test_cv_height_check.py` vào `~/Luan_workspace/NCKH_25-26/`, rồi `python cv_stgcn.py summarize --tags bbox spinebase_acc`. Không cần GPU. File mới trong `Training_logs/cv/summary_bbox_vs_spinebase_acc/`: `height_check.csv` (theo seed), `height_tertiles.csv`, `height_pairs_<tag>.csv` (cặp ghép với P trung bình qua seed, chỉ để đọc từng trường hợp).
+
+**Kết quả thật** (`khmt01`, caliper 0,03 m, 3 seed; file ở `Training_logs/cv/summary_bbox_vs_spinebase_acc/`):
+
+| Tag           | AUC P         | AUC chỉ chiều cao (CV) | AUC chiều cao + P | ΔAUC (KTC 95% từng seed)                       | AUC P trong tertile | AUC chiều cao trong tertile | Cặp ghép: P(ASD) cao hơn / ASD cao hơn |
+| ------------- | ------------- | ----------------------- | ------------------ | ------------------------------------------------ | -------------------- | ---------------------------- | --------------------------------------- |
+| bbox          | 0,884 ± 0,024 | 0,822 ± 0,012           | 0,877 ± 0,029      | +0,055 ± 0,017; KTC chứa 0 ở cả 3 seed          | 0,869 ± 0,048        | 0,505                        | 0,91 / 0,73 (10–12 cặp)                 |
+| spinebase_acc | 0,921 ± 0,008 | 0,822 ± 0,012           | 0,922 ± 0,007      | **+0,100 ± 0,015; KTC > 0 ở cả 3 seed**   | 0,880 ± 0,006        | 0,505                        | 0,85 / 0,73 (10–12 cặp)                 |
+
+- **Kết luận:** model **không chỉ học chiều cao**. Trong cùng tertile, chiều cao không tách nhãn (0,505) nhưng P vẫn đạt 0,87–0,88. Tertile giữa (1,12–1,22 m, 18 ASD / 8 Typical, cân bằng nhất) có AUC P 0,95 ở cả hai tag. Với spinebase_acc, phần thêm ngoài chiều cao chắc chắn (KTC > 0 ở mọi seed); với bbox chỉ có xu hướng dương.
+- Kiểm định tỉ số hợp lý `lr_p` ≈ 0 ở cả hai tag, nhưng tính trong mẫu nên chỉ để tham khảo.
+- **Giới hạn:** chiều cao hai nhóm chồng nhau ít. Tertile thấp có 4 ASD / 23 Typical, tertile cao 24 ASD / 3 Typical → AUC hai tertile này rất nhiễu. Cặp ghép chỉ được 10–12 cặp và vẫn lệch chiều cao (73% cặp ASD cao hơn) → không đủ để kết luận riêng. Siết caliper sẽ còn ít cặp hơn.
+- **Tuổi và giới trong tertile** (từ `subject_info` của split ge5): cùng dải chiều cao, tuổi lệch mạnh nhưng **ngược chiều** giữa các tertile (tertile thấp: ASD 8,0 so với Typical 6,4 tuổi; tertile giữa và cao: ASD 8,7 so với 11,0–11,3). Một model học theo tuổi không thể đạt AUC cao ở cả ba tertile → tuổi khó giải thích kết quả. Giới: ASD nhiều nam hơn ở mọi tertile (100/89/75% so với 65/75/67%). Chỉ riêng giới thì yếu (AUC ≈ 0,58), nhưng chưa loại hẳn được.
+- **Chưa chứng minh model học "dáng đi":** mới loại được giả thuyết "chỉ chiều cao". Vẫn còn có thể là tỉ lệ cơ thể theo tuổi, giới, hoặc khác biệt điều kiện ghi hình giữa hai nhóm trong bộ Dryad.
+
+**Cổng hiệp biến (thêm cùng phiên, chưa chạy trên số thật):** `cv_stgcn.py summarize` in thêm mục "CỔNG HIỆP BIẾN" và ghi `covariate_check.csv`.
+- Mốc so sánh: logistic(chiều cao, tuổi, tuổi², nam) so với cùng logistic đó cộng thêm logit P, cùng fold CV, có KTC bootstrap. Phần stacking dùng chung hàm `_stack_compare` với kiểm tra chiều cao.
+- Thêm AUC của P trong từng giới, và AUC chỉ tính trên cặp ASD–Typical cùng giới và cùng tertile chiều cao, đặt cạnh điểm chỉ-hiệp-biến trên đúng các cặp đó.
+- Test: thêm 3 test trong `tests/test_cv_height_check.py`; cả thư mục `tests/` đạt 44/44.
+- Chạy: `python cv_stgcn.py summarize --tags bbox spinebase_acc` (chép lại `cv_stgcn.py` lên `khmt01`).
+
+**Về việc đưa model này lên server:** server đã tự đọc `normalization`/`dynamic_features` từ config checkpoint (`_build_model_input`), nên đổi checkpoint gần như không cần sửa code. Nhưng chưa nên deploy:
+- CV chỉ tạo 15 model fold, mỗi model train trên khoảng 56 trẻ. Muốn deploy phải train một model cuối trên cả 80 trẻ, với số epoch cố định chọn từ CV.
+- Các con số ~0,83 / AUC 0,92 là trên Kinect. Lệch domain Kinect ↔ video điện thoại ở §22.6 vẫn chưa sửa: Kinect 2D lật gương, thang thời gian chênh khoảng 10 lần, khớp thiếu là (0,0). Riêng `spine_base` còn giữ thang pixel và gia tốc phụ thuộc fps.
+- Vì vậy số Kinect không chuyển sang được video trên server, và chưa có bộ video nào có nhãn sạch để kiểm (§22.2).
+
+**Việc tiếp theo:** chạy cổng hiệp biến; rồi việc 2–6 của §23.6. Trước khi deploy, cần việc 4 (đặc trưng theo fps thật, chuẩn hoá tỉ lệ thân) và các sửa ở §22.6.
+
+### 23.8 Phiên 2026-11-02 (tiếp): domain v2 — tiền xử lý chung train ↔ server
+
+**Vì sao:** ngoài lệch Kinect ↔ video (§22.6), train và server còn xử lý khác nhau. Train làm chuẩn hoá → kéo clip Kinect ~35 frame lên 128 → tính gia tốc với fps=30 trên chuỗi đã kéo. Server làm resample nearest → chuẩn hoá → gia tốc. Riêng `spine_base` còn giữ đơn vị pixel. Đo trên dữ liệu thật: gia tốc video lớn gấp **21,8 lần** Kinect với tag spinebase_acc (16,7 lần với bbox). Vì vậy **không deploy được model CV §23.6** lên server.
+
+**Module mới `gait_domain.py`** (chỉ numpy). File **phải giống hệt** ở `NCKH_25-26/gait_domain.py` và `API/services/gait_domain.py`; có test so byte ở cả hai phía. Các bước, áp như nhau cho cả hai nguồn, trên 17 khớp, theo quy ước trái/phải của OpenPose:
+1. Đưa về cùng quy ước khớp. Kinect 2D: lật gương, SpineShoulder = trung điểm vai, hông nới ×1,4, SpineBase = trung điểm hông. OpenPose: ánh xạ BODY_25 + mặt nạ hợp lệ (confidence ≥ 0,05); bàn chân chọn từng frame theo thứ tự ngón cái → gót → cổ chân; thân dùng cùng định nghĩa trung điểm. Camera ảo đã đúng quy ước sẵn.
+2. Loại frame có chiều dài thân lệch quá 2 lần trung vị, và khớp cách hông quá 5 lần thân. Sau đó nội suy khớp mất (không giữ (0,0)).
+3. Resample về **30 fps theo fps thật** của video.
+4. Lọc Gauss σ = 1 frame.
+5. Chuẩn hoá theo thân: gốc SpineBase từng frame, chia cho chiều dài thân trung vị của **cả clip**.
+6. Vận tốc/gia tốc tính theo giây.
+7. **Cửa sổ cố định 32 frame** (~1,07 s) thay vì kéo cả clip lên 128. Train: Kinect lấy cửa sổ ngẫu nhiên (val/test lấy giữa clip). Server: trượt cửa sổ stride 16, trung bình logit. Clip ngắn hơn cửa sổ mới bị kéo giãn.
+
+**Train (`NCKH_25-26`, có bản sao lưu `*.bak-20261102`):** `ULTIMATE_FINAL_TRAINING_ROUND.py` có cờ mới:
+- `--domain-v2` (bắt buộc kèm `--remove-head-neck`; đặc trưng động chỉ hỗ trợ `velocity`/`acceleration`; chưa kết hợp được với `--invariant-features`);
+- `--v2-window` (32), `--v2-smooth` (1,0), `--v2-hip-width` (1,4), `--v2-mirror-aug`.
+
+Checkpoint lưu `config.domain_v2`. Khi tắt cờ, pipeline cũ không đổi. `cv_stgcn.py` tự nhận cấu hình qua `_direction_kwargs`.
+
+**Server (`API/`):**
+- `services/gait_domain.py` (mới).
+- `services/stgcn_service.py`: nhánh domain v2 khi checkpoint có `config.domain_v2`. Có kiểm tra 17 khớp, đúng thứ tự kênh, đúng `version`; sai thì từ chối nạp. Kết quả dự đoán có thêm `preprocessing` (fps nguồn, `fps_assumed`, tỉ lệ khớp mất…). `windows` tính theo frame gốc.
+- `server_openpose.py`: truyền fps video (`probe_video`, hoặc `metadata.json` khi gọi `/subjects/{id}/predict`) xuống predictor; thiếu fps thì giả định 30 và báo `fps_assumed: true`.
+- Checkpoint cũ (không có `domain_v2`) chạy y như trước.
+
+**Kiểm chứng:**
+- `NCKH_25-26/tests` 60/60 đạt (16 test mới trong `test_gait_domain.py`), `API/tests` 46/46 đạt (8 test mới trong `test_domain_v2.py`).
+- **Test parity:** cùng một dáng đi, đưa vào dạng "file Kinect 2D" (ảnh gương, hông hẹp, 30 fps) qua dataset train và dạng "video 60 fps" (thang pixel khác) qua server → **cùng tensor đầu vào model** (vị trí lệch < 1e-5).
+- Chạy thật: train 1 epoch CPU với `--domain-v2 --virtual-camera … --dynamic-features acceleration`, nạp checkpoint vào `STGCNPredictor`, dự đoán một video Dataset_video 60 fps → 5 cửa sổ, `fps_assumed: false`.
+
+**Đo lệch domain** (`sub_phase/tools/dv2_domain_check.py`; kết quả ở `Training_logs/dv2_domain_check/results.csv`). Cùng bộ đặc trưng trên đúng tensor model nhìn thấy; 87 clip Kinect, 94 video:
+
+| Cấu hình | AUC domain (random forest) | Gia tốc video / Kinect | Đặc trưng lệch > 0,8 |
+| --- | --- | --- | --- |
+| Cũ, spine_base | 1,000 | 21,8 | 74 |
+| Cũ, bbox | 1,000 | 16,7 | 58 |
+| v2, file 2D Kinect | 0,997 | 1,8 | 19 |
+| v2, camera ảo phone + bone_scale | 0,999 | 0,87 | 2 |
+| v2, camera ảo không bone_scale | 0,998 | 0,98 | 8 |
+
+- v2 **sửa được lệch kỹ thuật**: thang gia tốc về gần 1, số đặc trưng lệch mạnh giảm rõ. Nhưng **hai domain vẫn tách gần như hoàn toàn**. Còn lại: hông dao động dọc ở camera ảo gấp đôi video (`pos_std_Hip*_y` 0,94–0,95), và mẫu nhiễu gia tốc giữa các khớp khác nhau. Khớp với kết luận §22.8: skeleton cảm biến độ sâu khác skeleton suy từ ảnh màu.
+- **Bài học về phép đo:** lần đo đầu, logistic cho v2 + camera ảo AUC 0,576. Đó là sai: 3 file Kinect 3D (ASD 4, ASD 8, ASD 22) có frame hỏng, chiếu ra thân dài tới 100.000 px, và ngoại lai cỡ 10⁶ làm hỏng logistic. Bước 2 ở trên được thêm để xử lý chuyện này. Từ nay dùng số random forest làm chính. Các frame hỏng này cũng đã ảnh hưởng tới các lần train `--virtual-camera` trước (§23.3).
+- `bone_scale` được fit trên chính 94 video dùng để đo, nên số của dòng đó hơi lạc quan.
+
+**Chạy CV với domain v2 trên `khmt01`** (chép `gait_domain.py`, `ULTIMATE_FINAL_TRAINING_ROUND.py`, `cv_stgcn.py`, `virtual_camera.py`, `tests/`):
+
+```bash
+python cv_stgcn.py run --tag dv2_acc --seeds 41 42 43 --     --data-root Datas/Kinect25_ASD/Kinect25_ASD_NoVideos --remove-head-neck --domain-v2     --include-dynamics --dynamic-features acceleration --device cuda
+python cv_stgcn.py run --tag dv2_vcam_acc --seeds 41 42 43 --     --data-root Datas/Kinect25_ASD/Kinect25_ASD_NoVideos --remove-head-neck --domain-v2     --virtual-camera --vcam-preset phone     --vcam-bone-scale "$(tr -d '
+ ' < Training_logs/vcam_domain_check/bone_scale.json)"     --include-dynamics --dynamic-features acceleration --device cuda
+python cv_stgcn.py summarize --tags spinebase_acc dv2_acc dv2_vcam_acc
+```
+
+**Deploy:** chép `API/services/gait_domain.py`, `API/services/stgcn_service.py`, `API/server_openpose.py` lên ML server. Không ảnh hưởng checkpoint đang chạy. Chỉ đổi checkpoint sang model domain v2 khi:
+- có model cuối train trên đủ trẻ;
+- đã calibrate lại;
+- chấp nhận rằng chưa có bằng chứng model chuyển được sang video (AUC domain ≈ 1,0, không có video nhãn sạch — §22.2).
+
+UI giữ cảnh báo "tham khảo".
+
+**Việc tiếp theo:**
+1. Chạy CV hai tag trên, xem domain v2 làm giảm AUC trên Kinect bao nhiêu (cửa sổ 1 s, mất thang pixel và độ dài clip).
+2. Thu hẹp hai dấu hiệu còn lại: biên độ dọc của hông trong camera ảo, và mô hình nhiễu khớp OpenPose (đo phổ nhiễu trên video rồi đưa vào `virtual_camera`).
+3. Cổng hiệp biến tuổi + giới (§23.7) vẫn chưa chạy trên số thật.
+
+### 23.9 Phiên 2026-11-02 (tiếp): nhiễu camera ảo + domain v2.2
+
+**Đo trước khi sửa** (`sub_phase/tools/noise_profile.py` → `Training_logs/noise_profile/profile.csv`). Tách phần dư nhanh (nhiễu) khỏi phần chậm (chuyển động) theo từng khớp, đơn vị chiều dài thân:
+- OpenPose thật gần như không rung dọc ở hông (0,008). Camera ảo cũ thêm nhiễu Gauss cùng tỉ lệ cho mọi khớp → hông rung gấp 3,4 lần.
+- Nhiễu thật có tương quan thời gian nhẹ. Cũ: nhiễu trắng.
+- Phần chuyển động chậm của video lớn gấp 2–2,5 lần, phần lớn do **trẻ đi lại gần camera nên to dần trong ảnh**. Chuẩn hoá một hệ số cho cả clip không bỏ được hiệu ứng này.
+
+**Sửa `gait_domain.py` → `domain-v2.2`** (đã chép sang `API/services/`; server từ chối checkpoint v2.1, nhưng chưa có checkpoint v2 nào được dùng):
+- Chiều dài thân làm mượt theo thời gian (`scale_smooth_s` = 0,5 s; đệm biên phản xạ lẻ để không lệch ở hai đầu clip) thay cho một hệ số cả clip. Test: người to gấp đôi trong 2 s → lệch 0,006 so với clip không lại gần (cách cũ lệch 0,41).
+- SpineShoulder/SpineBase luôn là trung điểm vai/hông cho mọi nguồn, sau nội suy.
+- `smooth(..., pad="odd")` mới.
+
+**Sửa `virtual_camera.py`:**
+- `noise_model="profile"`: biên độ riêng từng khớp × trục theo chiều dài thân trong ảnh + AR(1) (`noise_ar`).
+- Mặc định vẫn `"iid"`, giữ nguyên hành vi cũ.
+
+**Script train:** cờ `--vcam-noise-profile Training_logs/vcam_noise/noise_profile.json`.
+
+**Hiệu chỉnh** (`sub_phase/tools/calibrate_vcam_noise.py`):
+- Fit trên một nửa video, đánh giá trên nửa còn lại, 2 fold.
+- Fit cuối trên toàn bộ video → `Training_logs/vcam_noise/noise_profile.json` (ρ = 0).
+
+| Camera ảo (đánh giá trên nửa video không dùng để fit) | Lệch biên độ nhiễu | Lệch tự tương quan | AUC domain RF | RF chỉ gia tốc |
+| --- | --- | --- | --- | --- |
+| nhiễu cũ + bone_scale | 0,250 | 0,066 | 0,990 | 0,988 |
+| nhiễu profile + bone_scale | 0,185 | 0,135 | 0,979 | 0,953 |
+| nhiễu cũ, không bone_scale | 0,208 | 0,064 | 0,982 | 0,976 |
+| nhiễu profile, không bone_scale | 0,166 | 0,131 | 0,979 | 0,939 |
+
+`dv2_domain_check.py` (fit trên toàn bộ video nên hơi lạc quan):
+- Cấu hình `v2_vcam_noise_profile`: RF 0,986, gia tốc 0,947, **chỉ 1 đặc trưng đơn lẻ > 0,8** (`pos_std_SpineShoulder_y` 0,81).
+- So với 6 đặc trưng khi dùng nhiễu cũ; hông từ 0,95 xuống dưới 0,8.
+
+**Kết luận:**
+- Sửa nhiễu khớp được biên độ và gỡ được các dấu hiệu đơn lẻ (hông, thang gia tốc).
+- Hai domain **vẫn tách được khi kết hợp nhiều đặc trưng yếu** (RF ~0,98, chủ yếu ở phần tư thế 0,96–0,98).
+- Tiếp tục chỉnh nhiễu/tiền xử lý khó đi xa hơn. Lệch còn lại là khác biệt tư thế giữa skeleton độ sâu và skeleton ảnh màu (§22.8).
+- Muốn tiến tiếp cần một trong ba hướng:
+  - huấn luyện đối kháng domain (DANN) với video không nhãn;
+  - nâng 2D lên 3D;
+  - **video điện thoại có nhãn thật** quay cùng giao thức cho cả hai nhóm (cách duy nhất để đo hiệu năng trên video).
+- Tự tương quan nhiễu thật đo trên cửa sổ 32 frame khớp kém hơn cũ (0,13 so với 0,07). Lưới ρ chọn 0 hoặc 0,3; mô hình AR(1) đơn giản chưa mô tả đúng.
+
+**Kiểm chứng:**
+- `NCKH_25-26/tests` 65/65 (mới: 3 test nhiễu camera ảo, 2 test gait_domain).
+- `API/tests` 46/46.
+
+**Lệnh train với nhiễu mới:**
+
+```bash
+python cv_stgcn.py run --tag dv2_vcamnoise_acc --seeds 41 42 43 --     --data-root Datas/Kinect25_ASD/Kinect25_ASD_NoVideos --remove-head-neck --domain-v2     --virtual-camera --vcam-preset phone     --vcam-bone-scale "$(tr -d '
+ ' < Training_logs/vcam_domain_check/bone_scale.json)"     --vcam-noise-profile Training_logs/vcam_noise/noise_profile.json     --include-dynamics --dynamic-features acceleration --device cuda
+```
+
+Cần chép thêm `Training_logs/vcam_noise/noise_profile.json` và `Training_logs/vcam_domain_check/bone_scale.json` lên `khmt01`.
+
+### 23.10 Tạm ngưng (2026-11-02, 18:45)
+
+**Quyết định của chủ dự án:** không có MVP đạt > 80% trên video trước 7h30 thì tạm ngưng mạch model.
+
+**Lý do không có MVP:**
+- Không có video nhãn sạch (§22.2) để đo.
+- Kinect ↔ video vẫn tách được (AUC domain ≈ 0,98, §23.9).
+- Model đang deploy dựa vào lối tắt (§21.6).
+- Model Kinect đạt khoảng 83% độ chính xác cân bằng nhưng chỉ trên Kinect (§23.6).
+
+**Job có thể còn chạy trên `khmt01`:**
+- `~/Luan_workspace/NCKH_25-26/run_cv_dv2_20261102.sh` (nohup), log `Training_logs/cv/run_cv_dv2_20261102.log`.
+- Gồm tag `dv2_acc` rồi `dv2_vcamnoise_acc`, sau đó `summarize --tags spinebase_acc bbox dv2_acc dv2_vcamnoise_acc` → `Training_logs/cv/summary_spinebase_acc_vs_bbox_vs_dv2_acc_vs_dv2_vcamnoise_acc/`.
+- Nếu bị dừng, chạy lại đúng script: fold nào đã có `predictions.csv` sẽ được bỏ qua.
+
+**Bản sao lưu trước khi chép code mới:** `*.bak-20261102` trên server và máy dev.
+
+**Khi tiếp tục:**
+1. Đọc kết quả summarize (đổi sang domain v2 mất bao nhiêu AUC trên Kinect).
+2. Việc quyết định là có dữ liệu video điện thoại có nhãn, hai nhóm cùng giao thức quay, làm bộ test. Không có bộ này thì không báo được độ chính xác trên video.
+3. UI giữ cảnh báo "tham khảo".

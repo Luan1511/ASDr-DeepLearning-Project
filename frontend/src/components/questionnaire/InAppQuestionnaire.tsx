@@ -114,7 +114,7 @@ function Flow({
   onUsePaper: () => void
 }) {
   const navigate = useNavigate()
-  const [initial] = useState(() => loadInAppDraft(child.id, content.contentVersion))
+  const [initial] = useState(() => loadInAppDraft(child.id, content.revision))
   const [respondent, setRespondent] = useState<Respondent | null>(initial.respondent)
   const [answers, setAnswers] = useState<McHatAnswers>(initial.answers)
   const [index, setIndex] = useState(initial.index)
@@ -146,7 +146,7 @@ function Flow({
 
   function persist(next: { respondent?: Respondent | null; answers?: McHatAnswers; index?: number }) {
     saveInAppDraft(child.id, {
-      contentVersion: content.contentVersion,
+      contentVersion: content.revision,
       respondent: next.respondent !== undefined ? next.respondent : respondent,
       answers: next.answers ?? answers,
       index: next.index ?? index,
@@ -241,6 +241,7 @@ function Flow({
         answers: full,
         consentVersion: statement.version,
         mode: 'IN_APP',
+        revision: content.revision,
       })
       clearInAppDraft(child.id)
       // Without the Follow-Up pages in the content file, the result page offers the assisted Follow-Up entry.
@@ -255,6 +256,9 @@ function Flow({
       } else if (code === 'INCOMPLETE_ANSWERS') {
         const serverMissing = missingItemsOf(e)
         if (serverMissing.length) goTo(serverMissing[0] - 1)
+      } else if (code === 'QUESTIONNAIRE_CONTENT_CHANGED') {
+        clearInAppDraft(child.id)
+        setContentGone(true)
       } else if (code === 'QUESTIONNAIRE_CONTENT_UNAVAILABLE') {
         setContentGone(true)
       }
@@ -392,15 +396,20 @@ function Flow({
         )}
         {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{error}</div>}
         {contentGone && (
-          <button type="button" className={`btn-duo-secondary ${Q_NAV_BUTTON}`} disabled={submitting} onClick={onUsePaper}>
-            {PAPER_ENTRY_LINK}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={`btn-duo-secondary ${Q_NAV_BUTTON}`} onClick={() => window.location.reload()}>
+              Tải lại bảng hỏi
+            </button>
+            <button type="button" className={`btn-duo-secondary ${Q_NAV_BUTTON}`} onClick={onUsePaper}>
+              {PAPER_ENTRY_LINK}
+            </button>
+          </div>
         )}
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             className={`btn-duo ${Q_NAV_BUTTON}`}
-            disabled={blockers.length > 0 || missing.length > 0 || submitting}
+            disabled={blockers.length > 0 || missing.length > 0 || submitting || contentGone}
             onClick={() => void submit()}
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Send className="h-4 w-4" aria-hidden="true" />}

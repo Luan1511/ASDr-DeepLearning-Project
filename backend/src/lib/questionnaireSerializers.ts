@@ -35,6 +35,7 @@ import {
   type StepAnswer,
   type StepPosition,
 } from './questionnaires/followUpEngine'
+import { storedContentVersion } from './questionnaires/mchatContent'
 import type { ChecklistContent, ChoiceContent, McHatContentFile, PromptContent, TextContent } from './questionnaires/mchatContent'
 import { followUpItem, type ChecklistNode } from './questionnaires/mchatRfStructure'
 
@@ -86,10 +87,10 @@ function followUpSummary(row: QuestionnaireResponse, inAppAvailable: boolean) {
   const progress = storedProgress(row)
   const failed = sortedUnique(row.failedItems)
   const stillFailing = new Set(row.followUpFailedItems)
-  // Like the per-item scores, review flags are output only once the Follow-Up is COMPLETED.
-  const reviewItems = status === 'COMPLETED' ? (progress?.reviewItems ?? []) : []
+  // Review flags become actionable after all interview steps have been answered.
+  const reviewItems = progress?.complete ? progress.reviewItems : []
   return {
-    inAppAvailable: moderate && status === 'PENDING' && inAppAvailable,
+    inAppAvailable: moderate && status === 'PENDING' && inAppAvailable && !progress?.complete,
     inAppStarted: (progress?.stepCount ?? 0) > 0,
     itemsDone: progress ? progress.items.filter((i) => i.state === 'DONE').length : 0,
     itemsTotal: moderate ? failed.length : 0,
@@ -165,6 +166,7 @@ function copyrightLines(content: McHatContentFile): { copyrightNotice: string; c
 export function serializeQuestionnaireContent(content: McHatContentFile) {
   return {
     contentVersion: content.contentVersion,
+    revision: storedContentVersion(content),
     ...copyrightLines(content),
     translationSource: content.translationSource,
     ui: { ...content.ui },
@@ -369,11 +371,12 @@ export function serializeFollowUpState(
   const { maybe: _maybe, ...responseOptions } = options
   return {
     responseId: row.id,
+    revision: storedContentVersion(content),
     status,
     ...copyrightLines(content),
     items,
     current,
-    ...(completed ? { response: serializeQuestionnaireResponse(row, responseOptions) } : {}),
+    ...(progress.complete || completed ? { response: serializeQuestionnaireResponse(row, responseOptions) } : {}),
   }
 }
 

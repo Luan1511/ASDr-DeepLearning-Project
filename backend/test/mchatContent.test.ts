@@ -291,7 +291,10 @@ describe('content loader', () => {
     assert.equal(s.licenseRef, 'test-only')
     assert.equal(s.translationSource, 'synthetic')
     assert.deepEqual(getReadyContent(file), content)
-    assert.equal(storedContentVersion(content), `test-placeholder@${structureHash()}`)
+    const revision = storedContentVersion(content)
+    assert.ok(revision.startsWith(`test-placeholder@${structureHash()}@`))
+    assert.equal(storedContentVersion({ ...content }), revision)
+    assert.notEqual(storedContentVersion({ ...content, translationSource: 'changed' }), revision)
 
     write('mchat-rf.vi.json', JSON.stringify({ ...content, structureHash: 'ffffffffffffffff' }), new Date('2026-01-03T00:00:00Z'))
     s = getContentStatus(file)
@@ -671,10 +674,11 @@ describe('in-app serializers', () => {
     const dto = serializeQuestionnaireResponse(row({ ...done, followUpStatus: 'COMPLETED', outcome: 'SCREEN_NEGATIVE' }))
     assert.equal(dto.followUp.needsReview, true)
     assert.deepEqual(dto.followUp.reviewItems, [20])
-    // Not before COMPLETED (like the per-item scores).
+    // A finished interview may require confirmation before scores are released.
     const pending = serializeQuestionnaireResponse(row({ failedItems: [20], followUpAnswers: a as never }))
-    assert.equal(pending.followUp.needsReview, false)
-    assert.deepEqual(pending.followUp.reviewItems, [])
+    assert.equal(pending.followUp.needsReview, true)
+    assert.deepEqual(pending.followUp.reviewItems, [20])
+    assert.deepEqual(pending.followUp.itemScores, [])
   })
 })
 

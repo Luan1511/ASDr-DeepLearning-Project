@@ -133,6 +133,7 @@ export async function submitMchatResponse(
     answers: Record<number, boolean>
     consentVersion: string
     mode?: QuestionnaireResponseMode
+    revision?: string
   },
 ): Promise<QuestionnaireResponseDto> {
   const answers: Record<string, boolean> = {}
@@ -144,6 +145,7 @@ export async function submitMchatResponse(
     consentAccepted: true,
     consentVersion: input.consentVersion,
     ...(input.mode ? { mode: input.mode } : {}),
+    ...(input.revision ? { revision: input.revision } : {}),
   })
   return normalizeResponse(res.data.response)
 }
@@ -170,8 +172,8 @@ export async function answerFollowUp(id: string, input: FollowUpAnswerInput): Pr
   )
 }
 
-export async function followUpBack(id: string): Promise<FollowUpStateDto> {
-  return normalizeFollowUpState(unwrap((await api.post(`/questionnaire-responses/${id}/follow-up/back`)).data, 'state'))
+export async function followUpBack(id: string, revision: string): Promise<FollowUpStateDto> {
+  return normalizeFollowUpState(unwrap((await api.post(`/questionnaire-responses/${id}/follow-up/back`, { revision })).data, 'state'))
 }
 
 export async function deleteQuestionnaireResponse(id: string): Promise<{ deleted: boolean }> {
@@ -444,6 +446,7 @@ export const STEP_MISMATCH_MESSAGE =
 const API_ERROR_MESSAGE: Record<string, string> = {
   QUESTIONNAIRE_DISABLED: QUESTIONNAIRE_DISABLED_MESSAGE,
   QUESTIONNAIRE_CONTENT_UNAVAILABLE: CONTENT_UNAVAILABLE_MESSAGE,
+  QUESTIONNAIRE_CONTENT_CHANGED: 'Nội dung bảng hỏi đã thay đổi. Hãy tải lại để đọc phiên bản mới trước khi trả lời.',
   DATABASE_MIGRATION_REQUIRED: QUESTIONNAIRE_MIGRATION_MESSAGE,
   AGE_OUT_OF_RANGE: 'Tuổi của con hiện nằm ngoài khoảng 16–30 tháng của M-CHAT-R/F nên chưa gửi được.',
   INCOMPLETE_ANSWERS: 'Còn câu chưa có câu trả lời. Các câu còn thiếu được đánh dấu bên dưới.',

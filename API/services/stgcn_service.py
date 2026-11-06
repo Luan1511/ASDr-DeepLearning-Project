@@ -13,6 +13,13 @@ Pipeline (one video -> one probability):
    openpose_excel_stgcn_pipeline._predict_sequence, which mirrors the
    fine-tune preprocessing of the deployed checkpoint (nearest resample ->
    normalisation -> dynamics). Window logits are averaged.
+
+Checkpoints whose config carries ``domain_v2`` (trained with --domain-v2) skip
+steps 2 and 4 and use services/gait_domain.py instead, the SAME file the
+training script imports: OpenPose -> 17 joints with a validity mask, gap
+interpolation, resampling to 30 fps using the video's real fps, Gaussian
+smoothing, body-length normalisation, dynamics per second, then fixed-length
+windows (stride = half a window) whose logits are averaged.
 """
 
 from pathlib import Path
@@ -21,11 +28,15 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import torch
 
+from services import gait_domain as gd
 from services.preprocessing import preprocess_skeleton_sequence
 from openpose_excel_stgcn_pipeline import (
     _load_stgcn_from_checkpoint,
+    _predict_one,
     _predict_sequence,
 )
+
+FPS_FALLBACK = 30.0
 
 NUM_BODY25 = 25
 OP_NECK = 1
@@ -134,10 +145,38 @@ class STGCNPredictor:
         self.model = self.model.to(self.device)
         self.model.eval()
 
+        dv2 = (self.ckpt.get("config") or {}).get("domain_v2")
+        self.domain_v2 = gd.DomainV2Config.from_dict(dv2) if dv2 else None
+        if self.domain_v2 is not None:
+            self._check_domain_v2_checkpoint()
+
+    def _check_domain_v2_checkpoint(self) -> None:
+        """The checkpoint's channel layout must be exactly what gait_domain produces."""
+        cfg = self.ckpt.get("config") or {}
+        if int(self.ckpt.get("num_joints", 0)) != len(gd.KINECT17):
+            raise ValueError("domain_v2 checkpoint must use 17 joints")
+        dyn = list(cfg.get("dynamic_features") or []) if cfg.get("include_dynamics") else []
+        if sorted(dyn) != sorted(self.domain_v2.dynamic_features):
+            raise ValueError(f"checkpoint dynamic_features {dyn} != domain_v2 {list(self.domain_v2.dynamic_features)}")
+        if dyn and list(dyn) != [f for f in gd.DYNAMIC_FEATURES if f in dyn]:
+            raise ValueError(f"dynamic_features order {dyn} differs from gait_domain {gd.DYNAMIC_FEATURES}")
+        if self.domain_v2.version != gd.VERSION:
+            raise ValueError(f"checkpoint preprocessing {self.domain_v2.version} != server {gd.VERSION}")
+
     # ------------------------------------------------------------------ public
 
     def settings(self) -> Dict[str, object]:
         """What the server reports next to the checkpoint hash."""
+        if self.domain_v2 is not None:
+            return {
+                "preprocessing": self.domain_v2.version,
+                "seq_len": self.domain_v2.window,
+                "target_fps": self.domain_v2.target_fps,
+                "window_frames": self.domain_v2.window,
+                "window_stride": max(1, self.domain_v2.window // 2),
+                "resample": "linear",
+                "min_person_frames": self.min_person_frames,
+            }
         return {
             "seq_len": self.seq_len,
             "preprocess": self.preprocess,
@@ -153,7 +192,9 @@ class STGCNPredictor:
         sample_id: str = "api_sample",
         threshold: float = 0.5,
         temperature: float = 1.0,
+        fps: Optional[float] = None,
     ) -> Dict[str, object]:
+        """fps: frame rate of the source video (used by domain_v2 checkpoints only)."""
         seq_xy, confs, quality = self.frames_to_sequence(frames)
 
         if quality["frames_tracked"] < self.min_person_frames:
@@ -161,6 +202,14 @@ class STGCNPredictor:
                 f"chỉ có {quality['frames_tracked']} frame theo dõi được người "
                 f"(cần tối thiểu {self.min_person_frames})"
             )
+
+        if self.domain_v2 is not None:
+            result = self._predict_domain_v2(seq_xy, confs, fps, sample_id, threshold, temperature)
+            result["T_in"] = quality["frames_total"]
+            result["quality"] = quality
+            result["reliable"] = self._is_reliable(quality)
+            result["label_name"] = self._label_name(result)
+            return result
 
         if self.preprocess:
             seq_xy = preprocess_skeleton_sequence(
@@ -389,6 +438,89 @@ class STGCNPredictor:
             "n_windows": len(windows),
             "windows": per_window,
             "p_asd_window_mean": float(np.mean([w["p_asd"] for w in per_window])),
+        }
+
+    # ------------------------------------------------------------- domain v2
+
+    def domain_v2_windows(self, seq_xy: np.ndarray, confs: np.ndarray, fps: Optional[float]):
+        """Tracked BODY_25 clip -> (model inputs (n, W, 17, C), window spans in source frames, info).
+
+        Exposed separately so tests can compare it with the training dataset output.
+        """
+        cfg = self.domain_v2
+        fps_ok = fps is not None and np.isfinite(fps) and 1.0 <= float(fps) <= 240.0
+        fps_used = float(fps) if fps_ok else FPS_FALLBACK
+
+        present = np.any(confs > 0, axis=1)
+        idx = np.flatnonzero(present)
+        if idx.size == 0:
+            raise ValueError("không có frame nào theo dõi được người")
+        first, last = int(idx[0]), int(idx[-1]) + 1  # bỏ đoạn không có người ở hai đầu
+        seq17, valid = gd.openpose25_to_17(seq_xy[first:last], confs[first:last], cfg.min_conf)
+        feat, prep = gd.prepare_clip(seq17, valid, fps_used, cfg)
+
+        # Frames with a tracked person, on the resampled time axis (same resample as the joints)
+        present_t = gd.resample_fps(present[first:last].astype(np.float64)[:, None], fps_used, cfg.target_fps)[:, 0] >= 0.5
+        W = cfg.window
+        stride = max(1, W // 2)
+        starts = gd.window_starts(feat.shape[0], W, stride)
+        kept = [s for s in starts if present_t[s:s + W].mean() >= self.min_window_coverage] or starts
+        inputs = np.stack([gd.crop(feat, W, s) for s in kept])
+
+        scale = fps_used / cfg.target_fps  # resampled frame -> source frame
+        # [start, end) in source frames: map the first and LAST (inclusive) resampled frame back
+        spans = [(first + int(round(s * scale)),
+                  min(last, first + int(round((min(s + W, feat.shape[0]) - 1) * scale)) + 1)) for s in kept]
+        info = {
+            "version": cfg.version,
+            "fps_source": round(fps_used, 3),
+            "fps_assumed": not fps_ok,
+            "target_fps": cfg.target_fps,
+            "window_frames": W,
+            "window_stride": stride,
+            "frames_prepared": prep["frames_prepared"],
+            "missing_joint_fraction": round(prep["missing_frac"], 4),
+            "stretched": feat.shape[0] < W,
+        }
+        return inputs, spans, info
+
+    def _predict_domain_v2(
+        self,
+        seq_xy: np.ndarray,
+        confs: np.ndarray,
+        fps: Optional[float],
+        sample_id: str,
+        threshold: float,
+        temperature: float,
+    ) -> Dict[str, object]:
+        """Average window LOGITS, then softmax(T) — same convention as _predict_windows."""
+        inputs, spans, info = self.domain_v2_windows(seq_xy, confs, fps)
+        logits, per_window = [], []
+        for x, (start, end) in zip(inputs, spans):
+            _, p_asd_w, _, lg = _predict_one(self.model, x, self.device, temperature=temperature)
+            logits.append(lg)
+            per_window.append({"start": int(start), "end": int(end), "p_asd": float(p_asd_w)})
+
+        mean_logits = np.mean(np.asarray(logits, dtype=np.float64), axis=0)
+        probs = torch.softmax(torch.from_numpy(mean_logits) / float(temperature), dim=0).numpy()
+        p_asd = float(probs[1])
+        return {
+            "file": sample_id,
+            "T_used": int(sum(end - start for start, end in spans)),
+            "J": len(gd.KINECT17),
+            "p_typical": float(probs[0]),
+            "p_asd": p_asd,
+            "logit_typical": float(mean_logits[0]),
+            "logit_asd": float(mean_logits[1]),
+            "pred_argmax": int(np.argmax(probs)),
+            "label_threshold": int(p_asd >= float(threshold)),
+            "threshold": float(threshold),
+            "temperature": float(temperature),
+            "resample": "linear",
+            "n_windows": len(spans),
+            "windows": per_window,
+            "p_asd_window_mean": float(np.mean([w["p_asd"] for w in per_window])),
+            "preprocessing": info,
         }
 
     def _label_name(self, result: Dict[str, object]) -> str:

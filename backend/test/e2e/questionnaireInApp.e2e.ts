@@ -14,7 +14,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { QUESTIONNAIRE_CONSENT_VERSION } from '../../src/lib/consent'
 import { secondBirthday } from '../../src/lib/questionnaires/age'
-import { buildContentTemplate } from '../../src/lib/questionnaires/mchatContent'
+import { buildContentTemplate, storedContentVersion, type McHatContentFile } from '../../src/lib/questionnaires/mchatContent'
 import { MCHAT_RF } from '../../src/lib/questionnaires/mchatRf'
 import { followUpItem, structureHash } from '../../src/lib/questionnaires/mchatRfStructure'
 import { BACKEND_PORT, E2eHarness, api, type ApiResponse, type SeededUser } from './harness'
@@ -120,7 +120,10 @@ function answers(atRisk: number[] = []): Record<string, boolean> {
   return out
 }
 
-function submit(user: SeededUser, child: string, body: Record<string, unknown> = {}) {
+async function submit(user: SeededUser, child: string, body: Record<string, unknown> = {}) {
+  const revision = body.mode === 'IN_APP'
+    ? (await call('GET', '/questionnaires/content', { token: user.token })).body.revision
+    : undefined
   return call('POST', `/children/${child}/questionnaires`, {
     token: user.token,
     json: {
@@ -129,6 +132,7 @@ function submit(user: SeededUser, child: string, body: Record<string, unknown> =
       answers: answers(),
       consentAccepted: true,
       consentVersion: QUESTIONNAIRE_CONSENT_VERSION,
+      revision,
       ...body,
     },
   })
@@ -136,10 +140,11 @@ function submit(user: SeededUser, child: string, body: Record<string, unknown> =
 
 const getState = (id: string, user: SeededUser = parentA) =>
   call('GET', `/questionnaire-responses/${id}/follow-up`, { token: user.token })
+const syntheticRevision = () => storedContentVersion(syntheticContent() as McHatContentFile)
 const postAnswer = (id: string, json: Record<string, unknown>, user: SeededUser = parentA) =>
-  call('POST', `/questionnaire-responses/${id}/follow-up/answer`, { token: user.token, json })
+  call('POST', `/questionnaire-responses/${id}/follow-up/answer`, { token: user.token, json: { revision: syntheticRevision(), ...json } })
 const postBack = (id: string, user: SeededUser = parentA) =>
-  call('POST', `/questionnaire-responses/${id}/follow-up/back`, { token: user.token, json: {} })
+  call('POST', `/questionnaire-responses/${id}/follow-up/back`, { token: user.token, json: { revision: syntheticRevision() } })
 const getResponse = (id: string, user: SeededUser = parentA) =>
   call('GET', `/questionnaire-responses/${id}`, { token: user.token })
 
@@ -431,7 +436,7 @@ scenario('2. content ready (picked up without restart) → content endpoint; IN_
   const c = await call('GET', '/questionnaires/content', { token: parentA.token })
   assert.equal(c.status, 200, JSON.stringify(c.body))
   assert.match(c.headers.get('cache-control') ?? '', /no-store/)
-  assert.deepEqual(Object.keys(c.body).sort(), ['contentCopyrightNotice', 'contentVersion', 'copyrightNotice', 'stage1', 'translationSource', 'ui'])
+  assert.deepEqual(Object.keys(c.body).sort(), ['contentCopyrightNotice', 'contentVersion', 'copyrightNotice', 'revision', 'stage1', 'translationSource', 'ui'])
   assert.equal(c.body.contentVersion, CONTENT_VERSION)
   assert.equal(c.body.copyrightNotice, MCHAT_RF.copyright, "always the authors' line")
   assert.equal(c.body.contentCopyrightNotice, CONTENT_COPYRIGHT)
@@ -447,18 +452,20 @@ scenario('2. content ready (picked up without restart) → content endpoint; IN_
   assertNoPrivateData(c.body)
   assert.ok(!JSON.stringify(c.body).includes('licenseRef'), 'license reference is for admins only')
 
+  assertError(await submit(parentA, childId, { mode: 'IN_APP', revision: 'stale' }), 409, 'QUESTIONNAIRE_CONTENT_CHANGED')
+
   // LOW in app: stored with "<contentVersion>@<structureHash>", no Follow-Up state.
   const low = await submit(parentA, childId, { mode: 'IN_APP', answers: answers([1, 2]) })
   assert.equal(low.status, 201, JSON.stringify(low.body))
   assert.equal(low.body.response.mode, 'IN_APP')
-  assert.equal(low.body.response.contentVersion, `${CONTENT_VERSION}@${structureHash()}`)
+  assert.equal(low.body.response.contentVersion, c.body.revision)
   assert.equal(low.body.response.band, 'LOW')
   assert.equal(low.body.response.outcome, 'SCREEN_NEGATIVE')
   assert.equal(low.body.response.followUp.inAppAvailable, false)
   assert.ok(low.body.response.rescreenAfter, 'LOW under 24 months → rescreen date')
   const lowRow = await h.prisma.questionnaireResponse.findUniqueOrThrow({ where: { id: low.body.response.id } })
   assert.equal(lowRow.followUpAnswers, null)
-  assert.equal(lowRow.contentVersion, `${CONTENT_VERSION}@${structureHash()}`)
+  assert.equal(lowRow.contentVersion, c.body.revision)
   assertError(await getState(low.body.response.id), 409, 'FOLLOW_UP_NOT_APPLICABLE')
   assertError(await postAnswer(low.body.response.id, { item: 1, node: 'prompt', value: 'ACK' }), 409, 'FOLLOW_UP_NOT_APPLICABLE')
   assertError(await postBack(low.body.response.id), 409, 'FOLLOW_UP_NOT_APPLICABLE')
@@ -737,7 +744,7 @@ scenario('3. MODERATE IN_APP → Follow-Up walk (back, STEP_MISMATCH, maybe, mos
 
 let negativeId = ''
 
-scenario('4. IN_APP Follow-Up → SCREEN_NEGATIVE (items 3, 8, 12, 14, 18, 19; "Other" → review flag; stop at first yes)', async () => {
+scenario('4. IN_APP Follow-Up needs confirmation (items 3, 8, 12, 14, 18, 19; "Other" → review flag; stop at first yes)', async () => {
   const res = await submit(parentA, childId, { mode: 'IN_APP', answers: answers([3, 8, 12, 14, 18, 19]) })
   assert.equal(res.status, 201, JSON.stringify(res.body))
   negativeId = res.body.response.id
@@ -787,20 +794,17 @@ scenario('4. IN_APP Follow-Up → SCREEN_NEGATIVE (items 3, 8, 12, 14, 18, 19; "
   assert.equal(s.current.step.kind, 'YES_NO', 'item 8 starts with a question')
   s = await walk(negativeId, s, plan, trace)
 
-  assert.equal(s.status, 'COMPLETED')
-  assert.deepEqual(
-    s.items.map((i: any) => [i.item, i.score, i.needsReview]),
-    [[3, 1, true], [8, 0, false], [12, 0, true], [14, 0, false], [18, 0, false], [19, 0, false]],
-  )
+  assert.equal(s.status, 'PENDING')
+  assert.equal(s.current, null)
+  assert.ok(s.items.every((item: any) => item.score === null))
   const done = s.response
-  assert.equal(done.outcome, 'SCREEN_NEGATIVE')
-  assert.equal(done.followUpSource, 'IN_APP')
-  assert.equal(done.followUpFailCount, 1)
-  assert.deepEqual(done.followUpFailedItems, [3])
+  assert.equal(done.outcome, 'FOLLOW_UP_NEEDED')
+  assert.equal(done.followUpSource, null)
+  assert.equal(done.followUp.inAppAvailable, false)
+  assert.deepEqual(done.followUp.itemScores, [])
   assert.equal(done.followUp.needsReview, true)
   assert.deepEqual(done.followUp.reviewItems, [3, 12])
-  assert.equal(done.rescreenAfter, rescreenFor20Months, 'negative Follow-Up before 24 months → rescreen after the 2nd birthday')
-  assert.ok(done.actions.body.join(' ').includes('sinh nhật 2 tuổi'))
+  assert.equal(done.rescreenAfter, null)
 
   assert.deepEqual(trace, [
     '3.prompt', ...examplesOf(3, 'cl'),
@@ -822,10 +826,17 @@ scenario('4. IN_APP Follow-Up → SCREEN_NEGATIVE (items 3, 8, 12, 14, 18, 19; "
   assert.deepEqual(fa.items['12'].path[9], { node: 'cnt', example: 'n10o', value: 'YES', otherText: OTHER_MARKER })
   assert.equal(fa.items['12'].needsReview, true)
   const row = await h.prisma.questionnaireResponse.findUniqueOrThrow({ where: { id: negativeId } })
-  assert.equal(row.rescreenAfter?.toISOString(), rescreenFor20Months)
+  assert.equal(row.rescreenAfter, null)
   const read = await getResponse(negativeId)
   assertNoPrivateData(read.body)
-  assert.deepEqual(read.body.response.followUp.itemScores.map((x: any) => x.score), [1, 0, 0, 0, 0, 0])
+  assert.deepEqual(read.body.response.followUp.itemScores, [])
+  const confirmed = await call('POST', `/questionnaire-responses/${negativeId}/follow-up`, {
+    token: parentA.token,
+    json: { source: 'HEALTH_WORKER', stillFailingItems: [3] },
+  })
+  assert.equal(confirmed.status, 200)
+  assert.equal(confirmed.body.response.outcome, 'SCREEN_NEGATIVE')
+  assert.equal(confirmed.body.response.rescreenAfter, rescreenFor20Months)
 })
 
 scenario('5. assisted override replaces partial in-app answers; entry-mode MODERATE can take the in-app Follow-Up; ownership', async () => {
@@ -963,6 +974,14 @@ scenario('7. content removed mid-Follow-Up → 503, partial answers kept; restor
   } finally {
     fs.renameSync(aside, contentFile)
   }
+  // Changing content under the same version name cannot silently mix interviews.
+  try {
+    writeContent(contentFile, { ...syntheticContent(), translationSource: 'e2e-updated' }, 11)
+    assertError(await getState(pendingId), 409, 'QUESTIONNAIRE_CONTENT_UNAVAILABLE')
+    assertError(await postBack(pendingId), 409, 'QUESTIONNAIRE_CONTENT_UNAVAILABLE')
+  } finally {
+    writeContent(contentFile, syntheticContent(), 13)
+  }
   const s = (await getState(pendingId)).body
   checkView(s)
   assert.equal(stepKey(s), '10.cl.p2', 'resumes from the stored path')
@@ -1076,7 +1095,7 @@ scenario('9b. stage 1 only (Follow-Up texts empty): items in the app, Follow-Up 
   assert.equal(r.band, 'MODERATE')
   assert.equal(r.followUpStatus, 'PENDING')
   assert.equal(r.followUp.inAppAvailable, false)
-  assert.equal(r.contentVersion, `${CONTENT_VERSION}@${structureHash()}`)
+  assert.equal(r.contentVersion, content.body.revision)
   const row = await h.prisma.questionnaireResponse.findUniqueOrThrow({ where: { id: r.id } })
   assert.equal(row.followUpAnswers, null)
   assertError(await getState(r.id), 503, 'QUESTIONNAIRE_CONTENT_UNAVAILABLE')

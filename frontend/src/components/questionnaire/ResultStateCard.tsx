@@ -22,6 +22,7 @@ const FOLLOW_UP_DONE_WITH: Record<FollowUpSource, string> = {
 export function ResultStateCard({ response, childName }: { response: QuestionnaireResponseDto; childName: string | null }) {
   const state = resultStateOf(response)
   const review = response.followUp.needsReview
+  const awaitingReview = review && response.followUpStatus === 'PENDING'
   const reviewItems = [...response.followUp.reviewItems].sort((a, b) => a - b)
   return (
     <div className="card-duo space-y-4 p-6 print:p-0 print:shadow-none">
@@ -35,7 +36,9 @@ export function ResultStateCard({ response, childName }: { response: Questionnai
           Điểm phần đầu: {response.totalScore}/{MCHAT_ITEM_COUNT}
         </span>
       </div>
-      <p className="text-sm font-semibold leading-relaxed text-duo-ink">{RESULT_STATE_TEXT[state]}</p>
+      <p className="text-sm font-semibold leading-relaxed text-duo-ink">{awaitingReview
+        ? 'Bạn đã trả lời hết phần hỏi thêm. Một số câu cần nhân viên y tế xem lại trước khi có kết quả.'
+        : RESULT_STATE_TEXT[state]}</p>
       {response.followUpStatus === 'COMPLETED' && (
         <p className="text-xs font-bold text-duo-mute">
           Đã hoàn tất phần hỏi thêm (Follow-Up)
