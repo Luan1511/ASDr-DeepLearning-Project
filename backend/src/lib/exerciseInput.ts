@@ -3,6 +3,7 @@
  * database) so the bounds can be unit-tested; routes pass the configured limits.
  */
 import { z } from 'zod'
+import { MOVEMENT_PROFILES } from '../services/exerciseMovement/types'
 
 export type ExerciseMode = 'off' | 'admin_only' | 'on'
 
@@ -169,6 +170,7 @@ export const compileTemplateSchema = z.object({
   sourceSubjectId: z.string().min(1).max(64),
   fps: z.preprocess(blankToUndefined, z.coerce.number().positive().max(240).optional()),
   mirrorPolicy: z.enum(MIRROR_POLICIES),
+  movementProfile: z.enum(MOVEMENT_PROFILES).optional(),
   trim: z
     .object({ startSec: z.number().min(0), endSec: z.number().positive() })
     .refine((t) => t.endSec > t.startSec, { message: 'endSec must be after startSec' })

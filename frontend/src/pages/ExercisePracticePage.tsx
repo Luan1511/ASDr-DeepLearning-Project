@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Camera,
   Check,
+  Download,
   Loader2,
   Play,
   RefreshCw,
@@ -743,7 +744,7 @@ export function ExercisePracticePage() {
             Dài khoảng {formatNumber(take.durationMs / 1000, 0)} giây • {take.recordedVia === 'WEBCAM' ? 'Quay bằng camera' : 'Video tải lên'} •{' '}
             {PRACTICE_MODE_LABEL[take.practiceMode]}
           </div>
-          <Notice tone="info">Video chỉ dùng để chấm điểm và sẽ bị xoá ngay sau đó.</Notice>
+          <Notice tone="info">Bản gửi lên sẽ được xoá khỏi máy chủ sau khi phân tích.</Notice>
           {tooShort && <Notice tone="warn">{tooShortMessage}</Notice>}
           {uploadError && (
             <Notice tone="error">
@@ -770,6 +771,16 @@ export function ExercisePracticePage() {
               <RotateCcw className="h-4 w-4" />
               Quay lại lần nữa
             </button>
+            {caps?.debugRecordingDownload && take.recordedVia === 'WEBCAM' && (
+              <a
+                href={take.url}
+                download={`aimbrace-${exercise.slug}-${new Date().toISOString().replace(/[:.]/g, '-')}${take.extension}`}
+                className="btn-duo-secondary"
+              >
+                <Download className="h-4 w-4" />
+                Lưu bản quay để kiểm thử
+              </a>
+            )}
           </div>
         </div>
       </ParentShell>
@@ -864,7 +875,7 @@ export function ExercisePracticePage() {
       )
     }
 
-    const scored = session.score.status === 'SCORED'
+    const scored = session.score.status === 'SCORED' || session.score.movement?.checks.some(check => check.status === 'evaluated')
     return (
       <StageShell>
         <GuidePuppet {...puppetProps} pose={scored ? 'cheer' : 'shrug'} playing={false} size={puppetSize} />

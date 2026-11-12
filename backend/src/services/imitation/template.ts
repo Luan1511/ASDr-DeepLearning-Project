@@ -5,6 +5,7 @@
 import { createHash } from 'node:crypto'
 import type { OpenPoseKeypointFrame } from '../openposeService'
 import { sanitizeFps } from '../gaitFeatures'
+import { compileMovementReference } from '../exerciseMovement'
 import { JOINT_COUNT, cleanAndResample, selectExerciseTrack, type Joints } from './cleaning'
 import { IMITATION_V1 as C } from './constants'
 import {
@@ -373,6 +374,10 @@ export function buildTemplate(input: BuildTemplateInput): BuildTemplateResult {
 
   // 10. Outputs
   const anatomical = sliceSet(set, segStart, segEnd + 1)
+  const movement = input.movementProfile ? compileMovementReference({
+    profile: input.movementProfile, track: selection.track, poses, features: ext,
+    frameCount: frames.length, fps, segment,
+  }) : null
   const features: TemplateFeatures = {
     algorithmVersion: C.version,
     hz: C.hz as 15,
@@ -390,6 +395,7 @@ export function buildTemplate(input: BuildTemplateInput): BuildTemplateResult {
     partWeight: Object.fromEntries(PART_IDS.map((p) => [p, round(weights.partWeight[p], 4)])) as Record<PartId, number>,
     phaseWeight,
     lateralized,
+    ...(movement ? { movement } : {}),
   }
   const hash = templateHash(features, input.mirrorPolicy)
   const guideTrack = buildGuideTrack(poses, segment, ext.refWindow, ext.rootRef, ext.torsoMedian)

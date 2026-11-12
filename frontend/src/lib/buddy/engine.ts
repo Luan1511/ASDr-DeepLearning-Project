@@ -254,6 +254,7 @@ export class BuddyDirector {
   private exprStart = 0
   private exprName: ExpressionName = 'neutral'
   private caption: BuddyCaption | null = null
+  private voiceLevel: (() => number) | null = null
   private nextBlink = 1500
   private blinkStart = -1
   private scriptToken = 0
@@ -293,6 +294,7 @@ export class BuddyDirector {
   }
 
   say(text: string, now = performance.now()) {
+    this.voiceLevel = null
     this.caption = text ? { text, start: now, msPerChar: MS_PER_CHAR } : null
     return text.length * MS_PER_CHAR
   }
@@ -300,55 +302,89 @@ export class BuddyDirector {
   /** Cancels a running script (its pending steps never start). */
   cancelScript() {
     this.scriptToken++
+    this.voiceLevel = null
+    for (const id of ['step-gesture', 'step-ears', 'step-pose']) this.stop(id)
   }
 
-  async runScript(script: BuddyScript, onStep?: (index: number, step: BuddyStep) => void) {
+  async runScript(
+    script: BuddyScript,
+    onStep?: (index: number, step: BuddyStep) => void,
+    playVoice?: (text: string, start: (readLevel: () => number) => void) => Promise<void>,
+  ) {
     const token = ++this.scriptToken
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-    for (let i = 0; i < script.steps.length; i++) {
+    for (const [i, step] of script.steps.entries()) {
       if (token !== this.scriptToken) return false
-      const step = script.steps[i]
-      const now = performance.now()
-      onStep?.(i, step)
-      if (step.expression) this.setExpression(step.expression, now)
-      let wait = 700
-      const gesture = step.gesture && step.gesture !== 'none' ? step.gesture : null
-      const gestureClip = typeof gesture === 'string' ? CLIP_LIBRARY[gesture] : gesture
-      if (gestureClip) {
-        const loops = gestureClip.loop
-        this.play(gestureClip, { id: 'step-gesture' }, now)
-        if (!loops) wait = Math.max(wait, gestureClip.duration)
-      }
-      if (step.ears && step.ears !== 'none') {
-        const ears = CLIP_LIBRARY[`ears_${step.ears}`]
-        if (ears) {
-          this.play(ears, { id: 'step-ears' }, now)
-          wait = Math.max(wait, ears.duration)
+      let started = false
+      const start = (readLevel?: () => number) => {
+        if (token !== this.scriptToken) return 0
+        started = true
+        onStep?.(i, step)
+        const wait = this.startStep(step)
+        if (step.say && readLevel) {
+          this.caption = { text: step.say, start: performance.now(), msPerChar: MS_PER_CHAR }
+          this.voiceLevel = readLevel
         }
+        return wait
       }
-      const held: PartialPose = { ...(step.pose ?? {}) }
-      if (step.look) {
-        const look = typeof step.look === 'string' ? LOOK_TARGETS[step.look] : step.look
-        if (look && (look.x !== 0 || look.y !== 0 || typeof step.look !== 'string')) {
-          held['face.lookX'] = look.x
-          held['face.lookY'] = look.y
+      if (step.say && playVoice) {
+        try {
+          await playVoice(step.say, start)
+        } catch {
+          if (token !== this.scriptToken) return false
+          // The text version is still usable if audio is interrupted by a service error.
+          if (!started) await new Promise((resolve) => setTimeout(resolve, start()))
+          playVoice = undefined
         }
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, start()))
       }
-      if (Object.keys(held).length > 0) {
-        this.play({ duration: 1, loop: true, keyframes: [{ t: 0, pose: held }] }, { id: 'step-pose' }, now)
-      } else this.stop('step-pose', now)
-      if (step.say) {
-        const typing = this.say(step.say, now)
-        wait = Math.max(wait, typing + 700 + Math.min(step.say.length * 14, 1400))
+      if (token !== this.scriptToken) return false
+      if (this.voiceLevel && this.caption) {
+        this.caption.start = performance.now() - (this.caption.text.length + 1) * MS_PER_CHAR
       }
-      if (step.hold) wait = Math.max(wait, step.hold)
-      await sleep(wait)
-      if (gestureClip?.loop) this.stop('step-gesture')
+      this.voiceLevel = null
+      this.stop('step-gesture')
     }
-    if (token !== this.scriptToken) return false
     this.stop('step-pose')
     this.setExpression(script.idle ?? 'listening')
     return true
+  }
+
+  private startStep(step: BuddyStep) {
+    const now = performance.now()
+    if (step.expression) this.setExpression(step.expression, now)
+    let wait = 700
+    const gesture = step.gesture && step.gesture !== 'none' ? step.gesture : null
+    const gestureClip = typeof gesture === 'string' ? CLIP_LIBRARY[gesture] : gesture
+    if (gestureClip) {
+      const loops = gestureClip.loop
+      this.play(gestureClip, { id: 'step-gesture' }, now)
+      if (!loops) wait = Math.max(wait, gestureClip.duration)
+    }
+    if (step.ears && step.ears !== 'none') {
+      const ears = CLIP_LIBRARY[`ears_${step.ears}`]
+      if (ears) {
+        this.play(ears, { id: 'step-ears' }, now)
+        wait = Math.max(wait, ears.duration)
+      }
+    }
+    const held: PartialPose = { ...(step.pose ?? {}) }
+    if (step.look) {
+      const look = typeof step.look === 'string' ? LOOK_TARGETS[step.look] : step.look
+      if (look && (look.x !== 0 || look.y !== 0 || typeof step.look !== 'string')) {
+        held['face.lookX'] = look.x
+        held['face.lookY'] = look.y
+      }
+    }
+    if (Object.keys(held).length > 0) {
+      this.play({ duration: 1, loop: true, keyframes: [{ t: 0, pose: held }] }, { id: 'step-pose' }, now)
+    } else this.stop('step-pose', now)
+    if (step.say) {
+      const typing = this.say(step.say, now)
+      wait = Math.max(wait, typing + 700 + Math.min(step.say.length * 14, 1400))
+    }
+    if (step.hold) wait = Math.max(wait, step.hold)
+    return wait
   }
 
   private sampleExpression(now: number): PartialPose {
@@ -405,7 +441,10 @@ export class BuddyDirector {
     }
 
     let caption: BuddyFrame['caption'] = null
-    if (this.caption) {
+    if (this.caption && this.voiceLevel) {
+      caption = { full: this.caption.text, visible: this.caption.text, speaking: false }
+      pose['face.mouthOpen'] = this.voiceLevel()
+    } else if (this.caption) {
       const { text, start, msPerChar } = this.caption
       const count = Math.min(text.length, Math.max(0, Math.floor((now - start) / msPerChar)))
       const speaking = count < text.length

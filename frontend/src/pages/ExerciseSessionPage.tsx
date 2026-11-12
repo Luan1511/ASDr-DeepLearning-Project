@@ -22,9 +22,10 @@ const POLL_INTERVAL_MS = 3000
 const isPending = (s: ExerciseSessionDto) => s.status === 'QUEUED' || s.status === 'PROCESSING'
 
 function StatusPill({ session }: { session: ExerciseSessionDto }) {
+  const hasMovementFeedback = session.score?.movement?.checks.some(check => check.status === 'evaluated')
   const cls = isPending(session)
     ? 'bg-duo-green-soft text-duo-green-dark'
-    : session.status === 'SCORED'
+    : session.status === 'SCORED' || hasMovementFeedback
       ? 'bg-duo-green-soft text-duo-green-dark'
       : session.status === 'FAILED'
         ? 'bg-red-50 text-duo-red'
@@ -32,7 +33,7 @@ function StatusPill({ session }: { session: ExerciseSessionDto }) {
   return (
     <span className={['inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold', cls].join(' ')}>
       {isPending(session) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-      {SESSION_STATUS_LABEL[session.status]}
+      {hasMovementFeedback ? 'Đã có góp ý' : SESSION_STATUS_LABEL[session.status]}
     </span>
   )
 }

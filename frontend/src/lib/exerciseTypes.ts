@@ -19,6 +19,7 @@ export type ImitationWarningCode =
   | 'MIRRORED_VIDEO'
 
 export type ExerciseMode = 'off' | 'admin_only' | 'on'
+export type MovementProfile = 'jump-twists' | 'jumping-jacks' | 'high-kicks'
 
 export type ExerciseCapabilitiesDto = {
   mode: ExerciseMode
@@ -32,6 +33,7 @@ export type ExerciseCapabilitiesDto = {
   maxDurationSec: number
   maxUploadMb: number
   recordFps: 15
+  debugRecordingDownload?: boolean
 }
 
 export type ExerciseTemplateSummary = {
@@ -103,6 +105,19 @@ export type SessionScoreDto = {
   tempo: { ratio: number | null; lagSec: number | null }
   parts: Record<PartId, PartResultDto>
   feedback: { child: string[]; parent: string[] }
+  movement?: {
+    version: string
+    profile: MovementProfile
+    checks: Array<{ code: string; label: string; status: 'evaluated' | 'unmeasurable' }>
+    events: Array<{
+      code: string
+      label: string
+      feedback: string
+      startSec: number
+      endSec: number
+      repetitions: number | null
+    }>
+  }
 }
 
 export type ExerciseSessionDto = {
@@ -176,6 +191,8 @@ export type AdminTemplateDto = {
   sourceMlSubjectDeleted: boolean
   createdAt: string
   isCurrent: boolean
+  movementProfile?: MovementProfile
+  movementUnavailable?: string[]
 }
 
 export type AdminExerciseDto = Omit<ExerciseSummaryDto, 'template'> & {
@@ -200,6 +217,8 @@ export type BuildTemplateResultDto = {
     activeStartSec: number
     activeEndSec: number
     lateralized: boolean
+    movementProfile?: MovementProfile
+    movementUnavailable?: string[]
   } | null
   selfTest: TemplateSelfTestDto | null
 }

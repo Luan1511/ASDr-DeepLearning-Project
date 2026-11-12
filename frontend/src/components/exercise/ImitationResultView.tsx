@@ -40,6 +40,26 @@ function tempoLines(score: SessionScoreDto): string[] {
 }
 
 function ChildView({ score }: { score: SessionScoreDto }) {
+  if (score.movement) {
+    const hasMeasurement = score.movement.checks.some(check => check.status === 'evaluated')
+    const suggestion = score.movement.events[0]?.feedback
+    return (
+      <div className="space-y-4 text-center">
+        {score.stars !== null && <StarRating stars={score.stars} />}
+        <p className="text-xl font-black text-duo-ink">Con đã cố gắng rất tốt!</p>
+        {suggestion && (
+          <p className="mx-auto max-w-xl rounded-2xl bg-duo-green-soft px-4 py-3 text-lg font-bold leading-relaxed text-duo-green-dark">
+            {suggestion}
+          </p>
+        )}
+        {!hasMeasurement && (
+          <p className="mx-auto max-w-xl text-base font-bold text-duo-ink">
+            Lần sau mình đặt máy sao cho Mầm thấy cả tay và chân nhé.
+          </p>
+        )}
+      </div>
+    )
+  }
   if (score.status === 'INSUFFICIENT') {
     const reasons = [...new Set(score.reasonCodes)].slice(0, 2)
     return (
@@ -69,6 +89,50 @@ function ChildView({ score }: { score: SessionScoreDto }) {
         </ul>
       )}
     </div>
+  )
+}
+
+function MovementFeedback({ movement }: { movement: NonNullable<SessionScoreDto['movement']> }) {
+  const unavailable = movement.checks.filter(check => check.status === 'unmeasurable')
+  const evaluated = movement.checks.length - unavailable.length
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-base font-black text-duo-ink">Góp ý động tác</h3>
+        <span className="text-xs font-bold text-duo-mute">{evaluated}/{movement.checks.length} tiêu chí đo được</span>
+      </div>
+      {movement.events.length ? (
+        <ul className="space-y-2">
+          {movement.events.map((event, index) => (
+            <li key={`${event.code}-${event.startSec}-${index}`} className="rounded-2xl bg-duo-green-soft px-4 py-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <span className="text-sm font-extrabold text-duo-ink">{event.label}</span>
+                <span className="text-xs font-bold tabular-nums text-duo-green-dark">
+                  {formatNumber(event.startSec, 1)}–{formatNumber(event.endSec, 1)} giây
+                </span>
+              </div>
+              <p className="mt-1 text-sm font-semibold leading-relaxed text-duo-green-dark">{event.feedback}</p>
+              {event.repetitions !== null && (
+                <p className="mt-1 text-xs font-bold text-duo-mute">Quan sát qua {event.repetitions} lượt liên tiếp</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-2xl bg-duo-mist px-4 py-3 text-sm font-semibold text-duo-ink">
+          {evaluated ? 'Chưa thấy lỗi lặp lại ở những tiêu chí đo được.' : 'Cần thêm các nhịp rõ tay và chân để góp ý.'}
+        </p>
+      )}
+      {unavailable.length > 0 && (
+        <details className="rounded-xl bg-duo-mist px-3 py-2 text-sm text-duo-ink">
+          <summary className="cursor-pointer font-bold">Tiêu chí chưa đo được</summary>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">
+            {unavailable.map(check => <li key={check.code}>{check.label}</li>)}
+          </ul>
+        </details>
+      )}
+      <p className="text-xs font-semibold text-duo-mute">Góp ý thử nghiệm dựa trên chuyển động nhìn thấy trong video.</p>
+    </section>
   )
 }
 
@@ -171,5 +235,15 @@ function ParentView({ score }: { score: SessionScoreDto }) {
  * score with its band, per-part list, warnings and the disclaimer.
  */
 export function ImitationResultView({ score, view }: { score: SessionScoreDto; view: 'child' | 'parent' }) {
-  return view === 'child' ? <ChildView score={score} /> : <ParentView score={score} />
+  if (view === 'child') return <ChildView score={score} />
+  if (!score.movement) return <ParentView score={score} />
+  return (
+    <div className="space-y-4">
+      <MovementFeedback movement={score.movement} />
+      <details className="rounded-2xl border border-duo-mist px-4 py-3">
+        <summary className="cursor-pointer text-sm font-extrabold text-duo-ink">Điểm bắt chước tham khảo</summary>
+        <div className="mt-3"><ParentView score={score} /></div>
+      </details>
+    </div>
+  )
 }

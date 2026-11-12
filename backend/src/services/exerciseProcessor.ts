@@ -30,6 +30,8 @@ import { findActiveExerciseConsent } from './consentService'
 import { getMlCapabilities } from './mlCapabilities'
 import { OpenPoseApiError, openposeService, type OpenPoseExtractResponse } from './openposeService'
 import { resolveExerciseFps, scoreImitation, type MirrorPolicyValue, type PracticeMode, type RecordedVia, type TemplateFeatures } from './imitation'
+import { analyzeExerciseMovement } from './exerciseMovement'
+import { readMovementReference, type MovementReport } from './exerciseMovement/types'
 
 const WORKER_ID = `${os.hostname()}:${process.pid}:${randomUUID().slice(0, 8)}:ex`
 const HEARTBEAT_MS = 30_000
@@ -410,8 +412,10 @@ async function runSession(job: ClaimedSession, ctx: RunContext) {
 
   const width = session.videoWidth ?? keypoints.video?.width ?? null
   const height = session.videoHeight ?? keypoints.video?.height ?? null
+  const videoSize = width && height ? { width, height } : null
+  const template = session.template.features as unknown as TemplateFeatures
   const result = scoreImitation({
-    template: session.template.features as unknown as TemplateFeatures,
+    template,
     templateHash: session.template.templateHash,
     templateId: session.template.id,
     mirrorPolicy: session.template.mirrorPolicy as MirrorPolicyValue,
@@ -419,11 +423,20 @@ async function runSession(job: ClaimedSession, ctx: RunContext) {
     fps: fps.fps,
     fpsSource: fps.source,
     fpsWarning: fps.warning,
-    videoSize: width && height ? { width, height } : null,
+    videoSize,
     practiceMode: session.practiceMode as PracticeMode,
     playbackRate: session.playbackRate,
     guideOffsetMs: session.guideOffsetMs,
   })
+  const movementTemplate = readMovementReference(template.movement)
+  let movement: MovementReport | null = null
+  if (movementTemplate) {
+    try {
+      movement = analyzeExerciseMovement({ template: movementTemplate, frames, fps: fps.fps, videoSize })
+    } catch {
+      console.warn(`${LOG} movement feedback unavailable for session ${job.id}`)
+    }
+  }
 
   const status = result.status === 'SCORED' ? ExerciseSessionStatus.SCORED : ExerciseSessionStatus.INSUFFICIENT
   const scoreData = {
@@ -435,7 +448,7 @@ async function runSession(job: ClaimedSession, ctx: RunContext) {
     band: result.status === 'SCORED' ? result.band : null,
     mode: result.mode,
     reasonCodes: result.reasonCodes,
-    detail: result as unknown as Prisma.InputJsonValue,
+    detail: { ...result, ...(movement ? { movement } : {}) } as unknown as Prisma.InputJsonValue,
   }
   await prisma.$transaction(async (tx) => {
     const updated = await tx.exerciseSession.updateMany({

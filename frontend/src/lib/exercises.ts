@@ -17,6 +17,7 @@ import type {
   ImitationReasonCode,
   ImitationWarningCode,
   MirrorPolicy,
+  MovementProfile,
   PartId,
   PracticeMode,
   RecordedVia,
@@ -169,6 +170,7 @@ export type CompileTemplateInput = {
   sourceSubjectId: string
   fps?: number | null
   mirrorPolicy: MirrorPolicy
+  movementProfile?: MovementProfile
   trim?: { startSec: number; endSec: number }
   dryRun?: boolean
 }
@@ -240,6 +242,12 @@ export const MIRROR_POLICY_LABEL: Record<MirrorPolicy, string> = {
   EITHER: 'Chấp nhận cả làm theo kiểu soi gương',
   ANATOMICAL_ONLY: 'Phải đúng tay/chân (không soi gương)',
   MIRROR_ONLY: 'Chỉ chấp nhận soi gương',
+}
+
+export const MOVEMENT_PROFILE_LABEL: Record<MovementProfile, string> = {
+  'jump-twists': 'Jump Twists',
+  'jumping-jacks': 'Jumping Jacks',
+  'high-kicks': 'High Kicks',
 }
 
 export const PRACTICE_MODE_LABEL: Record<PracticeMode, string> = {

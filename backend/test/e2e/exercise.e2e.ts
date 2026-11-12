@@ -12,6 +12,7 @@ import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { CONSENT_VERSION, EXERCISE_CONSENT_VERSION, QUESTIONNAIRE_CONSENT_VERSION } from '../../src/lib/consent'
 import { buildScenario, type ScenarioName } from '../syntheticImitation'
+import { syntheticJacks } from '../syntheticJacks'
 import { encodeClip } from './fakeMlServer'
 import { BACKEND_DIR, E2eHarness, api, clipForm, sleep, waitFor, type SeededUser } from './harness'
 
@@ -166,9 +167,11 @@ scenario('1. admin_only: parents get EXERCISES_DISABLED, capabilities works, adm
   assert.equal(caps.status, 200)
   assert.equal(caps.body.mode, 'admin_only')
   assert.equal(caps.body.available, false)
+  assert.equal(caps.body.debugRecordingDownload, false)
 
   const adminCaps = await api('GET', '/exercises/capabilities', { token: admin.token })
   assert.equal(adminCaps.body.available, true)
+  assert.equal(adminCaps.body.debugRecordingDownload, true)
   assert.equal(adminCaps.body.mlReachable, true)
   assert.equal(adminCaps.body.mlLegacy, false)
   assert.equal((await api('GET', '/exercises', { token: admin.token })).status, 200)
@@ -313,6 +316,67 @@ scenario('3. template upload → tpl_ subject → dryRun (no row) → compile v1
 
   const slugs = (await refreshPublished()).map((e) => e.slug)
   assert.ok(slugs.includes('e2e-dang-tay-nguoi-lon'))
+})
+
+scenario('movement profile: compile, publish, score two concurrent movement errors, and keep child keypoints private', async () => {
+  const created = await api('POST', '/admin/exercises', {
+    token: admin.token,
+    json: {
+      slug: 'e2e-jumping-jacks', title: 'Jumping Jacks', description: '',
+      childPrompt: 'Mở chân cùng lúc nâng tay nhé!', difficulty: 1, bodyFocus: ['ARMS', 'LEGS'],
+    },
+  })
+  assert.equal(created.status, 201, JSON.stringify(created.body))
+  const exerciseId = created.body.exercise.id
+  const guide = syntheticJacks(false)
+  const source = await api('POST', `/admin/exercises/${exerciseId}/template-sources`, {
+    token: admin.token, form: clipForm(guide, { attestation: true, durationMs: guide.syntheticFrames.length / guide.fps * 1000 }),
+  })
+  assert.equal(source.status, 201, JSON.stringify(source.body))
+  const payload = {
+    sourceSubjectId: source.body.sourceSubjectId, mirrorPolicy: 'EITHER',
+    movementProfile: 'jumping-jacks', attestation: true,
+  }
+  const preview = await api('POST', `/admin/exercises/${exerciseId}/templates`, {
+    token: admin.token, json: { ...payload, dryRun: true },
+  })
+  assert.equal(preview.status, 200, JSON.stringify(preview.body))
+  assert.equal(preview.body.result.template.movementProfile, 'jumping-jacks')
+  assert.equal(preview.body.result.template.features, undefined)
+  const compiled = await api('POST', `/admin/exercises/${exerciseId}/templates`, { token: admin.token, json: payload })
+  assert.equal(compiled.status, 201, JSON.stringify(compiled.body))
+  assert.equal(compiled.body.template.movementProfile, 'jumping-jacks')
+  const templateId = compiled.body.template.id as string
+  const published = await api('POST', `/admin/exercises/${exerciseId}/publish`, { token: admin.token, json: { templateId } })
+  assert.equal(published.status, 200, JSON.stringify(published.body))
+
+  const child = await childWithConsent(parentA, 'movement')
+  const attempt = syntheticJacks(true)
+  const qs = new URLSearchParams({ childId: child.id, exerciseId, templateId })
+  const sent = await api('POST', `/exercise-sessions/upload?${qs}`, {
+    token: parentA.token,
+    form: clipForm(attempt, {
+      durationMs: attempt.syntheticFrames.length / attempt.fps * 1000, recordedVia: 'WEBCAM',
+      practiceMode: 'AFTER_DEMO', playbackRate: 1,
+    }),
+  })
+  assert.equal(sent.status, 201, JSON.stringify(sent.body))
+  const done = await waitSession(parentA, sent.body.session.id)
+  const movement = done.score?.movement
+  assert.ok(movement, JSON.stringify(done))
+  assert.equal(movement.profile, 'jumping-jacks')
+  assert.equal(movement.version, 'exercise-errors-v0.3')
+  assert.deepEqual(
+    [...new Set(movement.events.map((event: { code: string }) => event.code))].sort(),
+    ['JACKS_MISSING_FOOT_OPEN', 'JACKS_ONE_ARM_IDLE'],
+  )
+  for (const event of movement.events) {
+    assert.ok(event.startSec >= 1 && event.endSec > event.startSec && event.endSec <= 10)
+    assert.ok(event.repetitions >= 2)
+  }
+  for (const key of ['pose', 'frames', 'confidence', 'reference', 'features']) {
+    assert.ok(!JSON.stringify(movement).includes(`"${key}"`))
+  }
 })
 
 scenario('4. consent required, then identical attempt scored ≥ 90 with video and ML subject deleted, no skeleton stored', async (t) => {
@@ -985,7 +1049,10 @@ scenario('7a. legacy ML: .webm → 415 with no file left; .mp4 still scored (fps
 
 scenario('7b. legacy ML + EXERCISE_WEBM_AS_MKV=true: .webm accepted and sent as session.mkv', async () => {
   h.ml.switches.mode = 'legacy'
-  await h.startBackend({ env: { EXERCISE_WEBM_AS_MKV: 'true' } })
+  await h.startBackend({ env: { EXERCISE_WEBM_AS_MKV: 'true', EXERCISE_DEBUG_RECORDING_DOWNLOAD: 'false' } })
+  const adminCaps = await api('GET', '/exercises/capabilities', { token: admin.token })
+  assert.equal(adminCaps.status, 200)
+  assert.equal(adminCaps.body.debugRecordingDownload, false)
   const caps = await api('GET', '/exercises/capabilities', { token: parentA.token })
   assert.equal(caps.body.acceptsWebm, true)
   const child = await childWithConsent(parentA, 'S7b')

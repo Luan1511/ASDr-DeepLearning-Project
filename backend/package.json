@@ -11,7 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "tsx --test test/gaitFeatures.test.ts test/screeningResult.test.ts test/semaphore.test.ts test/prismaErrors.test.ts test/childInput.test.ts test/screeningData.test.ts test/poseTracking.test.ts test/imitationScoring.test.ts test/imitationTemplate.test.ts test/imitationConstants.test.ts test/imitationFeedback.test.ts test/exerciseInput.test.ts test/exerciseData.test.ts test/exerciseSerializers.test.ts test/exerciseConsent.test.ts test/mchatRf.test.ts test/questionnaireAge.test.ts test/questionnaireCopy.test.ts test/mchatRfStructure.test.ts test/followUpEngine.test.ts test/mchatContent.test.ts test/buddyChat.test.ts",
+    "test": "tsx --test test/gaitFeatures.test.ts test/screeningResult.test.ts test/semaphore.test.ts test/prismaErrors.test.ts test/childInput.test.ts test/screeningData.test.ts test/poseTracking.test.ts test/imitationScoring.test.ts test/imitationTemplate.test.ts test/imitationConstants.test.ts test/imitationFeedback.test.ts test/exerciseInput.test.ts test/exerciseData.test.ts test/exerciseSerializers.test.ts test/exerciseConsent.test.ts test/mchatRf.test.ts test/questionnaireAge.test.ts test/questionnaireCopy.test.ts test/mchatRfStructure.test.ts test/followUpEngine.test.ts test/mchatContent.test.ts test/buddyChat.test.ts test/exerciseMovement/coordination.test.js test/exerciseMovement/twists.test.js test/exerciseMovement/jacks.test.js test/exerciseMovement/kicks.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
     "prisma:deploy": "prisma migrate deploy",
     "privacy:purge-videos": "tsx scripts/purgeProcessedVideos.ts",

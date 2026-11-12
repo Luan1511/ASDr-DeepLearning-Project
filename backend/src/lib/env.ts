@@ -33,6 +33,7 @@ const envSchema = z.object({
   RETAIN_UPLOADED_VIDEOS: booleanFlag.default(false),
   CHAT_API_BASE_URL: z.string().url().optional(),
   // "Bạn Bin" companion (text chat through Groq's OpenAI-compatible API).
+  BUDDY_VOICE_URL: z.string().url().optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   GROQ_MODEL: z.string().min(1).default('openai/gpt-oss-120b'),
   GROQ_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
@@ -40,6 +41,8 @@ const envSchema = z.object({
   // Giai đoạn 4. off = hidden + worker stopped; admin_only = admins only
   // (default until the scoring is calibrated on adult recordings); on = parents too.
   EXERCISE_MODE: z.enum(['off', 'admin_only', 'on']).default('admin_only'),
+  EXERCISE_DEBUG_RECORDING_DOWNLOAD: z
+    .preprocess((val) => val === undefined || val === '' || val === 'true' || val === '1' || val === true, z.boolean()),
   EXERCISE_WORKER_ENABLED: z
     .preprocess((val) => (val === undefined || val === '' ? true : val === 'true' || val === '1' || val === true), z.boolean())
     .default(true),
@@ -84,11 +87,13 @@ export const env: Env = envSchema.parse({
   SCREENING_HIGH_RISK_THRESHOLD: process.env.SCREENING_HIGH_RISK_THRESHOLD,
   RETAIN_UPLOADED_VIDEOS: process.env.RETAIN_UPLOADED_VIDEOS,
   CHAT_API_BASE_URL: process.env.CHAT_API_BASE_URL,
+  BUDDY_VOICE_URL: process.env.BUDDY_VOICE_URL || undefined,
   GROQ_API_KEY: process.env.GROQ_API_KEY || undefined,
   GROQ_MODEL: process.env.GROQ_MODEL || undefined,
   GROQ_BASE_URL: process.env.GROQ_BASE_URL || undefined,
   GROQ_TIMEOUT_MS: process.env.GROQ_TIMEOUT_MS || undefined,
   EXERCISE_MODE: process.env.EXERCISE_MODE || undefined,
+  EXERCISE_DEBUG_RECORDING_DOWNLOAD: process.env.EXERCISE_DEBUG_RECORDING_DOWNLOAD,
   EXERCISE_WORKER_ENABLED: process.env.EXERCISE_WORKER_ENABLED,
   EXERCISE_MAX_UPLOAD_MB: process.env.EXERCISE_MAX_UPLOAD_MB,
   EXERCISE_MAX_DURATION_SEC: process.env.EXERCISE_MAX_DURATION_SEC,

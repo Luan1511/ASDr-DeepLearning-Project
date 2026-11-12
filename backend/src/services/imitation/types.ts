@@ -3,6 +3,7 @@
  * Pure, deterministic, no I/O. See master_prompt.md §6.7.
  */
 import type { OpenPoseKeypointFrame } from '../openposeService'
+import type { MovementProfile, MovementReference } from '../exerciseMovement/types'
 
 export type PartId = 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg' | 'trunk'
 export type FeatureId =
@@ -75,6 +76,7 @@ export interface TemplateFeatures {
   /** Per part, length n. */
   phaseWeight: Record<PartId, number[]>
   lateralized: boolean
+  movement?: MovementReference
 }
 
 /**
@@ -100,6 +102,7 @@ export interface BuildTemplateInput {
   frames: OpenPoseKeypointFrame[]
   fps: number | null
   mirrorPolicy: MirrorPolicyValue
+  movementProfile?: MovementProfile
   trim?: { startSec: number; endSec: number }
   videoSize?: { width: number; height: number } | null
 }

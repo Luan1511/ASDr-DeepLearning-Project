@@ -14,6 +14,7 @@ import {
 } from '../services/imitation'
 import { BUILTIN_TITLE_PREFIX } from './exerciseInput'
 import { starsFor } from './exerciseData'
+import { CHECK_CODES, MOVEMENT_LABELS, readMovementReference, readMovementReport, type MovementCode } from '../services/exerciseMovement/types'
 
 type MirrorPolicy = 'EITHER' | 'ANATOMICAL_ONLY' | 'MIRROR_ONLY'
 
@@ -68,7 +69,7 @@ export type AdminTemplateRow = Pick<
   | 'selfTest'
   | 'sourceMlSubjectDeletedAt'
   | 'createdAt'
->
+> & { features?: Prisma.JsonValue }
 export type AdminExerciseRow = ExerciseRow &
   Pick<Exercise, 'status' | 'sortOrder' | 'currentTemplateId'> & { templates: AdminTemplateRow[] }
 
@@ -78,6 +79,19 @@ export type AdminExerciseRow = ExerciseRow &
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
+}
+
+function serializeMovementSetup(features: unknown) {
+  const movement = readMovementReference(asRecord(features).movement)
+  if (!movement) return {}
+  let unavailable: readonly MovementCode[] = []
+  if (movement.profile === 'jump-twists') {
+    if (movement.reference.pattern.relation === 'uncertain') unavailable = CHECK_CODES['jump-twists']
+    else if (!movement.reference.reversal) unavailable = ['TWIST_REVERSAL_DELAY']
+  } else if (movement.profile === 'high-kicks' && !movement.reference.valid) {
+    unavailable = ['KICK_EXTENSION_MISSING']
+  }
+  return { movementProfile: movement.profile, movementUnavailable: unavailable.map(code => MOVEMENT_LABELS[code]) }
 }
 
 function num(value: unknown): number | null {
@@ -190,6 +204,7 @@ export function serializeSessionScore(score: Omit<ScoreRow, 'createdAt'>) {
   const tempo = asRecord(detail.tempo)
   const feedback = asRecord(detail.feedback)
   const parts = asRecord(detail.parts)
+  const movement = readMovementReport(detail.movement)
   const scored = score.status === 'SCORED'
   const overall = scored ? score.overall : null
   const stars = scored ? ((score.stars as 1 | 2 | 3 | null) ?? starsFor(overall)) : null
@@ -208,6 +223,7 @@ export function serializeSessionScore(score: Omit<ScoreRow, 'createdAt'>) {
       ReturnType<typeof serializePart>
     >,
     feedback: { child: strings(feedback.child).slice(0, 3), parent: strings(feedback.parent) },
+    ...(movement ? { movement } : {}),
   }
 }
 
@@ -269,6 +285,7 @@ function serializeSelfTest(value: unknown) {
 
 export function serializeAdminTemplate(t: AdminTemplateRow, currentTemplateId: string | null) {
   return {
+    ...serializeMovementSetup(t.features),
     id: t.id,
     version: t.version,
     source: t.source,
@@ -324,6 +341,7 @@ export function serializeBuildTemplateResult(result: BuildTemplateResult) {
           activeStartSec: t.activeStartSec,
           activeEndSec: t.activeEndSec,
           lateralized: t.lateralized,
+          ...serializeMovementSetup(t.features),
         }
       : null,
     selfTest: result.selfTest,

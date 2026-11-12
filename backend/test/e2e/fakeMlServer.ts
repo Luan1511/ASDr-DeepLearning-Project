@@ -369,6 +369,7 @@ export type ClipPayload =
   | { slug: string; scenario: ScenarioName; seed?: number }
   | { template: string }
   | { screening: true }
+  | { syntheticFrames: OpenPoseKeypointFrame[]; fps: number; width: number; height: number }
 
 export function encodeClip(payload: ClipPayload): Buffer {
   return Buffer.from(JSON.stringify(payload), 'utf8')
@@ -389,6 +390,15 @@ function decodeClip(data: Buffer): { frames: OpenPoseKeypointFrame[]; fps: numbe
   if (payload.screening === true) {
     const clip = buildScenario('buoc-deu', 'identical', { seed: 5 })
     return { frames: clip.frames, fps: clip.fps, width: clip.width, height: clip.height }
+  }
+  if (Array.isArray(payload.syntheticFrames) && typeof payload.fps === 'number' &&
+      typeof payload.width === 'number' && typeof payload.height === 'number') {
+    return {
+      frames: payload.syntheticFrames,
+      fps: payload.fps,
+      width: payload.width,
+      height: payload.height,
+    }
   }
   const slug = String(payload.slug)
   const scenario = String(payload.scenario) as ScenarioName

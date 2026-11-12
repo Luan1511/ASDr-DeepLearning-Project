@@ -1,5 +1,5 @@
 import { Router, type NextFunction, type Request, type Response } from 'express'
-import { ExerciseStatus } from '@prisma/client'
+import { ExerciseStatus, UserRole } from '@prisma/client'
 import { env } from '../lib/env'
 import { prisma } from '../lib/prisma'
 import { acceptedExtensions, exerciseAccess, uuidSchema } from '../lib/exerciseInput'
@@ -114,6 +114,7 @@ exercisesRouter.get(
       maxDurationSec: env.EXERCISE_MAX_DURATION_SEC,
       maxUploadMb: env.EXERCISE_MAX_UPLOAD_MB,
       recordFps: 15,
+      debugRecordingDownload: available && req.user?.role === UserRole.ADMIN && env.EXERCISE_DEBUG_RECORDING_DOWNLOAD,
     })
   }),
 )

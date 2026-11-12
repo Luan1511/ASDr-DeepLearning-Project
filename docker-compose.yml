@@ -44,9 +44,11 @@ services:
       # ML server: the GPU host by default; use http://ml-api:8000 with --profile ml.
       OPENPOSE_SERVER_URL: ${OPENPOSE_SERVER_URL:-http://host.docker.internal:8000}
       OPENPOSE_API_KEY: ${ML_API_KEY:-}
+      BUDDY_VOICE_URL: ${BUDDY_VOICE_URL:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
       MCHAT_MODE: ${MCHAT_MODE:-off}
+      EXERCISE_DEBUG_RECORDING_DOWNLOAD: ${EXERCISE_DEBUG_RECORDING_DOWNLOAD:-true}
       EXTRACT_API_TIMEOUT_MS: 3600000
       ML_MAX_CONCURRENCY: 1
       BYPASS_EXTRACT_API: ${BYPASS_EXTRACT_API:-false}
@@ -121,8 +123,21 @@ services:
       timeout: 10s
       retries: 5
 
+  buddy-voice:
+    profiles: ["buddy-voice"]
+    build:
+      context: ./buddy_voice
+    environment:
+      BUDDY_ASR_THREADS: ${BUDDY_ASR_THREADS:-2}
+      BUDDY_TTS_VOICE: ${BUDDY_TTS_VOICE:-Quang Sơn}
+    volumes:
+      - buddy_voice_models:/model-cache
+    networks:
+      - asdr-network
+
 volumes:
   asdr_db_data:
+  buddy_voice_models:
 
 networks:
   asdr-network:

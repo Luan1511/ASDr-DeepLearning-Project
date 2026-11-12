@@ -27,6 +27,7 @@ import { ExerciseMetadataForm, ExerciseStatusPill } from '../components/exercise
 import { apiErrorCode } from '../lib/api'
 import {
   MIRROR_POLICY_LABEL,
+  MOVEMENT_PROFILE_LABEL,
   PART_LABEL,
   adminCompileTemplate,
   adminDeleteExercise,
@@ -47,6 +48,7 @@ import type {
   AdminTemplateDto,
   BuildTemplateResultDto,
   MirrorPolicy,
+  MovementProfile,
   TemplateGateDto,
 } from '../lib/exerciseTypes'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
@@ -199,6 +201,11 @@ function TemplateCard({
             Đoạn {secText(t.activeStartSec)} → {secText(t.activeEndSec)} • dài {secText(t.durationSec)} • {formatNumber(t.sourceFps, 2)} fps (
             {FPS_SOURCE_LABEL[t.fpsSource] ?? t.fpsSource})
           </div>
+          {t.movementProfile && (
+            <div className="text-xs font-bold text-duo-green-dark">
+              Góp ý theo bài {MOVEMENT_PROFILE_LABEL[t.movementProfile]}
+            </div>
+          )}
           <div className="text-xs font-bold text-duo-mute">
             Bộ phận cử động: {t.activeParts.map((p) => PART_LABEL[p]).join(', ') || '—'}
           </div>
@@ -468,6 +475,7 @@ export function AdminExerciseEditPage() {
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const [fpsInput, setFpsInput] = useState('')
   const [mirrorPolicy, setMirrorPolicy] = useState<MirrorPolicy>('EITHER')
+  const [movementProfile, setMovementProfile] = useState<MovementProfile | ''>('')
   const [trim, setTrim] = useState<TrimRange | null>(null)
   const [trimTouched, setTrimTouched] = useState(false)
   const [dryResult, setDryResult] = useState<BuildTemplateResultDto | null>(null)
@@ -522,6 +530,7 @@ export function AdminExerciseEditPage() {
       ? {
           sourceSubjectId: source.sourceSubjectId,
           mirrorPolicy,
+          ...(movementProfile ? { movementProfile } : {}),
           ...(fpsOverride ? { fps: fpsValue } : {}),
           ...(trimTouched && trim ? { trim: { startSec: trim.startSec, endSec: trim.endSec } } : {}),
         }
@@ -691,6 +700,7 @@ export function AdminExerciseEditPage() {
     })
     setFpsInput(String(Math.round(t.sourceFps * 100) / 100))
     setMirrorPolicy(t.mirrorPolicy)
+    setMovementProfile(t.movementProfile ?? '')
     resetWizardResult()
   }
 
@@ -1017,6 +1027,28 @@ export function AdminExerciseEditPage() {
                     <div className="text-xs font-bold text-duo-red">
                       Fps phải nằm trong khoảng {FPS_MIN}–{FPS_MAX}.
                     </div>
+                  )}
+
+                  <label className="block max-w-md">
+                    <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-duo-mute">
+                      Góp ý theo bài tập
+                    </span>
+                    <select
+                      className="input-duo"
+                      value={movementProfile}
+                      onChange={(e) => setMovementProfile(e.target.value as MovementProfile | '')}
+                      disabled={compiling !== null}
+                    >
+                      <option value="">Chỉ chấm bắt chước</option>
+                      {Object.entries(MOVEMENT_PROFILE_LABEL).map(([profile, label]) => (
+                        <option key={profile} value={profile}>{label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {dryIsCurrent && !!dryResult?.template?.movementUnavailable?.length && (
+                    <p className="rounded-xl bg-yellow-50 px-3 py-2 text-sm font-semibold text-yellow-900">
+                      Mẫu này chưa đủ rõ để đo {dryResult.template.movementUnavailable.map(label => label.toLowerCase()).join(', ')}.
+                    </p>
                   )}
 
                   <div className="flex flex-wrap gap-2">

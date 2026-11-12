@@ -52,7 +52,7 @@ export const adminExercisesRouter = Router()
 adminExercisesRouter.use(requireAuth)
 adminExercisesRouter.use(requireRole(UserRole.ADMIN))
 
-/** Everything an admin DTO needs except the scoring features and guide skeleton. */
+/** Features are used internally to read the configured movement profile. */
 const adminTemplateSelect = {
   id: true,
   version: true,
@@ -67,6 +67,7 @@ const adminTemplateSelect = {
   activeEndSec: true,
   lateralized: true,
   activeParts: true,
+  features: true,
   quality: true,
   selfTest: true,
   sourceMlSubjectDeletedAt: true,
@@ -523,6 +524,7 @@ adminExercisesRouter.post(
       frames: keypoints.frames ?? [],
       fps,
       mirrorPolicy: input.mirrorPolicy,
+      movementProfile: input.movementProfile,
       trim: input.trim,
       videoSize: width && height ? { width, height } : null,
     })

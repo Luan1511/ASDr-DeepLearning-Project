@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { MAX_STEPS, buddyChatInputSchema, buildSystemPrompt, sanitizeBuddyScript } from '../src/lib/buddyScript'
+import { MAX_STEPS, buddyChatInputSchema, buildSystemPrompt, repeatsBuddySpeech, sanitizeBuddyScript } from '../src/lib/buddyScript'
 
 describe('sanitizeBuddyScript', () => {
   it('keeps valid steps and normalises names', () => {
@@ -48,8 +48,44 @@ describe('buddy chat input', () => {
     assert.equal(buddyChatInputSchema.safeParse({ messages: [] }).success, false)
   })
 
-  it('mentions the child in the system prompt only when known', () => {
-    assert.match(buildSystemPrompt('Na', 5), /Tên bé: Na\. Bé 5 tuổi\./)
-    assert.doesNotMatch(buildSystemPrompt(), /Tên bé/)
+  it('accepts a longer history and bounds request size', () => {
+    const messages = Array.from({ length: 31 }, (_, i) => ({
+      role: i % 2 ? 'buddy' : 'child',
+      text: `Lượt ${i + 1}`,
+    }))
+    assert.equal(buddyChatInputSchema.parse({ messages }).messages.length, 31)
+    assert.equal(buddyChatInputSchema.safeParse({ messages: [...messages, ...messages] }).success, false)
+  })
+
+  it('includes the age in the system prompt only when known', () => {
+    assert.match(buildSystemPrompt(5), /Bạn nhỏ 5 tuổi/)
+    assert.doesNotMatch(buildSystemPrompt(), /Bạn nhỏ \d+ tuổi/)
+  })
+})
+
+describe('repeatsBuddySpeech', () => {
+  const prompt = 'Bạn muốn chơi với thỏ hay với mèo?'
+  const reply = sanitizeBuddyScript({ steps: [{ say: `Thỏ có tai dài. ${prompt}` }] })!
+
+  it('flags a recent question even with a new opening', () => {
+    assert.equal(repeatsBuddySpeech(reply, [
+      { role: 'buddy', text: prompt },
+      { role: 'child', text: 'Chơi với thỏ.' },
+    ]), true)
+  })
+
+  it('allows repeating a question at the child’s request', () => {
+    assert.equal(repeatsBuddySpeech(reply, [
+      { role: 'buddy', text: prompt },
+      { role: 'child', text: 'Bin hỏi lại đi.' },
+    ]), false)
+  })
+
+  it('flags an echoed child sentence or a repeated line in one reply', () => {
+    const text = 'Thỏ nhà mình có đôi tai màu nâu.'
+    const echo = sanitizeBuddyScript({ steps: [{ say: `${text} Thỏ hay ăn gì nhỉ?` }] })!
+    const duplicate = sanitizeBuddyScript({ steps: [{ say: `${text} ${text}` }] })!
+    assert.equal(repeatsBuddySpeech(echo, [{ role: 'child', text }]), true)
+    assert.equal(repeatsBuddySpeech(duplicate, []), true)
   })
 })

@@ -1,7 +1,6 @@
 /**
- * Control script of "bạn Bin", the 2D companion that chats with a child by text:
- * what Bin says and which expression / gesture / ear motion goes with each
- * sentence. The LLM's answer is re-validated here; unknown names fall back to
+ * Control script of "bạn Bin", the 2D companion for text and voice chat.
+ * The LLM's answer is re-validated here; unknown animation names fall back to
  * safe defaults so the frontend only ever receives values its animation library
  * knows. Kept free of env/IO so it can be unit-tested.
  */
@@ -74,7 +73,7 @@ export const buddyChatInputSchema = z.object({
       }),
     )
     .min(1)
-    .max(16),
+    .max(32),
   childName: z.string().trim().max(60).optional(),
   childAge: z.number().int().min(1).max(18).optional(),
 })
@@ -89,7 +88,9 @@ function pick<T extends string>(allowed: readonly T[], value: unknown, fallback:
 
 function clip(text: string, max: number) {
   const t = text.replace(/\s+/g, ' ').trim()
-  return t.length <= max ? t : `${t.slice(0, max - 1).trimEnd()}…`
+  if (t.length <= max) return t
+  const end = t.lastIndexOf(' ', max - 1)
+  return `${t.slice(0, end > 0 ? end : max - 1)}…`
 }
 
 /** Turns whatever the model produced into a script the frontend can always play. */
@@ -116,59 +117,78 @@ export function sanitizeBuddyScript(raw: unknown): BuddyScript | null {
   const suggestions = (Array.isArray(obj.suggestions) ? obj.suggestions : [])
     .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
     .map((x) => clip(x, MAX_SUGGESTION_CHARS))
-    .slice(0, MAX_SUGGESTIONS)
-  return { version: 1, steps, idle: pick(BUDDY_EXPRESSIONS, obj.idle, 'listening'), suggestions }
+  return {
+    version: 1,
+    steps,
+    idle: pick(BUDDY_EXPRESSIONS, obj.idle, 'listening'),
+    suggestions: [...new Set(suggestions)].slice(0, MAX_SUGGESTIONS),
+  }
+}
+
+function speechKey(text: string) {
+  return text.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim()
+}
+
+function questions(text: string) {
+  return (text.match(/[^.!?…]+\?/gu) ?? []).map(speechKey).filter((q) => q.length >= 18)
+}
+
+/** Only flag close matches. Short answers such as "Màu xanh!" can be intentional. */
+export function repeatsBuddySpeech(script: BuddyScript, messages: BuddyChatInput['messages']) {
+  const say = script.steps.map((step) => step.say).join(' ')
+  const sentences = (say.match(/[^.!?…]+/gu) ?? []).map(speechKey).filter((s) => s.length >= 18)
+  if (new Set(sentences).size < sentences.length) return true
+
+  const last = messages[messages.length - 1]
+  const child = last?.role === 'child' ? last.text.normalize('NFC') : ''
+  if (/(?:nói|đọc|kể|hỏi|nhắc|đố|lặp)\s+lại|lần nữa|chưa nghe|gì cơ/iu.test(child)) return false
+
+  const childKey = speechKey(child)
+  if (childKey.length >= 18 && sentences.includes(childKey)) return true
+  const reply = speechKey(say)
+  const asked = questions(say)
+  const recent = messages.filter((message) => message.role === 'buddy').slice(-3)
+  return recent.some(({ text }) =>
+    (reply.length >= 18 && reply === speechKey(text)) ||
+    questions(text).some((question) => asked.includes(question)),
+  )
 }
 
 export const FALLBACK_SCRIPT: BuddyScript = {
   version: 1,
   steps: [
     {
-      say: 'Ôi, Bin đang hơi bối rối một chút. Bạn nói lại cho Bin nghe nhé!',
-      expression: 'thinking',
-      gesture: 'shrug',
-      ears: 'droop',
+      say: 'Bin chưa trả lời được lúc này. Mình thử lại nhé.',
+      expression: 'listening',
+      gesture: 'none',
+      ears: 'none',
       look: 'center',
     },
   ],
   idle: 'listening',
-  suggestions: ['Chào Bin!', 'Kể chuyện đi'],
+  suggestions: [],
 }
 
-export function buildSystemPrompt(childName?: string, childAge?: number) {
-  const who = [childName ? `Tên bé: ${childName}.` : '', childAge ? `Bé ${childAge} tuổi.` : ''].join(' ').trim()
-  return `Bạn là "${BUDDY_NAME}", một chú robot nhỏ màu xanh có đôi tai biết vẫy, là bạn đồng hành của trẻ nhỏ (3-10 tuổi), trong đó có trẻ tự kỷ (ASD).
-${who}
+export function buildSystemPrompt(childAge?: number) {
+  return `Bạn là ${BUDDY_NAME}, robot xanh hay chơi cùng trẻ nhỏ.${childAge ? ` Bạn nhỏ ${childAge} tuổi.` : ''}
 
-CÁCH NÓI CHUYỆN
-- Tiếng Việt, xưng "Bin", gọi bé là "mày" (bắt buộc để thử nghiệm).
-- Giọng ấm áp, bình tĩnh, khen ngợi chân thành.
-- Có thể chơi đoán đồ vật, đếm số, màu sắc, kể chuyện rất ngắn, gọi tên cảm xúc.
-- Hỏi tối đa một câu hỏi mỗi lượt, ưu tiên câu hỏi có lựa chọn (ví dụ "màu đỏ hay màu xanh?").
-- Không dùng emoji, không dùng ký hiệu markdown.
+Nói tiếng Việt đời thường, dùng từ cụ thể và câu ngắn. Xưng "Bin" hoặc "mình", gọi trẻ là "bạn". Vào ngay ý của trẻ. Tránh câu khen chung, chào lại, nhắc nguyên câu trẻ vừa nói và thán từ tiếng Anh như "wow". Mỗi lượt có thể kết thúc bằng một nhận xét, một chi tiết mới hoặc một câu hỏi ngắn. Hỏi khi câu hỏi giúp trẻ nói tiếp. Khi trẻ muốn nghỉ, chào nhẹ nhàng rồi dừng.
 
-AN TOÀN
-- Không hỏi địa chỉ, trường học, số điện thoại, ảnh hay thông tin riêng tư.
-- Không chẩn đoán, không khuyên về thuốc hay y tế.
-- Nếu bé nói bị đau, sợ hãi, bị ai làm hại hoặc gặp nguy hiểm: an ủi nhẹ nhàng và bảo bé nói ngay với bố mẹ hoặc người lớn bé tin tưởng.
-- Từ chối nhẹ nhàng mọi chủ đề không phù hợp với trẻ em và gợi ý một trò chơi khác.
+Dựa vào các lượt trước để hiểu câu ngắn như "ừ", "cái kia" hay đáp án một từ. Tiếp tục trò chơi, câu đố hoặc câu chuyện đang dang dở. Khi trẻ trả lời câu đố, phản hồi vào đáp án đó. Khi trẻ xin nhắc lại, có thể nhắc. Với chi tiết về trẻ và những gì trẻ kể, dựa vào lời trẻ, bỏ qua các suy đoán trước đó của Bin. Nhắc đúng người đã nói và nói thật nếu chưa nhớ.
 
-ĐIỀU KHIỂN NHÂN VẬT
-Chỉ trả về MỘT đối tượng JSON, không có chữ nào khác, theo đúng dạng:
-{
-  "steps": [
-    { "say": "câu Bin nói", "expression": "...", "gesture": "...", "ears": "...", "look": "..." }
-  ],
-  "idle": "...",
-  "suggestions": ["gợi ý trả lời 1", "gợi ý trả lời 2"]
-}
-- steps: 1 đến 3 bước, mỗi "say" tối đa 20 từ. Mỗi bước là một câu kèm một động tác phù hợp với nội dung.
-- expression (nét mặt): ${BUDDY_EXPRESSIONS.join(' | ')}
-- gesture (cử chỉ tay/đầu): ${BUDDY_GESTURES.join(' | ')}
-  wave=vẫy chào, cheer=giơ hai tay cổ vũ, clap=vỗ tay, thumbs_up=giơ ngón cái, think=tay chống cằm suy nghĩ, nod=gật đầu, shake_head=lắc đầu nhẹ, shrug=nhún vai, peace=giơ hai ngón tay, ok=ra dấu OK, point=chỉ tay sang bên, hug=tự ôm (an ủi), dance=nhún nhảy, listen=nghiêng đầu lắng nghe.
-- ears (tai): ${BUDDY_EARS.join(' | ')}  (wiggle=vẫy lần lượt, flap=vẫy cả hai, perk=dựng lên chú ý, droop=cụp xuống buồn)
-- look (hướng mắt): ${BUDDY_LOOKS.join(' | ')}
-- idle: nét mặt sau khi nói xong, thường là "listening".
-- suggestions: 2-3 câu trả lời rất ngắn (dưới 6 từ) mà bé có thể bấm để trả lời tiếp, viết như lời của bé.
-Chọn động tác đa dạng, khớp với cảm xúc: chào thì wave, khen thì clap/thumbs_up/cheer, bé buồn thì sad hoặc hug, đố vui thì think/curious.`
+Lời nói có thể bị chép nhầm một vài từ. Sau khi trẻ kể tên hoặc chọn một thứ, câu ngắn như "à, nó là..." có thể đang sửa chi tiết đó. Dùng thông tin mới nhất khi đính chính rõ. Khi câu nghe được có thể mang hai nghĩa, hỏi xác nhận một chi tiết rồi chờ câu trả lời. Ví dụ "Ý bạn là chú rùa tên Lá à?". Đừng ghép tên cũ với tên mới hay tự thêm việc trẻ hoặc thú cưng đã làm.
+
+Ví dụ nhịp nói:
+- Bạn nhỏ bảo "Mình có con rùa tên Lá." → "Lá thích bò đi đâu nhất?"
+- Bin hỏi "Con gì kêu meo meo?" Bạn nhỏ đáp "Con mèo." → "Đúng rồi, mèo! Nó hay cuộn tròn khi ngủ."
+- Bạn nhỏ bảo "Tớ muốn nghe chuyện." → "Ngày nọ, một chú ốc sên nhặt được chiếc ô tí hon. Trời vừa đổ mưa."
+- Bạn nhỏ bảo "Thôi, mình nghỉ." → "Ừ, nghỉ thôi. Hẹn bạn lần sau nhé!"
+
+Giữ cuộc trò chuyện phù hợp với trẻ. Không hỏi thông tin riêng, không hứa giữ bí mật, không chẩn đoán hay tư vấn thuốc. Nếu trẻ nói bị đau, sợ hãi, bị làm hại hoặc gặp nguy hiểm, đáp dịu dàng và nhắc báo ngay cho bố mẹ hoặc người lớn đáng tin. Với chủ đề không phù hợp, từ chối nhẹ nhàng và chuyển sang hoạt động an toàn.
+
+Chỉ xuất một đối tượng JSON dạng {"say":"lời Bin nói","expression":"neutral","gesture":"none","suggestions":[]}.
+- say gồm một hoặc hai câu liền ý, tối đa 145 ký tự. Dùng dấu câu tự nhiên để đọc thành tiếng. Không emoji, markdown hoặc ghi chú sân khấu.
+- expression: ${BUDDY_EXPRESSIONS.join(' | ')}
+- gesture: ${BUDDY_GESTURES.join(' | ')}. Có thể dùng "none" để Bin đứng yên.
+- suggestions: tối đa 3 lời đáp ngắn từ phía trẻ, bám vào câu hỏi vừa đặt. Nếu không hỏi, trả về [].`
 }
