@@ -4,10 +4,13 @@ import { api, apiErrorCode, isNetworkError } from '../lib/api'
 import type { ChildProfile, ConsentScope, ConsentStatement, ConsentStatus, VideoScreening } from '../lib/types'
 import { readVideoMetadata } from '../lib/video'
 import { childApiErrorMessage } from '../lib/children'
+import { updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
 import { SCREENING_STATUS_LABEL, formatBirthDate, todayInputValue } from '../lib/format'
 import { UploadDropzone } from './UploadDropzone'
 import { ConsentPanel } from './ConsentPanel'
 import { ScreeningResultView } from './ScreeningResultView'
+import { FamilyFaceEnrollment } from './children/FamilyFaceEnrollment'
+import { useAuth } from '../state/auth'
 
 const UPLOAD_HELPER = 'MP4, MOV, AVI, MKV • quay 6–10 giây trẻ đi thẳng, thấy cả bàn chân'
 const POLL_INTERVAL_MS = 2000
@@ -38,12 +41,16 @@ export function ScreeningUploadPanel({
   /** Preselected child (e.g. "Sàng lọc mới" on a child's page); ignored if not in the list. */
   initialChildId?: string
 }) {
+  const { user } = useAuth()
   const [children, setChildren] = useState<ChildProfile[] | null>(null)
   const [childId, setChildId] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDob, setNewDob] = useState('')
   const [newGender, setNewGender] = useState<ChildProfile['gender']>('UNSPECIFIED')
+  const [creatingChild, setCreatingChild] = useState(false)
+  const [faceUpdates, setFaceUpdates] = useState<FamilyFaceUpdates>({})
+  const [faceCameraActive, setFaceCameraActive] = useState(false)
 
   const [statement, setStatement] = useState<ConsentStatement | null>(null)
   // Consent status tagged with the child it belongs to; a stale entry reads as "loading".
@@ -98,22 +105,30 @@ export function ScreeningUploadPanel({
   const canUpload = Boolean(childId) && hasConsent && !uploading
 
   async function createChild() {
+    if (creatingChild || faceCameraActive) return
     setError(null)
     if (!newName || !newDob) {
       setError('Vui lòng nhập họ tên và ngày sinh của trẻ.')
       return
     }
+    setCreatingChild(true)
     try {
       const res = await api.post('/children', { fullName: newName, dateOfBirth: newDob, gender: newGender })
       const created: ChildProfile = res.data.child
+      if (user && Object.keys(faceUpdates).length > 0 && !updateFamilyFaceSamples(user.id, created.id, faceUpdates)) {
+        setError('Hồ sơ đã tạo. Không lưu được mẫu khuôn mặt trên trình duyệt này. Bạn có thể thử lại trong trang hồ sơ của bé.')
+      }
       setChildren((prev) => [created, ...(prev ?? [])])
       setChildId(created.id)
       setNewName('')
       setNewDob('')
       setNewGender('UNSPECIFIED')
+      setFaceUpdates({})
       setShowCreateForm(false)
     } catch (e) {
       setError(childApiErrorMessage(e, 'Không thể tạo hồ sơ trẻ.'))
+    } finally {
+      setCreatingChild(false)
     }
   }
 
@@ -235,7 +250,13 @@ export function ScreeningUploadPanel({
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between">
           <label className="text-xs font-extrabold uppercase tracking-wide text-duo-mute">Hồ sơ trẻ</label>
-          <button type="button" onClick={() => setShowCreateForm((v) => !v)} className="link-duo text-xs">
+          <button type="button" disabled={creatingChild} onClick={() => {
+            if (showCreateForm) {
+              setFaceUpdates({})
+              setFaceCameraActive(false)
+            }
+            setShowCreateForm((v) => !v)
+          }} className="link-duo text-xs">
             {showCreateForm ? 'Ẩn' : '+ Tạo mới'}
           </button>
         </div>
@@ -268,8 +289,9 @@ export function ScreeningUploadPanel({
               <option value="OTHER">Khác</option>
             </select>
           </div>
-          <button type="button" onClick={createChild} className="btn-duo">
-            Tạo hồ sơ
+          {user && <FamilyFaceEnrollment key={user.id} updates={faceUpdates} onChange={setFaceUpdates} onCameraActiveChange={setFaceCameraActive} disabled={creatingChild} />}
+          <button type="button" onClick={createChild} className="btn-duo" disabled={creatingChild || faceCameraActive}>
+            {creatingChild ? 'Đang tạo hồ sơ…' : 'Tạo hồ sơ'}
           </button>
         </div>
       )}

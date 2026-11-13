@@ -7,8 +7,10 @@ import { ChildForm, type ChildFormValues } from '../components/ChildForm'
 import { RiskPill } from '../components/RiskPill'
 import { api } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
+import { updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
 import { GENDER_LABEL, formatAge, formatDate } from '../lib/format'
 import type { ChildProfile } from '../lib/types'
+import { useAuth } from '../state/auth'
 
 function ChildCard({ child }: { child: ChildProfile }) {
   const s = child.summary
@@ -47,9 +49,10 @@ function ChildCard({ child }: { child: ChildProfile }) {
 
 export function ChildrenPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const location = useLocation()
   // Shown once after a deletion; cleared from history so Back/refresh do not repeat it.
-  const [deletedName] = useState(() => (location.state as { deletedName?: string } | null)?.deletedName)
+  const [deletion] = useState(() => location.state as { deletedName?: string; faceCleanupFailed?: boolean } | null)
   useEffect(() => {
     if (location.state) navigate(location.pathname, { replace: true, state: null })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,13 +73,14 @@ export function ChildrenPage() {
       })
   }, [])
 
-  async function create(values: ChildFormValues) {
+  async function create(values: ChildFormValues, faceUpdates: FamilyFaceUpdates) {
     setSaving(true)
     setFormError(null)
     try {
       const res = await api.post('/children', values)
       const created: ChildProfile = res.data.child
-      navigate(`/children/${created.id}`)
+      const facesSaved = !user || Object.keys(faceUpdates).length === 0 || updateFamilyFaceSamples(user.id, created.id, faceUpdates)
+      navigate(`/children/${created.id}`, { state: { faceSaveFailed: !facesSaved } })
     } catch (e) {
       setFormError(childApiErrorMessage(e, 'Không tạo được hồ sơ trẻ. Vui lòng thử lại.'))
     } finally {
@@ -102,16 +106,23 @@ export function ChildrenPage() {
           )}
         </div>
 
-        {deletedName && (
+        {deletion?.deletedName && (
           <div className="rounded-2xl bg-duo-green-soft px-4 py-3 text-sm font-bold text-duo-green-dark">
-            Đã xoá hồ sơ “{deletedName}” cùng toàn bộ dữ liệu sàng lọc của trẻ.
+            Đã xoá hồ sơ “{deletion.deletedName}” cùng toàn bộ dữ liệu sàng lọc của trẻ.
           </div>
+        )}
+        {deletion?.faceCleanupFailed && (
+          <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">
+            Không xoá được mẫu khuôn mặt trên thiết bị này. Bạn có thể xoá dữ liệu trang web trong cài đặt trình duyệt.
+          </p>
         )}
 
         {creating && (
           <div className="card-duo p-5">
             <div className="mb-4 text-sm font-extrabold uppercase tracking-wide text-duo-ink">Hồ sơ mới</div>
             <ChildForm
+              key={user?.id}
+              enrollmentUserId={user?.id}
               submitLabel="Tạo hồ sơ"
               submitting={saving}
               error={formError}

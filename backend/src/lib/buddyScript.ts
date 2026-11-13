@@ -64,6 +64,18 @@ const MAX_SAY_CHARS = 160
 const MAX_SUGGESTIONS = 3
 const MAX_SUGGESTION_CHARS = 40
 
+const VISION_ROLES = ['child', 'mother', 'father', 'unknown'] as const
+const VISION_CUES = ['smile', 'brow_lowered', 'mouth_open'] as const
+const buddyVisionContextSchema = z.object({
+  people: z.array(z.object({
+    role: z.enum(VISION_ROLES),
+    cues: z.array(z.enum(VISION_CUES)).max(VISION_CUES.length).optional(),
+  }).strict()).max(4),
+  speaker: z.enum(VISION_ROLES).optional(),
+}).strict()
+
+type BuddyVisionContext = z.infer<typeof buddyVisionContextSchema>
+
 export const buddyChatInputSchema = z.object({
   messages: z
     .array(
@@ -76,6 +88,7 @@ export const buddyChatInputSchema = z.object({
     .max(32),
   childName: z.string().trim().max(60).optional(),
   childAge: z.number().int().min(1).max(18).optional(),
+  vision: buddyVisionContextSchema.optional(),
 })
 
 export type BuddyChatInput = z.infer<typeof buddyChatInputSchema>
@@ -169,7 +182,24 @@ export const FALLBACK_SCRIPT: BuddyScript = {
   suggestions: [],
 }
 
-export function buildSystemPrompt(childAge?: number) {
+function visionPrompt(vision: BuddyVisionContext) {
+  const roleLabels = { child: 'bé', mother: 'mẹ', father: 'bố', unknown: 'chưa rõ vai trò' }
+  const cueLabels = { smile: 'có nét giống đang cười', brow_lowered: 'hạ chân mày', mouth_open: 'mở miệng' }
+  const people = vision.people.map((person) => {
+    const uniqueRole = vision.people.filter(({ role }) => role === person.role).length === 1
+    const role = uniqueRole ? person.role : 'unknown'
+    const cues = [...new Set(person.cues)].map((cue) => cueLabels[cue])
+    return [roleLabels[role], ...cues].join(', ')
+  }).join(' | ')
+  const speaker = vision.speaker && vision.speaker !== 'unknown'
+    && vision.people.filter(({ role }) => role === vision.speaker).length === 1
+    ? roleLabels[vision.speaker] : 'chưa xác định'
+
+  return `\n\nNgữ cảnh camera cho lượt hiện tại: ${people || 'không có quan sát đủ rõ'}. Người vừa nói: ${speaker}.
+Ưu tiên lời vừa nghe. Các quan sát camera chỉ để hỗ trợ khi phù hợp với câu chuyện. Đừng tự nói về camera, gán cảm xúc từ nét mặt hoặc suy ra người vừa nói từ người đang có mặt. Nếu người nói chưa xác định, xưng hô trung tính và đáp theo nội dung vừa nghe. Tuổi đã nêu là tuổi của bé trong hồ sơ.`
+}
+
+export function buildSystemPrompt(childAge?: number, vision?: BuddyVisionContext) {
   return `Bạn là ${BUDDY_NAME}, robot xanh hay chơi cùng trẻ nhỏ.${childAge ? ` Bạn nhỏ ${childAge} tuổi.` : ''}
 
 Nói tiếng Việt đời thường, dùng từ cụ thể và câu ngắn. Xưng "Bin" hoặc "mình", gọi trẻ là "bạn". Vào ngay ý của trẻ. Tránh câu khen chung, chào lại, nhắc nguyên câu trẻ vừa nói và thán từ tiếng Anh như "wow". Mỗi lượt có thể kết thúc bằng một nhận xét, một chi tiết mới hoặc một câu hỏi ngắn. Hỏi khi câu hỏi giúp trẻ nói tiếp. Khi trẻ muốn nghỉ, chào nhẹ nhàng rồi dừng.
@@ -190,5 +220,5 @@ Chỉ xuất một đối tượng JSON dạng {"say":"lời Bin nói","expressi
 - say gồm một hoặc hai câu liền ý, tối đa 145 ký tự. Dùng dấu câu tự nhiên để đọc thành tiếng. Không emoji, markdown hoặc ghi chú sân khấu.
 - expression: ${BUDDY_EXPRESSIONS.join(' | ')}
 - gesture: ${BUDDY_GESTURES.join(' | ')}. Có thể dùng "none" để Bin đứng yên.
-- suggestions: tối đa 3 lời đáp ngắn từ phía trẻ, bám vào câu hỏi vừa đặt. Nếu không hỏi, trả về [].`
+- suggestions: tối đa 3 lời đáp ngắn từ phía trẻ, bám vào câu hỏi vừa đặt. Nếu không hỏi, trả về [].${vision ? visionPrompt(vision) : ''}`
 }

@@ -16,7 +16,7 @@ async function callGroq(input: BuddyChatInput, signal: AbortSignal, retry = fals
     ? '\nViết một lời đáp mới nối vào câu cuối, tránh lặp câu đã nói. Giữ câu ngắn và đúng dạng JSON.'
     : ''
   const messages = [
-    { role: 'system', content: buildSystemPrompt(input.childAge) + instruction },
+    { role: 'system', content: buildSystemPrompt(input.childAge, input.vision) + instruction },
     ...input.messages.map((m) => ({ role: m.role === 'child' ? 'user' : 'assistant', content: m.text })),
   ]
   const res = await fetch(`${env.GROQ_BASE_URL.replace(/\/$/, '')}/chat/completions`, {

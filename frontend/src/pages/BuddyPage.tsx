@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Mic, MicOff, SendHorizontal, Sparkles } from 'lucide-react'
 import { BuddyCharacter } from '../components/buddy/BuddyCharacter'
+import { BuddyCamera, type BuddyCameraHandle } from '../components/buddy/BuddyCamera'
 import { api } from '../lib/api'
-import { askBuddy, recentBuddyMessages, type BuddyMessage } from '../lib/buddy/api'
+import { askBuddy, recentBuddyMessages, type BuddyMessage, type BuddyVisionContext } from '../lib/buddy/api'
 import { BuddyDirector, useBuddyFrame } from '../lib/buddy/engine'
-import { buddyVoiceEnabled, openBuddyMic, speakBuddyLine, transcribeBuddyTurn, type BuddyMic } from '../lib/buddy/voice'
+import { buddyVoiceEnabled, openBuddyMic, speakBuddyLine, transcribeBuddyTurn, type BuddyMic, type BuddyVoiceTiming } from '../lib/buddy/voice'
 import type { BuddyScript } from '../lib/buddy/types'
 import type { ChildProfile } from '../lib/types'
 import { useAuth } from '../state/auth'
@@ -70,6 +71,7 @@ export function BuddyPage() {
     <BuddyConversation
       key={`${userId ?? ''}:${childId}`}
       profiles={family && family.userId === userId ? family.profiles : []}
+      userId={userId ?? ''}
       childId={childId}
       showStudio={user?.role === 'ADMIN'}
       onChildChange={(id) => setParams(id ? { childId: id } : {}, { replace: true })}
@@ -77,8 +79,9 @@ export function BuddyPage() {
   )
 }
 
-function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
+function BuddyConversation({ profiles, userId, childId, showStudio, onChildChange }: {
   profiles: ChildProfile[]
+  userId: string
   childId: string
   showStudio: boolean
   onChildChange: (id: string) => void
@@ -94,6 +97,7 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
   const messages = useRef<BuddyMessage[]>([])
   const activeTurn = useRef<AbortController | null>(null)
   const voiceSession = useRef<VoiceSession | null>(null)
+  const camera = useRef<BuddyCameraHandle>(null)
   const [input, setInput] = useState('')
   const [phase, setPhase] = useState<TurnPhase>('idle')
   const [voiceAvailable, setVoiceAvailable] = useState(false)
@@ -194,7 +198,7 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
     else setPhase('idle')
   }
 
-  async function respond(raw: string, turn: AbortController, voice: AudioContext | null, source: TurnSource) {
+  async function respond(raw: string, turn: AbortController, voice: AudioContext | null, source: TurnSource, vision?: BuddyVisionContext) {
     const text = raw.trim()
     if (!text || turn.signal.aborted) return
     if (source !== 'retry') setLastChild({ text, fromVoice: source === 'voice' })
@@ -213,7 +217,12 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
       ? messages.current
       : recentBuddyMessages([...messages.current, { role: 'child', text: outbound }])
     messages.current = history
-    const { script, fallback } = await askBuddy(history, { age: activeChild ? ageInYears(activeChild.dateOfBirth) : undefined }, turn.signal)
+    const { script, fallback } = await askBuddy(
+      history,
+      { age: activeChild ? ageInYears(activeChild.dateOfBirth) : undefined },
+      turn.signal,
+      vision,
+    )
     if (turn.signal.aborted) return
     director.stop('waiting')
     setCanRetry(fallback)
@@ -258,7 +267,7 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
     setInput('')
     const voice = session?.context.state === 'running' ? session.context : null
     try {
-      await respond(text, turn, voice, mode === 'correction' ? 'voice' : mode)
+      await respond(text, turn, voice, mode === 'correction' ? 'voice' : mode, camera.current?.snapshot()?.context)
     } finally {
       finishTurn(turn, session)
     }
@@ -275,14 +284,17 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
     inputRef.current?.focus()
   }
 
-  async function listenToTurn(audio: Blob, session: VoiceSession) {
+  async function listenToTurn(audio: Blob, session: VoiceSession, timing: BuddyVoiceTiming) {
     if (voiceSession.current !== session) return
+    const vision = camera.current?.snapshot(timing)
     const turn = beginTurn()
     director.setExpression('thinking')
     try {
       const transcript = (await transcribeBuddyTurn(audio, turn.signal)).trim()
       turn.signal.throwIfAborted()
-      if (transcript) await respond(transcript, turn, session.context, 'voice')
+      if (transcript) {
+        await respond(transcript, turn, session.context, 'voice', vision?.isCurrent() ? vision.context : undefined)
+      }
       else setVoiceError('Bin chưa nghe rõ. Bạn nói lại nhé.')
     } catch {
       if (!turn.signal.aborted) setVoiceError('Bin chưa nghe được lần này. Bạn thử nói lại hoặc gõ cho Bin nhé.')
@@ -309,7 +321,7 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
             setVoiceError('')
             setPhase('recording')
           },
-          onTurn: (audio) => void listenToTurn(audio, session),
+          onTurn: (audio, timing) => void listenToTurn(audio, session, timing),
           onError: () => {
             if (voiceSession.current === session) stopVoice('Mic đã ngắt. Bật lại để nói tiếp nhé.')
           },
@@ -352,6 +364,7 @@ function BuddyConversation({ profiles, childId, showStudio, onChildChange }: {
           <Sparkles className="h-5 w-5 text-[#FACC15]" /> Bạn Bin
         </div>
         <div className="flex items-center gap-2">
+          <BuddyCamera ref={camera} userId={userId} childId={childId} />
           {profiles.length > 0 && (
             <select
               value={childId}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Loader2, Pencil, RotateCcw, ShieldAlert, ShieldCheck, Trash2, Video } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
@@ -13,6 +13,7 @@ import { ChildQuestionnairesSection } from '../components/children/ChildQuestion
 import { ChildExercisesSection } from '../components/children/ChildExercisesSection'
 import { api, apiErrorCode } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
+import { clearFamilyFaceSamples, updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
 import {
   GAIT_VIEW_LABEL,
   GENDER_LABEL,
@@ -24,6 +25,7 @@ import {
   formatDateTime,
 } from '../lib/format'
 import type { ChildDetail, ChildScreening } from '../lib/types'
+import { useAuth } from '../state/auth'
 
 const POLL_INTERVAL_MS = 4000
 
@@ -154,12 +156,15 @@ export function ChildDetailPage() {
 
 function ChildDetail({ id }: { id: string }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user } = useAuth()
   const [data, setData] = useState<ChildDetail | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [faceSaveFailed, setFaceSaveFailed] = useState(() => Boolean((location.state as { faceSaveFailed?: boolean } | null)?.faceSaveFailed))
   const [openId, setOpenId] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -203,11 +208,17 @@ function ChildDetail({ id }: { id: string }) {
     return () => window.clearInterval(timer)
   }, [processing, load])
 
-  async function save(values: ChildFormValues) {
+  async function save(values: ChildFormValues, faceUpdates: FamilyFaceUpdates) {
     setSaving(true)
     setFormError(null)
     try {
       await api.patch(`/children/${id}`, { ...values, note: values.note || null })
+      if (user && Object.keys(faceUpdates).length > 0 && !updateFamilyFaceSamples(user.id, id, faceUpdates)) {
+        await load()
+        setFormError('Thông tin hồ sơ đã lưu. Không lưu được mẫu khuôn mặt trên trình duyệt này.')
+        return
+      }
+      setFaceSaveFailed(false)
       await load()
       setEditing(false)
     } catch (e) {
@@ -262,7 +273,8 @@ function ChildDetail({ id }: { id: string }) {
     setDeleteError(null)
     try {
       await api.delete(`/children/${id}`)
-      navigate('/children', { replace: true, state: { deletedName: data.child.fullName } })
+      const facesCleared = !user || clearFamilyFaceSamples(user.id, id)
+      navigate('/children', { replace: true, state: { deletedName: data.child.fullName, faceCleanupFailed: !facesCleared } })
     } catch (e) {
       setDeleteError(childApiErrorMessage(e, 'Không xoá được hồ sơ. Vui lòng thử lại.'))
       setDeleting(false)
@@ -297,6 +309,9 @@ function ChildDetail({ id }: { id: string }) {
         </Link>
 
         {loadError && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{loadError}</div>}
+        {faceSaveFailed && <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">
+          Hồ sơ đã tạo. Không lưu được mẫu khuôn mặt trên trình duyệt này. Bạn có thể thử lại trong phần Sửa hồ sơ.
+        </p>}
         {!data && !loadError && <div className="text-sm font-semibold text-duo-mute">Đang tải...</div>}
 
         {data && child && (
@@ -306,7 +321,9 @@ function ChildDetail({ id }: { id: string }) {
                 <>
                   <div className="mb-4 text-sm font-extrabold uppercase tracking-wide text-duo-ink">Sửa hồ sơ</div>
                   <ChildForm
+                    key={user?.id}
                     initial={child}
+                    enrollmentUserId={user?.id}
                     submitLabel="Lưu thay đổi"
                     submitting={saving}
                     error={formError}

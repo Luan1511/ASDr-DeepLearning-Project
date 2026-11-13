@@ -18,13 +18,15 @@ export async function transcribeBuddyTurn(audio: Blob, signal: AbortSignal) {
 
 export type BuddyMic = { setListening: (listening: boolean) => void }
 
-type MicMessage = { generation: number } & ({ type: 'speech' } | { type: 'turn'; frames: Float32Array[] })
+type MicMessage = { generation: number } & ({ type: 'speech' } | { type: 'turn'; frames: Float32Array[]; endedAt: number })
+
+export type BuddyVoiceTiming = { endedAt: number; frameMs: number; energy: number[] }
 
 /** The worklet detects utterances locally. The input is disabled between turns. */
 export async function openBuddyMic(
   context: AudioContext,
   signal: AbortSignal,
-  events: { onSpeech: () => void; onTurn: (audio: Blob) => void; onError: () => void },
+  events: { onSpeech: () => void; onTurn: (audio: Blob, timing: BuddyVoiceTiming) => void; onError: () => void },
 ): Promise<BuddyMic> {
   signal.throwIfAborted()
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -82,7 +84,11 @@ export async function openBuddyMic(
         return
       }
       setListening(false)
-      events.onTurn(voiceWav(data.frames, context.sampleRate))
+      events.onTurn(voiceWav(data.frames, context.sampleRate), {
+        endedAt: performance.now() + (data.endedAt - context.currentTime) * 1000,
+        frameMs: 1000 * data.frames[0].length / context.sampleRate,
+        energy: data.frames.map(rms),
+      })
     }
     return { setListening }
   } catch (error) {

@@ -57,7 +57,8 @@ class BuddyMicProcessor extends AudioWorkletProcessor {
     const frames = this.frames.slice(0, this.frames.length - trim)
     this.generation = 0
     this.resetTurn()
-    this.port.postMessage({ type: 'turn', generation, frames }, frames.map((part) => part.buffer))
+    const endedAt = currentTime - trim * FRAME_MS / 1000
+    this.port.postMessage({ type: 'turn', generation, frames, endedAt }, frames.map((part) => part.buffer))
   }
 
   process(inputs) {

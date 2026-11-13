@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import type { ChildProfile, Gender } from '../lib/types'
 import { GENDER_LABEL, toDateInputValue, todayInputValue } from '../lib/format'
+import { loadFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
+import { FamilyFaceEnrollment } from './children/FamilyFaceEnrollment'
 
 export type ChildFormValues = { fullName: string; dateOfBirth: string; gender: Gender; note: string }
 
@@ -10,6 +12,7 @@ const GENDERS: Gender[] = ['UNSPECIFIED', 'MALE', 'FEMALE', 'OTHER']
 /** Create / edit form for a child profile. */
 export function ChildForm({
   initial,
+  enrollmentUserId,
   submitLabel,
   submitting,
   error,
@@ -17,10 +20,11 @@ export function ChildForm({
   onCancel,
 }: {
   initial?: ChildProfile
+  enrollmentUserId?: string
   submitLabel: string
   submitting: boolean
   error?: string | null
-  onSubmit: (values: ChildFormValues) => void
+  onSubmit: (values: ChildFormValues, familyFaceUpdates: FamilyFaceUpdates) => void
   onCancel?: () => void
 }) {
   const [fullName, setFullName] = useState(initial?.fullName ?? '')
@@ -28,10 +32,14 @@ export function ChildForm({
   const [gender, setGender] = useState<Gender>(initial?.gender ?? 'UNSPECIFIED')
   const [note, setNote] = useState(initial?.note ?? '')
   const [localError, setLocalError] = useState<string | null>(null)
+  const [faceUpdates, setFaceUpdates] = useState<FamilyFaceUpdates>({})
+  const [cameraActive, setCameraActive] = useState(false)
+  const [savedFaces] = useState(() => initial && enrollmentUserId ? loadFamilyFaceSamples(enrollmentUserId, initial.id) : undefined)
   const today = todayInputValue()
 
   function submit(e: FormEvent) {
     e.preventDefault()
+    if (submitting || cameraActive) return
     if (!fullName.trim() || !dateOfBirth) {
       setLocalError('Vui lòng nhập họ tên và ngày sinh của trẻ.')
       return
@@ -41,7 +49,7 @@ export function ChildForm({
       return
     }
     setLocalError(null)
-    onSubmit({ fullName: fullName.trim(), dateOfBirth, gender, note: note.trim() })
+    onSubmit({ fullName: fullName.trim(), dateOfBirth, gender, note: note.trim() }, faceUpdates)
   }
 
   const shownError = localError ?? error
@@ -86,10 +94,14 @@ export function ChildForm({
         />
       </label>
 
+      {enrollmentUserId && (
+        <FamilyFaceEnrollment saved={savedFaces} updates={faceUpdates} onChange={setFaceUpdates} onCameraActiveChange={setCameraActive} disabled={submitting} />
+      )}
+
       {shownError && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{shownError}</div>}
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" className="btn-duo" disabled={submitting}>
+        <button type="submit" className="btn-duo" disabled={submitting || cameraActive}>
           {submitting ? 'Đang lưu...' : submitLabel}
         </button>
         {onCancel && (

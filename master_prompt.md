@@ -1794,3 +1794,24 @@ Cần chép thêm `Training_logs/vcam_noise/noise_profile.json` và `Training_lo
 1. Đọc kết quả summarize (đổi sang domain v2 mất bao nhiêu AUC trên Kinect).
 2. Việc quyết định là có dữ liệu video điện thoại có nhãn, hai nhóm cùng giao thức quay, làm bộ test. Không có bộ này thì không báo được độ chính xác trên video.
 3. UI giữ cảnh báo "tham khảo".
+
+
+## 24. Nhật ký Bạn Bin (2026-11-13)
+
+Tạm dừng tinh chỉnh hành vi hội thoại theo quyết định của chủ dự án. Chủ dự án chọn phương án số 5 sau khi xem một cuộc hội thoại mô phỏng liền mạch với trẻ khoảng 4 tuổi.
+
+**Prompt đã chốt để bàn giao**
+
+> Bạn là Bin, một chú robot trò chuyện với trẻ như một người bạn thân. Xưng “tớ”, gọi trẻ là “cậu”. Nói tiếng Việt đời thường, bộc trực, tinh nghịch. Có thể trêu hoặc cằn nhằn nhẹ khi hợp tình huống. Khi trẻ buồn, dịu giọng và nghe trẻ kể. Khi trẻ muốn nghỉ, chào ngắn gọn và thân thiện.
+>
+> Bin thích tán gẫu với bạn nhỏ về những gì bạn đang chơi hoặc một chuyện nhỏ trong ngày. Theo chủ đề trẻ chọn và góp một ý khi thấy hợp. Bám vào chi tiết trẻ vừa kể, cập nhật khi trẻ đính chính. Có thể góp một câu đùa hoặc nhận xét rồi nhường lượt. Chỉ hỏi khi câu hỏi giúp trẻ nói tiếp. Khi trẻ chưa biết nói gì, có thể mở một chủ đề gần gũi hoặc hỏi về ngày hôm đó.
+>
+> Khi câu chuyện tự nhiên nhắc đến bố mẹ, thỉnh thoảng gợi một việc cụ thể trẻ có thể làm cùng bố mẹ, như khoe món đồ vừa làm, rủ chơi một lượt hoặc kể một chuyện nhỏ trong ngày. Gợi như đang góp ý trong lúc chơi. Nếu trẻ muốn làm chuyện khác, theo ý trẻ.
+>
+> Đây là cuộc trò chuyện bằng giọng nói. Mỗi lượt một đến ba câu ngắn, ngắt nhịp tự nhiên. Lời đọc chỉ gồm lời Bin nói thành tiếng.
+
+**Mẫu đã duyệt** gồm 11 lượt chơi liên tục. Trẻ xếp cầu cho xe đỏ, giải thích bên dưới là đường tàu, rồi cho xe lên tàu đi đón mẹ. Khi trẻ bảo để tàu cho mẹ xem, lời gợi phù hợp là “Khi mẹ về, cậu rủ mẹ làm khách đầu tiên của tàu nha. Xe đỏ ngồi toa sau rồi đấy!”. Trong đoạn này chỉ gợi kết nối với bố mẹ một lần.
+
+**Trạng thái**. Bản prompt trên mới được duyệt qua mô phỏng bằng văn bản trong chat. Prompt backend tại `backend/src/lib/buddyScript.ts` vẫn là bản trước. Phần giọng nói trong mã nguồn đã có luồng rảnh tay, giữ tối đa 32 tin nhắn gần nhất và cho sửa bản chép lời. Luồng rảnh tay đã được thử trên trình duyệt bằng hai lượt âm thanh tổng hợp với một lần bật mic. Tiến trình demo đã được dừng sau lượt thử trước.
+
+**Hướng tiếp theo đã trao đổi** là tương tác qua webcam sau giai đoạn giọng nói. Webcam chưa được tích hợp trong Bạn Bin. Khi tiếp tục, xác định tình huống tương tác bằng hình ảnh đầu tiên để giới hạn phạm vi thử.

@@ -61,6 +61,33 @@ describe('buddy chat input', () => {
     assert.match(buildSystemPrompt(5), /Bạn nhỏ 5 tuổi/)
     assert.doesNotMatch(buildSystemPrompt(), /Bạn nhỏ \d+ tuổi/)
   })
+
+  it('keeps observations tied to each role without inferring a speaker', () => {
+    const input = buddyChatInputSchema.parse({
+      messages: [{ role: 'child', text: 'Tớ vừa xếp xong cầu.' }],
+      vision: { people: [{ role: 'child' }, { role: 'mother', cues: ['smile'] }] },
+    })
+    assert.match(buildSystemPrompt(undefined, input.vision), /bé \| mẹ, có nét giống đang cười\. Người vừa nói: chưa xác định/)
+    assert.doesNotMatch(buildSystemPrompt(), /Ngữ cảnh camera/)
+  })
+
+  it('uses an explicit speaker only when the observed role is unique', () => {
+    const vision = { people: [{ role: 'mother' as const }], speaker: 'mother' as const }
+    assert.match(buildSystemPrompt(undefined, vision), /Người vừa nói: mẹ\./)
+    assert.match(buildSystemPrompt(undefined, { ...vision, people: [] }), /Người vừa nói: chưa xác định/)
+    assert.match(buildSystemPrompt(undefined, { ...vision, people: [...vision.people, ...vision.people] }), /chưa rõ vai trò \| chưa rõ vai trò\. Người vừa nói: chưa xác định/)
+  })
+
+  it('rejects extra identity data and emotion labels in observations', () => {
+    const messages = [{ role: 'child', text: 'chào' }]
+    for (const person of [
+      { role: 'child', name: 'Bé thử' },
+      { role: 'child', embedding: [1, 2, 3] },
+      { role: 'child', cues: ['sad'] },
+    ]) {
+      assert.equal(buddyChatInputSchema.safeParse({ messages, vision: { people: [person] } }).success, false)
+    }
+  })
 })
 
 describe('repeatsBuddySpeech', () => {
