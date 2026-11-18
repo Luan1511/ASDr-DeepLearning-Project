@@ -4,16 +4,23 @@ Nhật ký thay đổi source code, logic xử lý, giao diện, database và tr
 
 Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md` và source hiện tại. Ngày cập nhật code và ngày triển khai được ghi riêng khi có thông tin. Kết quả kiểm thử thuộc lần thực hiện được nêu trong từng mục.
 
-## Chưa phát hành
+## 2026-11-18 — Sửa lỗi tạo mẫu khuôn mặt trên website
 
-### 2026-11-18 — Cải thiện lấy mẫu khuôn mặt cho Bạn Bin
+- Bản quay từ người dùng cho thấy mặt và tư thế đã được chấp nhận, nhưng bước tạo vector nhận diện liên tục báo lỗi.
+- Xác định nginx trên website trả module ONNX Runtime `.mjs` với `Content-Type: application/octet-stream`, khiến trình duyệt chặn import module.
+- Bổ sung location dành cho `.mjs` trong `frontend/nginx.conf`, trả `text/javascript` và trả 404 nếu tệp module thiếu.
+- Đã áp cấu hình vào source triển khai và nginx đang chạy trên `khmt01`. Lưu bản sao cấu hình tại `/home/khmt01/Luan_workspace/diagnostics/nginx-mjs-20261118-f87b11ee`, chạy `nginx -t` thành công rồi reload.
+- Kiểm chứng qua `aimbrace.agriwatch.io.vn`: trước sửa Chrome import thất bại, sau sửa import thành công và worker SFace trả vector hữu hạn 128 chiều với tensor tổng hợp. HTTP của module trả `text/javascript`, API health trả 200.
+- Lần kiểm thử giao diện trước đó dùng máy chủ thử có MIME đúng nên chưa phát hiện sai cấu hình nginx. Sau triển khai cần tải lại trang để worker khởi động lại rồi thử lấy mẫu bằng camera thật.
+
+## 2026-11-18 — Cải thiện lấy mẫu khuôn mặt cho Bạn Bin
 
 - Camera lấy mẫu dùng khung 4:3 dành cho khuôn mặt, thay cấu hình toàn thân của bài tập. Mở rộng phần xem trước và thêm khung hướng dẫn cho góc chính diện.
 - Phân biệt các trường hợp mặt quá nhỏ, sát mép, sai góc và lỗi tạo vector nhận diện. Giao diện chỉ rõ cần tiến gần, dịch vào giữa hay điều chỉnh hướng mặt.
 - Nới nhẹ khoảng chấp nhận góc chính diện, từ khoảng 8° lên khoảng 10° và tăng dung sai góc nhìn dọc của camera. Các ngưỡng so khớp danh tính giữ theo cấu hình nhận diện hiện tại.
 - Làm rõ cách hoàn tất sau góc đầu tiên bằng nút “Dùng mẫu chính diện”. Người dùng có thể tiếp tục lấy thêm bốn góc.
 - Kiểm chứng trên bản sao source gồm 37 test liên quan, lint và build frontend đạt. Chrome với camera giả lập và ảnh người lớn công khai đã chạy mô hình thật, tự lấy mẫu cho hai người, lưu vector tại trình duyệt và mở giao diện ở chiều rộng 375 px.
-- Cần thử thêm với người thật để đánh giá dung sai góc mới. Bản sửa được áp vào source máy dev, frontend trên máy chủ cần build và triển khai.
+- Giao diện cập nhật đã xuất hiện trong bản quay website người dùng gửi sau đó. Cần thử thêm với người thật để đánh giá dung sai góc mới sau khi khắc phục lỗi module ONNX.
 
 ## 2026-11-18 — Khởi tạo nhật ký thay đổi
 
