@@ -6,7 +6,14 @@ Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md
 
 ## Chưa phát hành
 
-Ghi các thay đổi đang làm tại đây, sau đó chuyển sang mục có ngày khi hoàn tất. Ghi rõ môi trường đã áp dụng để theo dõi phần còn chờ triển khai.
+### 2026-11-18 — Cải thiện lấy mẫu khuôn mặt cho Bạn Bin
+
+- Camera lấy mẫu dùng khung 4:3 dành cho khuôn mặt, thay cấu hình toàn thân của bài tập. Mở rộng phần xem trước và thêm khung hướng dẫn cho góc chính diện.
+- Phân biệt các trường hợp mặt quá nhỏ, sát mép, sai góc và lỗi tạo vector nhận diện. Giao diện chỉ rõ cần tiến gần, dịch vào giữa hay điều chỉnh hướng mặt.
+- Nới nhẹ khoảng chấp nhận góc chính diện, từ khoảng 8° lên khoảng 10° và tăng dung sai góc nhìn dọc của camera. Các ngưỡng so khớp danh tính giữ theo cấu hình nhận diện hiện tại.
+- Làm rõ cách hoàn tất sau góc đầu tiên bằng nút “Dùng mẫu chính diện”. Người dùng có thể tiếp tục lấy thêm bốn góc.
+- Kiểm chứng trên bản sao source gồm 37 test liên quan, lint và build frontend đạt. Chrome với camera giả lập và ảnh người lớn công khai đã chạy mô hình thật, tự lấy mẫu cho hai người, lưu vector tại trình duyệt và mở giao diện ở chiều rộng 375 px.
+- Cần thử thêm với người thật để đánh giá dung sai góc mới. Bản sửa được áp vào source máy dev, frontend trên máy chủ cần build và triển khai.
 
 ## 2026-11-18 — Khởi tạo nhật ký thay đổi
 

@@ -2,6 +2,7 @@ import { FaceLandmarker, type FaceLandmarkerResult, type NormalizedLandmark } fr
 import visionLoader from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.js?url'
 import visionWasm from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.wasm?url'
 import { FACE_POSE, classifyFaceView, headPose, type Point } from './visionPose'
+import { enrollmentQuality, poseHint } from './faceEnrollment'
 import type { VisionRequest, VisionResponse } from './visionProtocol'
 import { BuddyFaceTracker, findFamilyRole, type FaceObservation } from './visionTracking'
 
@@ -92,14 +93,18 @@ function transform(points: Point[]) {
   return new DOMMatrix([a, b, -b, a, to.x - a * from.x + b * from.y, to.y - b * from.x - a * from.y])
 }
 
-/** Eye centres, nose tip and mouth corners in pixels; null when the face is too small to align. */
-function facePoints(points: NormalizedLandmark[], frame: ImageBitmap): Point[] | null {
+/** Eye centres, nose tip and mouth corners in pixels. */
+function alignmentPoints(points: NormalizedLandmark[], frame: ImageBitmap): Point[] {
   const inPixels = (index: number) => ({ x: points[index].x * frame.width, y: points[index].y * frame.height })
   // Use lid corners rather than iris positions so glances do not move the crop.
   const eyes = [center([inPixels(33), inPixels(133)]), center([inPixels(362), inPixels(263)])].sort((a, b) => a.x - b.x)
   const mouth = [inPixels(61), inPixels(291)].sort((a, b) => a.x - b.x)
-  const eyeDistance = Math.hypot(eyes[1].x - eyes[0].x, eyes[1].y - eyes[0].y)
-  return eyeDistance < 24 ? null : [...eyes, inPixels(1), ...mouth]
+  return [...eyes, inPixels(1), ...mouth]
+}
+
+function facePoints(points: NormalizedLandmark[], frame: ImageBitmap): Point[] | null {
+  const source = alignmentPoints(points, frame)
+  return Math.hypot(source[1].x - source[0].x, source[1].y - source[0].y) < 24 ? null : source
 }
 
 // The crop is drawn before the first await, so the caller may close the frame right after calling.
@@ -174,16 +179,31 @@ scope.onmessage = async ({ data }) => {
       const { frame, capture, neutralPitch } = data
       const result = detect(frame, performance.now())
       const count = result.faceLandmarks.length
-      const source = count === 1 && observation(result, 0, frame).matchable ? facePoints(result.faceLandmarks[0], frame) : null
+      const source = count === 1 ? alignmentPoints(result.faceLandmarks[0], frame) : null
       const pose = source && headPose(source)
+      const quality = source ? enrollmentQuality(
+        observation(result, 0, frame).box,
+        Math.hypot(source[1].x - source[0].x, source[1].y - source[0].y),
+        frame.width, frame.height,
+      ) : null
       if (count !== 1) {
         scope.postMessage({ id: data.id, type: 'enroll', value: { status: count === 0 ? 'no-face' : 'many-faces' } })
+      } else if (quality) {
+        scope.postMessage({ id: data.id, type: 'enroll', value: { status: quality } })
       } else if (!source || !pose) {
         scope.postMessage({ id: data.id, type: 'enroll', value: { status: 'low-quality' } })
       } else {
         const view = classifyFaceView(pose, neutralPitch)
-        const sample = view && capture.includes(view) ? await embedding(frame, source) : null
-        scope.postMessage({ id: data.id, type: 'enroll', value: { status: 'ok', view, pitch: pose.pitch, sample } })
+        const requested = view && capture.includes(view)
+        const sample = requested ? await embedding(frame, source) : null
+        if (requested && !sample) {
+          scope.postMessage({ id: data.id, type: 'enroll', value: { status: 'embedding-failed' } })
+        } else {
+          scope.postMessage({ id: data.id, type: 'enroll', value: {
+            status: 'ok', view, pitch: pose.pitch, sample,
+            ...(view ? {} : { hint: poseHint(pose, neutralPitch) }),
+          } })
+        }
       }
     }
   } catch {

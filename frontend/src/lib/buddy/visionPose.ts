@@ -21,11 +21,11 @@ export type Point = { x: number; y: number }
 export type HeadPose = { yaw: number; pitch: number }
 
 export const FACE_POSE = Object.freeze({
-  /** Frontal sample: nose within ≈ 8° of centre. */
-  frontYaw: 0.09,
+  /** Accept a small natural turn (about 10 degrees) when taking the first sample. */
+  frontYaw: 0.12,
   /** Level-head range accepted for the first (frontal) sample. */
-  neutralPitchMin: 0.36,
-  neutralPitchMax: 0.72,
+  neutralPitchMin: 0.28,
+  neutralPitchMax: 0.80,
   /** Later frontal checks: within ≈ 6° of the frontal sample's tilt. */
   frontTilt: 0.06,
   /** Side samples: ≈ 13°–28° of turn, without much tilt. */
