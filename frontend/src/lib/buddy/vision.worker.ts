@@ -1,6 +1,7 @@
 import { FaceLandmarker, type FaceLandmarkerResult, type NormalizedLandmark } from '@mediapipe/tasks-vision'
 import visionLoader from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.js?url'
 import visionWasm from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.wasm?url'
+import { FACE_POSE, classifyFaceView, headPose, type Point } from './visionPose'
 import type { VisionRequest, VisionResponse } from './visionProtocol'
 import { BuddyFaceTracker, findFamilyRole, type FaceObservation } from './visionTracking'
 
@@ -57,7 +58,6 @@ function observation(result: FaceLandmarkerResult, index: number, frame: ImageBi
   }
 }
 
-type Point = { x: number; y: number }
 const CANONICAL: Point[] = [
   { x: 38.2946, y: 51.6963 }, { x: 73.5318, y: 51.5014 },
   { x: 56.0252, y: 71.7366 },
@@ -92,21 +92,18 @@ function transform(points: Point[]) {
   return new DOMMatrix([a, b, -b, a, to.x - a * from.x + b * from.y, to.y - b * from.x - a * from.y])
 }
 
-function facePoints(points: NormalizedLandmark[], frame: ImageBitmap) {
+/** Eye centres, nose tip and mouth corners in pixels; null when the face is too small to align. */
+function facePoints(points: NormalizedLandmark[], frame: ImageBitmap): Point[] | null {
   const inPixels = (index: number) => ({ x: points[index].x * frame.width, y: points[index].y * frame.height })
   // Use lid corners rather than iris positions so glances do not move the crop.
   const eyes = [center([inPixels(33), inPixels(133)]), center([inPixels(362), inPixels(263)])].sort((a, b) => a.x - b.x)
   const mouth = [inPixels(61), inPixels(291)].sort((a, b) => a.x - b.x)
-  const nose = inPixels(1)
   const eyeDistance = Math.hypot(eyes[1].x - eyes[0].x, eyes[1].y - eyes[0].y)
-  const eyeCenter = center(eyes)
-  if (eyeDistance < 24 || Math.abs(nose.x - eyeCenter.x) > eyeDistance * 0.34) return null
-  return [...eyes, nose, ...mouth]
+  return eyeDistance < 24 ? null : [...eyes, inPixels(1), ...mouth]
 }
 
-async function embedding(frame: ImageBitmap, points: NormalizedLandmark[]) {
-  const source = facePoints(points, frame)
-  if (!source) return null
+// The crop is drawn before the first await, so the caller may close the frame right after calling.
+async function embedding(frame: ImageBitmap, source: Point[]) {
   aligned.resetTransform()
   aligned.fillStyle = 'black'
   aligned.fillRect(0, 0, INPUT_SIZE, INPUT_SIZE)
@@ -158,29 +155,39 @@ scope.onmessage = async ({ data }) => {
       scope.postMessage({ id: data.id, type: 'analyze', value })
       if (!identifying && samples && Object.keys(samples).length) {
         const match = tracker.identifyNext(timestamp)
-        if (match) {
+        const source = match && facePoints(result.faceLandmarks[match.index], frame)
+        const pose = source && headPose(source)
+        if (match && (!source || !pose || Math.abs(pose.yaw) > FACE_POSE.matchYaw)) {
+          // Turned too far (or too small) for a trustworthy crop: no evidence either way.
+          tracker.confirm(match, undefined)
+        } else if (match && source) {
           identifying = true
-          // Extract pixels before closing the frame. Inference runs in a second worker.
-          void embedding(frame, result.faceLandmarks[match.index])
-            .then((value) => tracker.confirm(match, value ? findFamilyRole(value, samples) : null))
-            .catch(() => tracker.confirm(match, null))
+          // Inference runs in a second worker. A failed inference is no evidence either.
+          void embedding(frame, source)
+            .then((value) => tracker.confirm(match, value ? findFamilyRole(value, samples) : undefined))
+            .catch(() => tracker.confirm(match, undefined))
             .finally(() => { identifying = false })
         }
       }
     } else {
       if (identifying) throw new Error('vision-busy')
-      const { frame } = data
+      const { frame, capture, neutralPitch } = data
       const result = detect(frame, performance.now())
-      if (result.faceLandmarks.length !== 1) throw new Error('face-count')
-      if (!observation(result, 0, frame).matchable) throw new Error('face-quality')
-      const value = await embedding(frame, result.faceLandmarks[0])
-      if (!value) throw new Error('face-quality')
-      scope.postMessage({ id: data.id, type: 'capture', value })
+      const count = result.faceLandmarks.length
+      const source = count === 1 && observation(result, 0, frame).matchable ? facePoints(result.faceLandmarks[0], frame) : null
+      const pose = source && headPose(source)
+      if (count !== 1) {
+        scope.postMessage({ id: data.id, type: 'enroll', value: { status: count === 0 ? 'no-face' : 'many-faces' } })
+      } else if (!source || !pose) {
+        scope.postMessage({ id: data.id, type: 'enroll', value: { status: 'low-quality' } })
+      } else {
+        const view = classifyFaceView(pose, neutralPitch)
+        const sample = view && capture.includes(view) ? await embedding(frame, source) : null
+        scope.postMessage({ id: data.id, type: 'enroll', value: { status: 'ok', view, pitch: pose.pitch, sample } })
+      }
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : ''
-    const visibleError = message === 'face-count' || message === 'face-quality' ? message : 'vision-processing-error'
-    scope.postMessage({ id: data.id, type: 'error', error: visibleError })
+  } catch {
+    scope.postMessage({ id: data.id, type: 'error', error: 'vision-processing-error' })
   } finally {
     if ('frame' in data) data.frame.close()
   }

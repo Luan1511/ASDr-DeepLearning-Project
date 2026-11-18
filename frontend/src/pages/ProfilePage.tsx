@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 import { api, apiErrorMessage } from '../lib/api'
 import type { ChildProfile } from '../lib/types'
+import { formatAge, formatBirthDate } from '../lib/format'
 import {
   User as UserIcon,
   Mail,
@@ -73,11 +74,6 @@ export function ProfilePage() {
   })
   const [children, setChildren] = useState<ChildProfile[]>([])
   const [loadingData, setLoadingData] = useState(true)
-
-  // Sync user name if auth changes
-  useEffect(() => {
-    if (user?.name) setName(user.name)
-  }, [user?.name])
 
   // Fetch stats & children
   useEffect(() => {
@@ -604,15 +600,6 @@ export function ProfilePage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {children.map((c) => {
-                  const birthDate = new Date(c.dateOfBirth)
-                  const ageMonths = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.4375))
-                  const ageYears = Math.floor(ageMonths / 12)
-                  const remMonths = ageMonths % 12
-                  const ageStr =
-                    ageYears > 0
-                      ? `${ageYears} tuổi${remMonths > 0 ? ` ${remMonths} tháng` : ''}`
-                      : `${ageMonths} tháng tuổi`
-
                   return (
                     <div
                       key={c.id}
@@ -627,7 +614,7 @@ export function ProfilePage() {
                             {c.fullName}
                           </h4>
                           <div className="text-xs font-bold text-duo-mute">
-                            {ageStr} • Sinh ngày {birthDate.toLocaleDateString('vi-VN')}
+                            {formatAge(c.dateOfBirth)} • Sinh ngày {formatBirthDate(c.dateOfBirth)}
                           </div>
                           {c.gender && (
                             <span className="mt-1 inline-block text-[11px] font-bold text-duo-mute">

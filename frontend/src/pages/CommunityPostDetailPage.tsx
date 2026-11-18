@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { isAxiosError } from 'axios'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -29,7 +30,7 @@ import {
 import { AuthorAvatar } from '../components/community/AuthorAvatar'
 import { CommunityGuidelinesCard } from '../components/community/CommunityGuidelinesCard'
 import { formatDateTime } from '../lib/format'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 export function CommunityPostDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -37,8 +38,8 @@ export function CommunityPostDetailPage() {
   const { user } = useAuth()
 
   const [post, setPost] = useState<CommunityPost | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadedId, setLoadedId] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   // Actions state
   const [likeBusy, setLikeBusy] = useState(false)
@@ -57,23 +58,31 @@ export function CommunityPostDetailPage() {
   const [replyAnonymous, setReplyAnonymous] = useState(false)
   const [replyLoading, setReplyLoading] = useState(false)
 
-  const loadDetail = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await fetchCommunityPost(id)
-      setPost(data)
-    } catch {
-      setError('Không thể tải bài viết hoặc bài viết đã bị xoá.')
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+  // "Loading" until a response for this post id has arrived: derived, not set
+  // inside the effect; a late response for a previous id is ignored.
+  const loading = loadedId !== id
+  const error = loading ? null : loadError
 
   useEffect(() => {
-    void loadDetail()
-  }, [loadDetail])
+    if (!id) return
+    let stale = false
+    fetchCommunityPost(id).then(
+      (data) => {
+        if (stale) return
+        setPost(data)
+        setLoadError(null)
+        setLoadedId(id)
+      },
+      () => {
+        if (stale) return
+        setLoadError('Không thể tải bài viết hoặc bài viết đã bị xoá.')
+        setLoadedId(id)
+      },
+    )
+    return () => {
+      stale = true
+    }
+  }, [id])
 
   async function handleLike() {
     if (!post || likeBusy) return
@@ -153,8 +162,9 @@ export function CommunityPostDetailPage() {
       )
       setCommentText('')
       setCommentAnonymous(false)
-    } catch (err: any) {
-      setCommentError(err?.response?.data?.detail || 'Không thể gửi bình luận.')
+    } catch (err) {
+      const detail = isAxiosError(err) ? (err.response?.data as { detail?: string } | undefined)?.detail : undefined
+      setCommentError(detail || 'Không thể gửi bình luận.')
     } finally {
       setCommentLoading(false)
     }

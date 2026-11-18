@@ -10,7 +10,7 @@ import { childApiErrorMessage } from '../lib/children'
 import { updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
 import { GENDER_LABEL, formatAge, formatDate } from '../lib/format'
 import type { ChildProfile } from '../lib/types'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 function ChildCard({ child }: { child: ChildProfile }) {
   const s = child.summary

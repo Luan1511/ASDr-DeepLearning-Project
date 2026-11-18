@@ -27,7 +27,7 @@ import {
   formatDateTime,
 } from '../lib/format'
 import type { ChildDetail, ChildScreening } from '../lib/types'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 const POLL_INTERVAL_MS = 4000
 

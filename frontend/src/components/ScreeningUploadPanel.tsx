@@ -10,7 +10,7 @@ import { UploadDropzone } from './UploadDropzone'
 import { ConsentPanel } from './ConsentPanel'
 import { ScreeningResultView } from './ScreeningResultView'
 import { FamilyFaceEnrollment } from './children/FamilyFaceEnrollment'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 const UPLOAD_HELPER = 'MP4, MOV, AVI, MKV • quay 6–10 giây trẻ đi thẳng, thấy cả bàn chân'
 const POLL_INTERVAL_MS = 2000

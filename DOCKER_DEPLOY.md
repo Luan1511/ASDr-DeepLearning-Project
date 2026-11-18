@@ -49,7 +49,7 @@ docker compose --profile ml up -d --build
 
 ## Lưu ý quan trọng
 
-- **Không trỏ backend trong compose vào DB dùng chung của nhóm** (`100.104.148.57:5433`): DB đó có lịch sử migration khác repo, `prisma migrate deploy` sẽ lỗi. Nếu bắt buộc phải trỏ vào đó, đặt `SKIP_MIGRATIONS=1` cho service `backend` và áp migration thủ công theo `master_prompt.md` §5.
+- **Không trỏ backend trong compose vào DB dùng chung của nhóm** (`100.104.148.57:5433`): DB đó có lịch sử migration khác repo, `prisma migrate deploy` sẽ lỗi. Nếu bắt buộc phải trỏ vào đó, đặt `SKIP_MIGRATIONS=1` cho service `backend` và áp migration thủ công theo `master_prompt.md` §5. *(Cập nhật 18/11/2026: DB dùng chung này đã ngừng từ 24/10/2026 và không dựng lại, xem `master_prompt.md` §26.10; dữ liệu của nó cũng đã xoá ngày 18/11, nên lưu ý trên không còn áp dụng.)*
 - Video gốc người dùng upload nằm ở `backend/uploads` (volume) và được xoá sau khi phân tích thành công (`RETAIN_UPLOADED_VIDEOS=false`).
 - Kiểm tra máy GPU: nếu `/health` báo `cuda_available: false` hoặc OpenPose lỗi `Cuda check failed ... no CUDA-capable device`, container/máy chủ không thấy GPU (driver, `--gpus all`, NVIDIA Container Toolkit).
 

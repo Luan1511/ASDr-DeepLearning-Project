@@ -4,7 +4,7 @@ import { Sidebar } from '../components/Sidebar'
 import { HeaderBar } from '../components/HeaderBar'
 import { Home, Video, History, Baby, Bot, BookOpen, PersonStanding, Settings, Users, type LucideIcon } from 'lucide-react'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 interface MobileItem {
   to: string

@@ -1,19 +1,7 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { api, onUnauthorized, setAuthToken } from '../lib/api'
 import type { User } from '../lib/types'
-
-type AuthState = {
-  token: string | null
-  user: User | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-  refreshMe: () => Promise<void>
-  updateUser: (user: User) => void
-}
-
-const AuthContext = createContext<AuthState | null>(null)
+import { AuthContext, type AuthState } from './useAuth'
 
 const TOKEN_KEY = 'asdr_token'
 
@@ -28,7 +16,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return stored
   })
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  // Without a stored token there is no session to restore, so nothing is loading.
+  const [loading, setLoading] = useState<boolean>(() => localStorage.getItem(TOKEN_KEY) !== null)
+
+  function clearSession() {
+    setAuthToken(null)
+    setUser(null)
+    setToken(null)
+    localStorage.removeItem(TOKEN_KEY)
+  }
 
   // An expired token anywhere in the app logs the user out (ProtectedRoute
   // then redirects to /login) instead of leaving pages with silent errors.
@@ -53,17 +49,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await api.get('/auth/me')
       setUser(res.data.user)
     } catch {
-      setAuthToken(null)
-      setUser(null)
-      setToken(null)
-      localStorage.removeItem(TOKEN_KEY)
+      clearSession()
     } finally {
       setLoading(false)
     }
   }
 
+  // Restore the session of the stored token once, on first mount.
   useEffect(() => {
-    refreshMe()
+    if (!token) return
+    let stale = false
+    api
+      .get('/auth/me')
+      .then(
+        (res) => {
+          if (!stale) setUser(res.data.user)
+        },
+        () => {
+          if (!stale) clearSession()
+        },
+      )
+      .finally(() => {
+        if (!stale) setLoading(false)
+      })
+    return () => {
+      stale = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -86,10 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
-    setAuthToken(null)
-    setUser(null)
-    setToken(null)
-    localStorage.removeItem(TOKEN_KEY)
+    clearSession()
   }
 
   function updateUser(updated: User) {
@@ -103,10 +111,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
 }

@@ -1,4 +1,5 @@
-import type { FamilyFaceSamples } from './visionProfiles'
+import type { EnrollProbe } from './faceEnrollment'
+import type { FaceView, FamilyFaceSamples } from './visionProfiles'
 import type { VisionRequest, VisionResponse } from './visionProtocol'
 import type { BuddyFace } from './visionTracking'
 
@@ -6,15 +7,16 @@ export type { BuddyFace } from './visionTracking'
 
 export type BuddyVision = {
   analyze(video: HTMLVideoElement, timestamp: number, samples?: FamilyFaceSamples): Promise<BuddyFace[]>
-  capture(video: HTMLVideoElement): Promise<number[]>
+  /** One look during enrolment; see VisionRequest 'enroll'. */
+  enroll(video: HTMLVideoElement, capture: FaceView[], neutralPitch: number | null): Promise<EnrollProbe>
   close(): Promise<void>
 }
 
 type RequestPayload =
   | { type: 'init' }
   | { type: 'analyze'; frame: ImageBitmap; timestamp: number; samples?: FamilyFaceSamples }
-  | { type: 'capture'; frame: ImageBitmap }
-type ResponseValues = { init: undefined; analyze: BuddyFace[]; capture: number[] }
+  | { type: 'enroll'; frame: ImageBitmap; capture: FaceView[]; neutralPitch: number | null }
+type ResponseValues = { init: undefined; analyze: BuddyFace[]; enroll: EnrollProbe }
 
 export async function createBuddyVision(): Promise<BuddyVision> {
   const worker = new Worker(new URL('./vision.worker.ts', import.meta.url), { type: 'module' })
@@ -86,7 +88,7 @@ export async function createBuddyVision(): Promise<BuddyVision> {
 
   return {
     analyze: (video, timestamp, samples) => withFrame(video, (frame) => send({ type: 'analyze', frame, timestamp, samples })),
-    capture: (video) => withFrame(video, (frame) => send({ type: 'capture', frame })),
+    enroll: (video, capture, neutralPitch) => withFrame(video, (frame) => send({ type: 'enroll', frame, capture, neutralPitch })),
     close: async () => { stop('vision-closed') },
   }
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 export function RegisterPage() {
   const { register } = useAuth()

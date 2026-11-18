@@ -9,7 +9,7 @@ import { BuddyDirector, useBuddyFrame } from '../lib/buddy/engine'
 import { buddyVoiceEnabled, openBuddyMic, speakBuddyLine, transcribeBuddyTurn, type BuddyMic, type BuddyVoiceTiming } from '../lib/buddy/voice'
 import type { BuddyScript } from '../lib/buddy/types'
 import type { ChildProfile } from '../lib/types'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 const DEFAULT_SUGGESTIONS = ['Chào Bin!', 'Mình chơi đố vui nhé', 'Kể chuyện cho tớ nghe']
 

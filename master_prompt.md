@@ -1,6 +1,6 @@
 # AIMBRACE — Master Prompt (Handoff cho AI agent và thành viên nhóm)
 
-> **Cập nhật mới nhất:** 2026-11-17 (phiên thứ hai trong ngày, §26) — cải thiện bài tập (góp ý động tác trong tiến độ, nhắc trực tiếp có test và lời khen), **Bin toàn thân thay bạn Mầm** (§6.7.3), **cá nhân hoá hồ sơ trẻ** (§6.9, Giai đoạn 6) và **phía bác sĩ với danh sách bác sĩ mẫu** (§6.10, Giai đoạn 7). **Việc phải làm trước khi dùng: áp migration `20261117_personalization_doctors` lên DB chung và seed bác sĩ mẫu (§26.6).** Chat mới: bắt đầu từ §26; về mô hình ST-GCN từ §23.9; về hội thoại Bạn Bin từ §24. Trước đó cùng ngày: rà soát phần bài tập (§25). Bảng §2 còn vài ô cũ ở F1/F2/F5/F6 (tin §21 và §23.1/§24 hơn).
+> **Cập nhật mới nhất:** 2026-11-18 (§27) — dọn source (ESLint frontend về 0 lỗi), **Bạn Bin đăng ký khuôn mặt đa góc nhìn và giữ được danh tính khi xoay nhẹ đầu** (§27.2, chưa thử bằng camera thật), DB chung ngừng hẳn (§26.10). Trước đó, 2026-11-17 (phiên thứ hai trong ngày, §26) — cải thiện bài tập (góp ý động tác trong tiến độ, nhắc trực tiếp có test và lời khen), **Bin toàn thân thay bạn Mầm** (§6.7.3), **cá nhân hoá hồ sơ trẻ** (§6.9, Giai đoạn 6) và **phía bác sĩ với danh sách bác sĩ mẫu** (§6.10, Giai đoạn 7). **Trạng thái DB (18/11): `khmt01` đã có migration `20261117_personalization_doctors` và bác sĩ mẫu (§26.9). DB chung trên `user-KHMT02` đã ngừng từ 24/10 và không dựng lại (§26.10); `backend/.env` ở máy dev vẫn trỏ tới DB đó, nên chạy thử tại máy dev bằng `npm run sandbox`.** Chat mới: bắt đầu từ §26; về mô hình ST-GCN từ §23.9; về hội thoại Bạn Bin từ §24. Trước đó cùng ngày: rà soát phần bài tập (§25). Bảng §2 còn vài ô cũ ở F1/F2/F5/F6 (tin §21 và §23.1/§24 hơn).
 > **Cập nhật trước đó:** 2026-11-02, phiên 02/11: domain v2.2 + nhiễu camera ảo hiệu chỉnh theo OpenPose (§23.9) — hết dấu hiệu lệch đơn lẻ mạnh, nhưng kết hợp nhiều đặc trưng vẫn tách domain (RF ≈ 0,98). Trước đó: **domain v2** — một module tiền xử lý dùng chung cho train và ML server (`gait_domain.py`), lệch kỹ thuật đã sửa nhưng Kinect ↔ video vẫn tách được (AUC domain ≈ 1,0), chưa train, chưa deploy (§23.8). Trước đó cùng ngày: kiểm tra chiều cao (§23.7): **model không chỉ học chiều cao** — trong cùng dải chiều cao (chiều cao AUC 0,505) P vẫn đạt AUC 0,87–0,88; spinebase_acc thêm +0,10 AUC ngoài chiều cao (KTC > 0 ở cả 3 seed), bbox +0,055 (KTC chứa 0). **Chat mới: bắt đầu từ §23.9.** Phiên 31/10: cross-validation theo trẻ (`cv_stgcn.py`) trên split Kinect sạch — spinebase_acc AUC cấp trẻ 0,921 ± 0,008, bbox 0,884 ± 0,024, accuracy ≈ 0,83 (thấp hơn 8–10 điểm so với hai bài đã đăng); chưa loại được lối tắt chiều cao (§23.5–23.6). Phiên 30/10: nhân vật 2D "Bạn Bin" chat bằng văn bản qua Groq (§23.1), deploy lên `khmt01` (§23.2), **hướng 1 camera ảo + hướng 2 kênh bất biến** trong `NCKH_25-26` — giảm lệch domain mà không dùng 3D lúc suy luận, có hướng dẫn (§23.3). (Bàn giao cũ của phiên 30/10 ở §23.4.) Phiên 29/10: **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
 > **Nguồn:** đề cương "AIMBRACE – AI for Life 2026" (25/09/2026), khảo sát repo tại commit `c6b011e`, Giai đoạn 1–2 (người dùng đã commit trong `09d23fe`) và thay đổi chưa commit của phiên 2026-10-06 (Giai đoạn 3, §17), 2026-10-07 (Giai đoạn 4 + bảng hỏi, §18), 2026-10-13 (§19) và 2026-10-14 (§20).
 > **Vai trò:** nguồn sự thật (source of truth) khi tiếp quản repo. Đọc file liên quan trước khi sửa, giữ nguyên thay đổi đang có của người dùng, sửa hẹp và có kiểm chứng.
@@ -34,6 +34,7 @@
 24. [Nhật ký Bạn Bin (2026-11-13)](#24-nhật-ký-bạn-bin-2026-11-13)
 25. [Nhật ký phiên 2026-11-17 (rà soát phần bài tập, cập nhật master prompt)](#25-nhật-ký-phiên-2026-11-17-rà-soát-phần-bài-tập-cập-nhật-master-prompt)
 26. [Nhật ký phiên 2026-11-17 (tiếp): cải thiện bài tập, Bin toàn thân, cá nhân hoá, phía bác sĩ](#26-nhật-ký-phiên-2026-11-17-tiếp-cải-thiện-bài-tập-bin-toàn-thân-cá-nhân-hoá-phía-bác-sĩ)
+27. [Nhật ký phiên 2026-11-18: dọn source, đăng ký khuôn mặt đa góc nhìn cho Bạn Bin](#27-nhật-ký-phiên-2026-11-18-dọn-source-đăng-ký-khuôn-mặt-đa-góc-nhìn-cho-bạn-bin)
 
 ---
 
@@ -81,10 +82,10 @@ Ký hiệu: ✅ đã có, chạy được · 🟡 có một phần / chờ tri�
 | F4  | Đánh giá mức độ bắt chước                                                          | `services/imitation/` (imitation-v1: góc khớp, DTW con, chế độ soi gương, điểm theo bộ phận, sao, phản hồi tiếng Việt), hàng đợi `exerciseProcessor.ts`; từ 2026-11-12 thêm `services/exerciseMovement/` (góp ý lỗi động tác lặp cho 3 dạng bài, §6.7.1); nhắc trực tiếp khi tập `frontend/src/lib/exerciseCoach/` (§6.7.2, chưa commit) | 🟡 (hằng số cố định + test tổng hợp;**chưa hiệu chỉnh trên video thật** — C1; góp ý động tác và nhắc trực tiếp cũng chưa thử trên video thật)                                                                 |
 | F5  | AI Agent: trợ lý phụ huynh, kiến thức ASD có nguồn                                   | `chatMock.ts` (regex); `server_llama.py` (chưa nối)                                                                                                                                                                                                                                    | 🟡 (mock)                                                                                                                                                        |
 | F6  | Nhân vật LLM + Speech-to-Speech                                                           | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
-| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác | `ChildPersonalization` (hồ sơ do phụ huynh khai), `lib/personalization.ts` (luật gợi ý bài tập + cài đặt, có lý do bằng lời), `routes/childPersonalization.ts`; UI: thẻ "Cá nhân hoá" ở hồ sơ trẻ, "Gợi ý cho con" ở thư viện bài tập, cài đặt chọn sẵn ở trang tập (§6.9) | 🟡 (code + test + xem trong sandbox, 2026-11-17; ngưỡng luật chưa hiệu chỉnh trên dữ liệu thật; **migration chưa áp lên DB chung**) |
+| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác | `ChildPersonalization` (hồ sơ do phụ huynh khai), `lib/personalization.ts` (luật gợi ý bài tập + cài đặt, có lý do bằng lời), `routes/childPersonalization.ts`; UI: thẻ "Cá nhân hoá" ở hồ sơ trẻ, "Gợi ý cho con" ở thư viện bài tập, cài đặt chọn sẵn ở trang tập (§6.9) | 🟡 (code + test + xem trong sandbox, 2026-11-17; ngưỡng luật chưa hiệu chỉnh trên dữ liệu thật; migration đã có trên `khmt01` từ 18/11, §26.9) |
 | F8  | Theo dõi tiến trình qua các phiên                                                      | `ChildDetailPage`: `GaitTrendChart` (dáng đi) + `ChildExercisesSection` (`ExerciseProgressChart`: điểm luyện tập theo từng bài) + `ChildQuestionnairesSection` (lịch sử bảng hỏi)                                                                                      | 🟡 (đủ 3 nguồn dữ liệu; chưa có dữ liệu thật)                                                                                                          |
 | F9  | Dashboard người chăm sóc                                                                | `HomePage`, `ChildrenPage`/`ChildDetailPage`, `HistoryPage` (lọc theo trẻ, xoá), `AdminPage` (thống kê, hàng đợi, sức khoẻ ML)                                                                                                                                           | 🟡                                                                                                                                                               |
-| F10 | Kết nối cơ sở chuyên gia | `DoctorProfile`, `DoctorChildLink`, `lib/doctorShare.ts`, `routes/doctors.ts` (phụ huynh), `routes/doctorPortal.ts` (bác sĩ, chỉ đọc), 8 bác sĩ mẫu (`lib/mockDoctors.ts`, `DOCTOR_MODE=demo`); UI `/doctors`, thẻ "Chia sẻ với bác sĩ" ở hồ sơ trẻ, phía bác sĩ `/doctor` (§6.10) | 🟡 (code + test + xem trong sandbox, 2026-11-17; chỉ có bác sĩ mẫu, chưa có quy trình cho bác sĩ thật; **migration chưa áp lên DB chung**) |
+| F10 | Kết nối cơ sở chuyên gia | `DoctorProfile`, `DoctorChildLink`, `lib/doctorShare.ts`, `routes/doctors.ts` (phụ huynh), `routes/doctorPortal.ts` (bác sĩ, chỉ đọc), 8 bác sĩ mẫu (`lib/mockDoctors.ts`, `DOCTOR_MODE=demo`); UI `/doctors`, thẻ "Chia sẻ với bác sĩ" ở hồ sơ trẻ, phía bác sĩ `/doctor` (§6.10) | 🟡 (code + test + xem trong sandbox, 2026-11-17; chỉ có bác sĩ mẫu, chưa có quy trình cho bác sĩ thật; migration và 8 bác sĩ mẫu đã có trên `khmt01` từ 18/11, §26.9) |
 | +   | (Bổ sung) Bảng hỏi phụ huynh M-CHAT-R/F (16–30 tháng), đánh giá thêm ngoài video | `lib/questionnaires/*` (chấm điểm, tuổi, engine Follow-Up bản 2025), `routes/questionnaires.ts`, trang `/questionnaires`                                                                                                                                                          | ✅ thử nội bộ (`MCHAT_MODE=inapp` từ 2026-10-14: 20 câu + Follow-Up trong app, đã kiểm chứng; đưa ra ngoài nhóm cần giấy phép tác giả — L1) |
 
 ---
@@ -96,7 +97,7 @@ Trình duyệt (React/Vite :5173; Docker: nginx :3000 proxy /api)
    │  axios + Bearer JWT (localStorage "asdr_token", header gắn đồng bộ khi login/logout; 401 → tự đăng xuất)
    ▼
 Backend Express + TS (:4000, mọi router dưới /api)
-   ├─ Prisma ──► PostgreSQL "asdr" (DB dùng chung: 100.104.148.57:5433 qua Tailscale — lịch sử migration lệch repo, §5.4)
+   ├─ Prisma ──► PostgreSQL "asdr" (trên khmt01: container asdr-db trong cùng mạng compose, tự chạy migrate deploy; từ ngoài vào qua 100.120.184.26:5433 trên Tailscale. DB chung cũ 100.104.148.57:5433 trên user-KHMT02 đã ngừng từ 24/10/2026, §26.10 — lịch sử migration lệch repo, §5.4)
    ├─ Consent: ConsentRecord (phụ huynh đồng ý theo từng trẻ, có thu hồi, lưu nguyên văn nội dung đã đồng ý)
    ├─ Hàng đợi bền vững: bảng ScreeningJob + worker trong process (FOR UPDATE SKIP LOCKED, heartbeat 30s,
    │   tự phục hồi job "chết" sau 2 phút, retry backoff 30s/60s, tối đa SCREENING_MAX_ATTEMPTS)
@@ -115,7 +116,7 @@ ML server FastAPI "ASD OpenPose + ST-GCN" 2.0.0 (:8000 trên máy GPU khmt01 RTX
 
 - `subject_id` trên máy ML = `VideoUpload.id` (UUID) → khớp 1–1 với DB.
 - **Từ 2026-10-27 máy ML chạy bản 2.0.0** (API key bắt buộc, làm mờ mặt, `/health`, calibration, probe video, tracking một người) trong Docker Compose trên máy `khmt01` (§21.2). Bản 1.0 cũ chỉ còn ở container `openpose_builder-old` (đã dừng).
-- Máy `khmt01` (`ssh khmt01@100.120.184.26`, Tailscale) chạy **trọn stack** bằng compose: `asdr-db` (DB riêng của máy này, cổng 5433 trên IP Tailscale), `asdr-backend` :4000, `asdr-frontend` :3010, `asdr-ml-api` :8000, `cloudflared-aimbrace`, `ngrok`. DB dùng chung của nhóm (`100.104.148.57:5433`, máy `user-KHMT02`) là DB khác, dành cho máy dev (§5.1, §5.4).
+- Máy `khmt01` (`ssh khmt01@100.120.184.26`, Tailscale) chạy **trọn stack** bằng compose: `asdr-db` (DB riêng của máy này, cổng 5433 trên IP Tailscale), `asdr-backend` :4000, `asdr-frontend` :3010, `asdr-ml-api` :8000, `cloudflared-aimbrace`, `ngrok`. DB dùng chung của nhóm (`100.104.148.57:5433`, máy `user-KHMT02`) là DB khác, từng dành cho máy dev; **đã ngừng từ 24/10/2026 và không dựng lại** (§5.1, §26.10).
 - Môi trường phát triển: Windows, PowerShell/Git Bash, Node 20+ (máy dev hiện có Node 24). Máy ML: Ubuntu 24.04, OpenPose build `build_rtx5060ti` mount vào container tại `/workspace/openpose`, Python 3.12 + torch 2.14 cu130 trong image `openpose-api:rtx5060ti-v2`. Workspace huấn luyện gốc `/home/nhomk23/workspace/NCKH_25-26/` (máy cũ, có `ULTIMATE_*.py`) **không** có trên `khmt01`.
 
 ---
@@ -170,7 +171,7 @@ Main/
 │  ├─ pages/                Home, Screening, Children, ChildDetail, History, Admin, AdminSkeleton, Guide, Login, …
 │  │                        Exercises, ExercisePractice, ExerciseSession, AdminExercises, AdminExerciseEdit,
 │  │                        AdminRecorderProbe, Questionnaires, QuestionnaireEntry, QuestionnaireResult, QuestionnaireFollowUp
-│  └─ state/auth.tsx
+│  └─ state/                auth.tsx (AuthProvider), useAuth.ts (context + hook useAuth)
 ├─ API/
 │  ├─ server_openpose.py    FastAPI OpenPose + ST-GCN (bản mới, chưa triển khai lên máy GPU)
 │  ├─ server_llama.py       FastAPI Llama LoRA (chưa nối)
@@ -195,7 +196,7 @@ Main/
 ### 5.1 Dịch vụ
 
 - Frontend dev: `http://localhost:5173` / `http://127.0.0.1:5173`. Backend dev: `http://localhost:4000`, health `GET /api/health`.
-- DB dùng chung: `100.104.148.57:5433`, DB `asdr` (cần Tailscale đang kết nối). `backend/.env` trỏ `DATABASE_URL` tới đó. Không in/commit credentials. Container `asdr-db` trên máy `user-KHMT02` mất cổng sau mỗi lần máy chủ reboot cho tới khi sửa dứt điểm (§15 mục 24, §19.1).
+- DB: **DB dùng chung `100.104.148.57:5433` (máy `user-KHMT02`) đã ngừng từ 24/10/2026; ngày 18/11 chủ dự án chốt không chạy trên máy đó nữa (§26.10).** `backend/.env` ở máy dev vẫn trỏ `DATABASE_URL` tới địa chỉ cũ, nên backend dev (`npm run dev`) hiện không kết nối được DB. Chạy thử tại máy dev: `npm run sandbox` (§5.3). Muốn có DB cố định cho máy dev thì dựng một DB tại chỗ rồi đổi `DATABASE_URL` (chưa làm, chủ dự án chưa yêu cầu). DB đang chạy thật là `asdr-db` trên `khmt01` (từ ngoài vào: `100.120.184.26:5433` qua Tailscale, DB `asdr`). Không in/commit credentials.
 - ML server: origin lấy từ `OPENPOSE_SERVER_URL`, nếu trống thì `EXTRACT_API_URL` (máy dev: URL ngrok; backend trong compose trên `khmt01`: `http://asdr-ml-api:8000`). **Từ 2026-10-27 máy ML yêu cầu key:** `OPENPOSE_API_KEY` (backend) phải bằng `ML_API_KEY` (ML). Giá trị nằm trong `asdr/.env` và `asdr/repo/.env` trên `khmt01` (không in, không commit); máy dev muốn gọi qua ngrok phải chép giá trị đó vào `backend/.env`.
 
 ### 5.2 Chạy
@@ -237,7 +238,7 @@ Tài khoản demo sau seed: Admin `admin@asdr.local` / `admin123`, User `	` / `u
 cd backend && npm run typecheck && npm test            # 430 test (2026-11-17 tối: 427 đạt, 3 thất bại có sẵn ở gaitFeatures góc chính diện — §12 mục 26)
 cd backend && npm run test:e2e                         # 53 test, đạt cả (2026-11-17 tối; thêm doctor.e2e.ts, hết chập chờn): PostgreSQL tạm :55432 + backend :4100 + ML giả :8100 (không đụng DB chung)
 cd frontend && npx tsc -b && npm run build              # ESLint còn 7 lỗi có sẵn (auth.tsx, Community*, ProfilePage), không có lỗi ở code mới
-cd frontend && npm test                                 # vitest, 36 test (luật nhắc trực tiếp, co giãn Bin toàn thân) — có từ 2026-11-17
+cd frontend && npm test                                 # vitest, 70 test (luật nhắc trực tiếp, co giãn Bin toàn thân, góc đầu + nhận diện + lưu mẫu khuôn mặt của Bin)
 cd backend && npm run sandbox                           # thử bằng tay: PostgreSQL tạm + ML giả + backend :4100 + dữ liệu demo (không đụng DB chung);
                                                         # terminal khác: cd frontend && npm run dev:sandbox → http://localhost:5175 (§26.5)
 cd API && python -m pytest tests -q                     # 38 test (OpenPose giả, checkpoint ngẫu nhiên; gồm test_stgcn_service: tracking, cửa sổ, chất lượng)
@@ -248,6 +249,7 @@ Kiểm chứng runtime: `GET /api/health`, login thật, `GET /api/auth/me`, `GE
 
 ### 5.4 Migration — ĐỌC KỸ trước khi đụng DB dùng chung
 
+- **Cập nhật 18/11/2026: DB dùng chung đã ngừng từ 24/10/2026 và không dựng lại (§26.10).** Volume dữ liệu `asdr_db_data` của nó trên `user-KHMT02` cũng đã xoá chiều 18/11 theo yêu cầu của chủ dự án, nên DB này không khôi phục được nữa; các gạch đầu dòng dưới đây giữ lại làm tư liệu về cách xử lý một DB có lịch sử migration lệch. DB đang chạy (`khmt01`) dùng `prisma migrate deploy` bình thường: container backend tự chạy lệnh này khi khởi động và đã tự áp `20261117_personalization_doctors` (§26.9).
 - Lịch sử migration trên DB dùng chung **khác repo**: DB ghi nhận `20261003162407_init` (không có trong repo) thay vì `20260521_init` + `20260926_add_screening_error_message`; schema thực tế thì khớp. Ngày 2026-10-05 migration `20261005_screening_privacy_queue` đã được áp lên DB này bằng cách chạy đúng SQL của nó trong một transaction (`prisma db execute`), rồi `prisma migrate resolve --applied 20261005_screening_privacy_queue`. Đã kiểm tra `prisma migrate diff` → "No difference detected".
 - Ngày 2026-10-07 hai migration chỉ-thêm đã được áp lên DB chung theo đúng quy trình dưới đây: `20261007_exercise_imitation` (4 bảng `Exercise`, `ExerciseTemplate`, `ExerciseSession`, `SessionScore` + 3 enum) và `20261007_parent_questionnaire` (bảng `QuestionnaireResponse`). `migrate diff` sau đó → "No difference detected".
 - **Không bao giờ** chạy `prisma migrate dev` (sẽ đòi reset DB chung) hay `prisma migrate deploy` (sẽ cố chạy lại init và lỗi) trên DB dùng chung.
@@ -753,7 +755,7 @@ git status          # kiểm tra lại trước khi commit
 ### P1
 
 3. **Số liệu mô hình chỉ là lạc quan:** calibration 27/10 chạy trên cùng 99 video đã fine-tune (không có split gốc), 5 cặp trùng; T = 0.441 < 1 làm xác suất rất nhọn (video biên 0.78 thô thành 0.95). Khi có dữ liệu/split sạch (P0-1) phải chạy lại toàn bộ `EVALUATION.md`; cân nhắc `--score-level subject` nếu một trẻ có nhiều video.
-4. **Lịch sử migration DB chung lệch repo** (§5.4).
+4. **Lịch sử migration DB chung lệch repo** (§5.4). *Hết hiệu lực từ 18/11/2026: DB chung đã ngừng và không dựng lại (§26.10).*
 5. *(đã xong 27/10)* Chọn người: ML giờ theo dõi một người xuyên clip (điểm track ưu tiên dài, tự tin, thấy chân) và trả `quality`/`reliable`; backend chưa hiển thị hai trường này.
 6. **Chỉ số dáng đi:** chưa có chuẩn theo tuổi; nhón gót là thử nghiệm; quay chính diện chỉ có nhịp bước.
 7. *(hết từ 27/10 với ML 2.0)* fps lấy từ probe OpenCV của ML; chỉ còn thiếu khi máy dev trỏ vào ML cũ.
@@ -770,7 +772,7 @@ git status          # kiểm tra lại trước khi commit
 
 ### P3
 
-15. `state/auth.tsx` còn 2 lỗi ESLint có sẵn.
+15. ~~`state/auth.tsx` còn 2 lỗi ESLint có sẵn.~~ Đã sửa 18/11: `npm run lint` ở frontend không còn lỗi nào (§27.1).
 16. `RecentResultsCard` không tự làm mới sau khi có kết quả mới.
 17. Thanh điều hướng mobile đã có "Trẻ" nhưng vẫn thiếu admin/guide/settings.
 18. README frontend là template.
@@ -793,7 +795,7 @@ git status          # kiểm tra lại trước khi commit
 
 - Mục 22: đã có 31 test cho `rules.ts`; **vẫn chưa thử trên camera thật**. Mục 23: luật trực tiếp đã dùng chung ngưỡng với backend và có test đối chiếu; vẫn là hai bản cài đặt. Mục 24, 25, 27: đã xử lý. Mục 26: còn nguyên.
 
-28. **(P0, vận hành) Migration `20261117_personalization_doctors` chưa áp lên DB chung và chưa seed bác sĩ mẫu** — lúc 23h ngày 17/11 DB chung không kết nối được (P1001). Trước khi áp: phần mới báo "chưa sẵn sàng", phần cũ chạy bình thường (đã kiểm bằng e2e). Lệnh ở §26.6.
+28. **(Đã đóng 18/11) Migration `20261117_personalization_doctors` chưa áp lên DB chung và chưa seed bác sĩ mẫu** — lúc 23h ngày 17/11 DB chung không kết nối được (P1001). Trước khi áp: phần mới báo "chưa sẵn sàng", phần cũ chạy bình thường (đã kiểm bằng e2e). Lệnh ở §26.6. *Cập nhật 18/11:* trên `khmt01` đã áp xong và đã có bác sĩ mẫu (§26.9); còn DB chung thì đã ngừng từ 24/10 (container `asdr-db` trên `user-KHMT02` bị gỡ) và chủ dự án chốt không dựng lại, volume dữ liệu cũng đã xoá chiều 18/11 (§26.10), nên không còn gì phải áp.
 29. **(P1) Phía bác sĩ mới ở mức demo:** chỉ có bác sĩ mẫu với mật khẩu thử; chưa có quy trình tạo/xác minh bác sĩ thật. Không mở `DOCTOR_MODE=demo` trên môi trường có dữ liệu trẻ thật mà người ngoài nhóm truy cập được: đặt `off`, hoặc `on` sau khi có quy trình cho bác sĩ thật.
 30. **(P2) Luật cá nhân hoá chưa hiệu chỉnh:** ngưỡng 50/60/80 và cách chọn tốc độ là lựa chọn ban đầu, chưa có dữ liệu thật; đổi ngưỡng trong `PLAN_RULES`.
 31. **(P2) Bin toàn thân chưa thử với mẫu quay từ người thật** (mới thử với 6 bài tổng hợp và 4 động tác vẽ thử); góc quay nghiêng hoặc khớp bị che có thể cho hình dáng lạ.
@@ -944,7 +946,7 @@ Còn: tổ chức/cơ sở chuyên gia, quy trình cho bác sĩ thật, nhận x
 3. Tái hiện vấn đề bằng lệnh nhỏ nhất; nêu giả thuyết và phép kiểm tra phân biệt trước lần sửa đầu tiên.
 4. Sửa nhỏ, tập trung; chạy test hẹp nhất, rồi typecheck/build package bị ảnh hưởng (§5.3).
 5. Thay đổi runtime: kiểm chứng bằng HTTP thật. Có thể dựng PostgreSQL tạm từ `C:\Program Files\PostgreSQL\15\bin` (initdb/pg_ctl, port riêng, thư mục Temp) và ML server cục bộ với `API/tests/fake_openpose.py` + checkpoint ngẫu nhiên, để không đụng DB chung.
-6. Schema: chỉ thêm (bảng mới, cột nullable), ghi tiếp các cột cũ còn bắt buộc; tạo migration có tên rõ ràng; áp lên DB chung theo §5.4; không sửa migration đã áp.
+6. Schema: chỉ thêm (bảng mới, cột nullable), ghi tiếp các cột cũ còn bắt buộc; tạo migration có tên rõ ràng; `khmt01` tự áp bằng `migrate deploy` khi deploy backend (DB chung cũ đã ngừng, §26.10, nên không còn bước thủ công của §5.4); không sửa migration đã áp.
 7. Không in hay commit credentials và `.env`.
 8. Không đưa dữ liệu trẻ thật vào test hay fixture; dùng dữ liệu tổng hợp.
 9. Không refactor `research_src/` hay `API/ST_GCN.py` khi làm việc web; giữ contract JSON của ML (chỉ thêm trường).
@@ -960,9 +962,9 @@ Còn: tổ chức/cơ sở chuyên gia, quy trình cho bác sĩ thật, nhận x
 ## 15. Debugging playbook
 
 1. **Prisma `EPERM` trên `query_engine-windows.dll.node`:** một tiến trình Node khác (backend dev khác, kể cả instance test của agent) đang giữ engine. Dừng đúng tiến trình đó, hoặc đổi tên file `.dll.node` đang bị khoá rồi chạy lại `npx prisma generate` (Windows cho đổi tên DLL đang nạp). Không xoá file khác của người dùng.
-2. **`The table public.ScreeningJob does not exist` / P2021 / P2022 / API trả 503 `DATABASE_MIGRATION_REQUIRED`:** DB chưa có migration mới. DB chung: §5.4. DB mới: `npm run prisma:deploy`. Worker tự tạm dừng 60s mỗi lần thay vì spam log.
+2. **`The table public.ScreeningJob does not exist` / P2021 / P2022 / API trả 503 `DATABASE_MIGRATION_REQUIRED`:** DB chưa có migration mới. DB mới: `npm run prisma:deploy` (trên `khmt01` container backend tự chạy khi khởi động). DB chung cũ, đã ngừng (§26.10): §5.4. Worker tự tạm dừng 60s mỗi lần thay vì spam log.
 3. **Nodemon báo `app crashed`:** lấy stack trace đầu tiên sau `starting tsx src/server.ts`; chạy `npm run typecheck` riêng.
-4. **Backend chạy được không có nghĩa DB truy cập được:** test `/api/health`, login, `/api/auth/me`. DB chung cần Tailscale đang kết nối (`tailscale status`).
+4. **Backend chạy được không có nghĩa DB truy cập được:** test `/api/health`, login, `/api/auth/me`. DB chung đã ngừng từ 24/10/2026 (§26.10): `.env` còn trỏ tới `100.104.148.57:5433` thì luôn báo không kết nối được. DB của `khmt01` cần Tailscale đang kết nối (`tailscale status`).
 5. **Login 401 trên DB mới:** chưa seed (`npm run prisma:seed`, chỉ khi muốn có dữ liệu demo).
 6. **Lỗi ML:**
 
@@ -990,7 +992,7 @@ Còn: tổ chức/cơ sở chuyên gia, quy trình cho bác sĩ thật, nhận x
 21. **Menu "Bài tập" không hiện với phụ huynh:** `EXERCISE_MODE` mặc định `admin_only` — đăng nhập admin hoặc đặt `on` sau C1. Menu "Bảng hỏi" không hiện: `MCHAT_MODE=off`.
 22. **`inapp` vẫn chạy như `entry`:** file nội dung thiếu / sai cấu trúc → `npm run questionnaires:validate-content` (Admin → thẻ Bảng hỏi cũng báo trạng thái).
 23. **Test e2e:** `npm run test:e2e` tự dựng PostgreSQL tạm :55432, backend :4100, ML giả :8100 và tự dọn; nếu bị ngắt giữa chừng, tắt tiến trình trên đúng các cổng đó (không đụng :4000/:5173) và `pg_ctl -D <Temp>/aimbrace-e2e-*/pgdata stop`.
-24. **`Can't reach database server at 100.104.148.57:5433` dù log Postgres báo "ready to accept connections":** thường là sau khi máy chủ DB (`user-KHMT02`) khởi động lại. Kiểm tra theo thứ tự:
+24. **`Can't reach database server at 100.104.148.57:5433` dù log Postgres báo "ready to accept connections":** **từ 24/10/2026 đây là trạng thái bình thường: DB chung trên `user-KHMT02` đã ngừng và không dựng lại (§26.10). Đổi `DATABASE_URL` sang DB khác hoặc dùng `npm run sandbox`.** Phần dưới là cách chữa cũ, dùng khi container còn nhưng mất cổng sau lúc máy chủ DB khởi động lại; giữ để tham khảo. Kiểm tra theo thứ tự:
 
     - `tailscale ping 100.104.148.57` → máy có lên mạng không;
     - `Test-NetConnection 100.104.148.57 -Port 5433` → cổng có mở không;
@@ -2024,7 +2026,7 @@ Môi trường thử đã dọn: không còn tiến trình nào ở các cổng 
 
 ### 26.6 Việc cần làm
 
-- [ ] **Áp migration lên DB chung và tạo bác sĩ mẫu** (agent không làm được vì DB không kết nối được lúc cuối phiên). Trong `backend/`, khi Tailscale và DB đã lên:
+- [x] **Áp migration và tạo bác sĩ mẫu** — *đóng ngày 18/11:* `khmt01` đã có cả hai (§26.9); DB chung đã ngừng và không dựng lại (§26.10), nên các lệnh dưới đây không cần chạy nữa. Giữ lại làm quy trình mẫu cho một DB có lịch sử migration lệch (chạy trong `backend/`):
 
 ```bash
 # 0) Kiểm tra: khác biệt duy nhất giữa DB và schema phải là 3 bảng mới (ChildPersonalization, DoctorProfile, DoctorChildLink)
@@ -2058,6 +2060,103 @@ npm run doctors:seed-mock -- --yes
 ### 26.8 Bàn giao cho chat mới
 
 1. Đọc dòng "Cập nhật mới nhất" đầu file, rồi §6.7 (kể cả §6.7.1–§6.7.3), §6.9, §6.10, §12 (mục 22–33) và mục này.
-2. Việc chặn mọi thứ khác: §26.6 mục đầu (migration + bác sĩ mẫu trên DB chung). Sau khi làm, mở `/children/:id` kiểm tra thẻ "Cá nhân hoá" và "Chia sẻ với bác sĩ", mở `/doctors`, đăng nhập bằng một tài khoản bác sĩ mẫu (email trong `backend/src/lib/mockDoctors.ts`).
-3. Muốn xem giao diện mà không đụng DB chung: `cd backend && npm run sandbox`, terminal khác `cd frontend && npm run dev:sandbox` → `http://localhost:5175`. Tài khoản và mật khẩu của sandbox được in ra khi sandbox sẵn sàng (định nghĩa trong `backend/test/e2e/sandbox.ts`); dừng bằng Ctrl+C.
+2. Migration + bác sĩ mẫu đã có trên `khmt01` (§26.9). DB chung đã ngừng (§26.10) và máy dev chưa có DB cố định (§5.1). Để kiểm tra tính năng, mở `/children/:id` kiểm tra thẻ "Cá nhân hoá" và "Chia sẻ với bác sĩ", mở `/doctors`, đăng nhập bằng một tài khoản bác sĩ mẫu (email trong `backend/src/lib/mockDoctors.ts`).
+3. Muốn xem giao diện tại máy dev (không cần DB cố định): `cd backend && npm run sandbox`, terminal khác `cd frontend && npm run dev:sandbox` → `http://localhost:5175`. Tài khoản và mật khẩu của sandbox được in ra khi sandbox sẵn sàng (định nghĩa trong `backend/test/e2e/sandbox.ts`); dừng bằng Ctrl+C.
 4. Hướng làm tiếp hợp lý: thử trên camera thật (Bin, nhắc trực tiếp), quy trình cho bác sĩ thật + nhận xét của bác sĩ, hiệu chỉnh luật cá nhân hoá khi có dữ liệu, rồi G0/C1.
+
+### 26.9 Triển khai lên `khmt01` (2026-11-18, chủ dự án tự làm)
+
+- Chủ dự án đã đưa code mới lên `khmt01` và build lại `asdr-backend` + `asdr-frontend` (khoảng 15h21 ngày 18/11). Container backend không đặt `SKIP_MIGRATIONS` nên **tự chạy `prisma migrate deploy` khi khởi động**: migration `20261117_personalization_doctors` đã được áp lên DB của `khmt01` (không cần quy trình thủ công của §26.6 — quy trình đó chỉ dành cho DB chung có lịch sử lệch).
+- Bác sĩ mẫu được tạo từ máy dev (image chạy thật không có `tsx` và thư mục `scripts/`), trỏ `DATABASE_URL` vào DB của `khmt01` qua Tailscale. Lưu ý rút ra:
+  - user của DB là `postgres`, tên DB `asdr` (không phải tài khoản Linux `khmt01`); mật khẩu là `POSTGRES_PASSWORD` trong `~/Luan_workspace/asdr/.env` trên máy đó;
+  - trong PowerShell không dùng được cú pháp `TÊN=giá_trị lệnh` của Git Bash: đặt `$env:DATABASE_URL`, `$env:MOCK_DOCTOR_PASSWORD`, chạy `npx tsx scripts/seedMockDoctors.ts --yes` **từ thư mục `backend/`**, rồi `Remove-Item Env:DATABASE_URL, Env:MOCK_DOCTOR_PASSWORD` (để các lệnh sau không nối nhầm vào DB của `khmt01`);
+  - lấy địa chỉ DB mà không cần nhớ mật khẩu: `$env:DATABASE_URL = (ssh khmt01@100.120.184.26 "docker exec asdr-backend printenv DATABASE_URL") -replace '@[^@/]+/', '@100.120.184.26:5433/'`.
+- Agent đã kiểm tra chỉ-đọc qua SSH sau khi chủ dự án báo xong: 8/8 `DoctorProfile` là bác sĩ mẫu, chưa có lượt chia sẻ nào, `DOCTOR_MODE=demo`, `GET /api/health` trả `{"ok":true}`.
+- **Còn lại:** DB chung của máy dev (`100.104.148.57:5433`) đã ngừng và không dựng lại (§26.10), nên không còn gì phải cập nhật ở đó; trên `khmt01` tính năng bác sĩ đang ở chế độ `demo` và trang mở ra internet (§12 mục 29) — mật khẩu của tài khoản bác sĩ mẫu do chủ dự án đặt lúc seed.
+
+### 26.10 DB chung trên `user-KHMT02` đã ngừng hẳn (phát hiện và chốt ngày 2026-11-18)
+
+Chủ dự án yêu cầu cập nhật DB chung (`100.104.148.57:5433`). Ở bước chẩn đoán agent chỉ kiểm tra chỉ-đọc (SSH `user@100.104.148.57`, key `~/.ssh/id_ed25519_khmt02`), **không thay đổi gì trên máy đó**; thay đổi duy nhất về sau là xoá volume theo yêu cầu của chủ dự án (cuối mục này):
+
+- Tailscale và SSH bình thường (ping ~12 ms, cổng 22 mở); cổng 5433 từ chối kết nối.
+- Máy chưa khởi động lại (uptime 41 ngày, tức từ 08/10) nên **không phải** sự cố mất cổng sau reboot của §19.1 / §15 mục 24.
+- `docker ps -a` không còn container `asdr-db`; không còn network `asdr-network`; không còn image postgres nào. Container duy nhất trên máy là `luan-gpu-worker-2` (đã dừng 5 tuần). Các image còn lại thuộc dự án khác (2–3 tuần tuổi).
+- **Volume `asdr_db_data` lúc đó vẫn còn** (tạo 2026-10-03 23:12, 66 MB, không container nào dùng): dữ liệu của DB chung nhiều khả năng còn nguyên trong đó. *(Đã xoá sau đó, xem cuối mục.)*
+- **Nguyên nhân (xác định ngày 18/11, chỉ-đọc: nhật ký dockerd, lịch sử shell của tài khoản `user`, bảng đăng nhập `last`):** container bị gỡ có chủ ý ngày **24/10/2026**, trong một phiên SSH tương tác từ máy `luan` (`100.111.216.21`, máy dev của chủ dự án) kéo dài 11:03–11:47, lúc dọn dung lượng đĩa/GPU trên máy chủ. Trình tự trong phiên đó: `docker stop asdr-db` (11:12:30) → `docker rm -v asdr-db` → `docker rmi postgres:16-alpine` → `docker network rm asdr-network`; cùng phiên còn gỡ container `ai_sandbox`, image pytorch và build cache. Volume còn lại vì `docker rm -v` chỉ xoá volume vô danh, không xoá volume có tên. DB chung vì vậy đã ngừng từ 24/10, không phải từ 17/11.
+- Lệnh tạo container ban đầu (lấy từ lịch sử shell, đã bỏ mật khẩu): `docker run -d --name asdr-db --network asdr-network -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=… -e POSTGRES_DB=asdr -p 100.104.148.57:5433:5432 -v asdr_db_data:/var/lib/postgresql/data --restart unless-stopped postgres:16-alpine`. Dữ liệu trong volume vì vậy thuộc PostgreSQL 16 bản alpine.
+- Tài nguyên máy chủ lúc kiểm tra: đĩa trống 99 GB (đã dùng 70%), RAM khả dụng 22 GB, không container nào đang chạy, cổng 5432/5433 trống.
+
+**Quyết định của chủ dự án (18/11, khoảng 16h25): không chạy trên `user-KHMT02` nữa, không dựng lại DB chung.** Trong suốt quá trình kiểm tra agent không tạo gì trên máy đó (kiểm lại sau cùng: không có container, network, image hay tệp mới nào của agent), nên không có gì phải dọn. Hai hướng đã nêu trước khi có quyết định, ghi lại để tham khảo:
+
+1. *(Không chọn; không còn làm được vì volume đã xoá.)* **Dựng lại container trên `user-KHMT02` từ volume còn lại** rồi áp migration + seed theo §26.6. Các bước trên máy chủ: `docker network create asdr-network`, `docker pull postgres:16-alpine`, chạy lại lệnh `docker run` ở trên (không cần truyền `POSTGRES_*`: thư mục dữ liệu đã khởi tạo nên entrypoint bỏ qua bước init và giữ nguyên mật khẩu cũ), rồi `pg_dump` một bản sao lưu trước khi áp migration. `backend/.env` của máy dev giữ nguyên. Lỗi mất cổng sau reboot (§19.1) vẫn còn cho tới khi đặt sysctl ở §19.5.
+2. *(Chưa làm, chủ dự án chưa yêu cầu.)* **Cho máy dev dùng DB riêng tại chỗ** (PostgreSQL 15.13 đã cài trên máy dev, service `postgresql-x64-15` đang dừng): tạo DB mới, `npm run prisma:deploy` (lịch sử migration sạch, không cần quy trình thủ công của §5.4 nữa), `npm run prisma:seed`, đổi `DATABASE_URL` trong `backend/.env`. (Dữ liệu cũ không còn: volume đã xoá.)
+
+Hiện trạng sau quyết định:
+
+- **Volume `asdr_db_data` trên `user-KHMT02` đã xoá chiều 18/11 theo yêu cầu rõ ràng của chủ dự án** (66 MB, dữ liệu DB chung tới 24/10, là bản duy nhất, nên dữ liệu đó không còn khôi phục được). Trước khi xoá agent kiểm đúng máy (`hostname` = `user-KHMT02`, IP Tailscale `100.104.148.57`), đúng volume (tạo 2026-10-03 23:12) và không container nào tham chiếu; lệnh: `docker volume rm asdr_db_data`. Sau đó máy này không còn volume có tên nào và không còn gì của ASDr. Volume **cùng tên** trên `khmt01` là DB thật (tạo 2026-10-17), không liên quan và đã kiểm lại vẫn nguyên: `asdr-db` healthy, `pg_isready` nhận kết nối, `/api/health` trả `{"ok":true}`.
+- `backend/.env` ở máy dev vẫn trỏ `DATABASE_URL` tới DB đã ngừng, nên backend dev không kết nối được DB. Chạy thử tại máy dev: `npm run sandbox` + `npm run dev:sandbox` (§26.5).
+- DB đang chạy thật: `asdr-db` trên `khmt01`, đã có migration `20261117_personalization_doctors` và 8 bác sĩ mẫu (§26.9).
+- Không còn cần làm: quy trình thủ công của §5.4 / §26.6, và mục "sysctl chống mất cổng DB chung" trong các checklist §19.5, §20.5, §21.
+
+## 27. Nhật ký phiên 2026-11-18: dọn source, đăng ký khuôn mặt đa góc nhìn cho Bạn Bin
+
+Cùng ngày còn có việc DB chung ngừng hẳn (§26.10). Không đổi schema DB, không có migration mới, không sửa `API/`.
+
+### 27.1 Dọn source
+
+- **ESLint frontend từ 7 lỗi về 0** (`npm run lint` giờ sạch, đóng §12 mục 15):
+  - `state/auth.tsx` chỉ còn export `AuthProvider`; context, kiểu `AuthState` và hook `useAuth` chuyển sang `state/useAuth.ts` (16 file đổi import sang `../state/useAuth`). Việc khôi phục phiên lúc mở app chạy trong callback của promise, có cờ bỏ kết quả cũ; `loading` khởi tạo theo việc có token lưu sẵn hay không. Header Authorization vẫn được gắn đồng bộ trong initializer của `useState` như §15 yêu cầu.
+  - `CommunityPage`, `CommunityPostDetailPage`: "đang tải" suy ra từ việc đã có phản hồi cho bộ lọc / id hiện tại hay chưa (không còn `setState` trong thân effect); phản hồi của yêu cầu cũ đến muộn bị bỏ qua; bỏ `catch (err: any)`.
+  - `ProfilePage`: bỏ effect đồng bộ tên (trang nằm sau `ProtectedRoute` nên `user` luôn có lúc mount); tuổi và ngày sinh dùng `formatAge`, `formatBirthDate` của `lib/format.ts` thay cho phép tính riêng gọi `Date.now()` lúc render.
+- **Xoá mã và tệp không còn dùng:** `frontend/src/components/PrivacyCard.tsx`, `frontend/src/pages/SettingsPage.tsx` (`/settings` từ trước đã trỏ vào `ProfilePage`); tệp mẫu còn sót của Vite `src/App.css`, `src/assets/` (`hero.png`, `react.svg`, `vite.svg`), `public/icons.svg`; hàm `instrumentVersionLine` (frontend `lib/questionnaires.ts`); 3 hằng `RESULT_HEADER`, `ENTRY_INSTRUCTIONS`, `ENTRY_HELP` trong `backend/src/lib/questionnaires/copy.ts` (bản đang hiển thị nằm ở frontend); 2 tệp debug cũ bị gitignore `backend/backend.log`, `backend/response.json`.
+- **Tài liệu:** `frontend/README.md` viết lại (trước là README mẫu của Vite); `README.md` gốc thêm danh sách chức năng và lệnh kiểm thử, bỏ nhắc tới DB chung.
+- **Cách rà:** script đồ thị import tự viết (để ngoài repo) + `eslint` + `pyflakes`. Kết quả sau khi dọn: frontend không còn file nào không tới được từ `main.tsx`; backend chỉ còn `prisma.config.ts` (do Prisma CLI đọc, giữ). Không có dependency thừa.
+- **Để nguyên, có chủ ý:**
+  - `updateCommunityPost` (client của route PATCH đã có ở backend, chưa có giao diện sửa bài); các kiểu export chưa dùng; `logo-full.png`, `logo-horizontal.png` (tài sản thương hiệu).
+  - Comment `// eslint-disable-next-line no-console` ở backend (backend chưa có ESLint, comment vô hại).
+  - Mã Python: `pyflakes` báo import thừa ở `API/server_llama.py`, tên chưa định nghĩa `normalize_combined` ở `API/ST_GCN.py:900`, nhiều import lặp trong các file xuất từ notebook ở `research_src/`. Không sửa vì `API/` là mã đang chạy trên `khmt01` và phần này không có test che.
+  - `backend/uploads/` ở máy dev (60 video, 774 MB, bị gitignore): không xoá; dùng `npm run privacy:purge-videos` nếu muốn dọn.
+  - `COMMANDS.md` còn đường dẫn cũ `~/Luan_workspace/ASDr/ASDr` (nay là `~/Luan_workspace/asdr/repo`, §21.2).
+
+### 27.2 Bạn Bin nhận ra người thân: đăng ký khuôn mặt đa góc nhìn
+
+Phần nhận diện người thân của Bạn Bin (có từ commit "update interactive bot", trước đây chưa được ghi trong file này) chạy hoàn toàn trong trình duyệt: MediaPipe Face Landmarker tìm mặt và điểm mốc, cắt ảnh 112×112 theo 5 điểm, SFace (`public/buddy-vision/sface-int8.onnx`, onnxruntime-web trong worker riêng) cho vector 128 chiều. Mẫu lưu ở `localStorage` theo cặp tài khoản + hồ sơ trẻ, vai trò `child` / `mother` / `father`; không có gì gửi lên máy chủ.
+
+- **Vấn đề trước đây:** mỗi người chỉ có 1 mẫu chụp chính diện. Khi xoay đầu, độ giống cosine với mẫu đó tụt dưới ngưỡng 0,58; và chỉ một lần so không khớp là track mất danh tính ngay.
+- **Ước lượng góc đầu** (`lib/buddy/visionPose.ts`, hàm thuần, có test): từ 5 điểm căn chỉnh (2 tâm mắt, chóp mũi, 2 khoé miệng) tính `yaw` = độ lệch ngang của chóp mũi so với trung điểm hai mắt chia khoảng cách mắt (≈ 0,64·tan góc xoay theo tỉ lệ khuôn mặt chuẩn của MediaPipe: 0,23 ≈ 20°) và `pitch` = vị trí chóp mũi giữa đường mắt (0) và đường miệng (1) (≈ 0,54 khi nhìn ngang). Cả hai đo theo trục nối hai mắt nên không đổi khi nghiêng đầu sang vai, không phụ thuộc kích thước mặt.
+- **Năm góc nhìn** (`FACE_VIEWS`): `front`, `left`, `right` (theo phía của ảnh mà mũi hướng tới), `up`, `down`. Ngưỡng nằm trong `FACE_POSE`: thẳng |yaw| ≤ 0,09 (≈ 8°); nghiêng 0,15–0,34 (≈ 13°–28°); ngẩng/cúi lệch 0,09–0,24 so với `pitch` của mẫu thẳng (≈ 10°–25°). Ngẩng/cúi luôn xét tương đối với mẫu thẳng của chính người đó vì `pitch` lúc nhìn ngang khác nhau theo người và theo độ cao camera. Giữa các vùng có khoảng trống để không chụp lúc đầu đang chuyển động giữa hai góc.
+- **Luồng đăng ký** (`components/children/FamilyFaceEnrollment.tsx`, logic thuần ở `lib/buddy/faceEnrollment.ts`): sau khi mở camera, cứ 250 ms worker nhìn một lần (yêu cầu `enroll` mới trong `visionProtocol.ts`, thay cho `capture` cũ). Một góc chỉ được chụp khi lần nhìn trước đó cũng thấy đúng góc ấy (tránh ảnh nhoè do chuyển động). Mẫu thẳng phải có trước; đủ 5 góc thì tự kết thúc, hoặc bấm "Dùng n/5 góc đã lấy" khi đã có mẫu thẳng. Giao diện có 5 nhãn góc, câu hướng dẫn bước kế tiếp (không gọi tên bên trái/phải để khỏi nhầm giữa ảnh và người thật) và gợi ý riêng cho bé (cầm đồ chơi di chuyển chậm quanh camera).
+- **Lưu trữ** (`lib/buddy/visionProfiles.ts`): `FaceTemplate = { front, left?, right?, up?, down? }`, khoá mới `aimbrace:buddy-face:sface-v2:<user>:<child>`. Mẫu v1 (1 vector) vẫn đọc được như mẫu chỉ có góc thẳng và được chuyển sang v2 ở lần lưu kế tiếp; giao diện hiện "n/5 góc" để phụ huynh biết nên lấy lại.
+- **So khớp** (`findFamilyRole` trong `visionTracking.ts`): điểm của một người = độ giống cao nhất trong các góc đã lưu; vẫn cần ≥ 0,58 và hơn người kế tiếp ≥ 0,12. Ngưỡng không đổi.
+- **Giữ danh tính** (`BuddyFaceTracker.confirm`): vẫn cần 2 lần khớp liên tiếp để xác nhận. Sau đó danh tính gắn với khuôn mặt đang được bám và chỉ mất khi: 3 lần so liên tiếp không ủng hộ, quá 8 giây không có lần so nào ủng hộ, một người khác được xác nhận (2 lần liên tiếp), mặt không còn so được (quá nhỏ, ra mép khung, chồng lên mặt khác) hoặc mất dấu quá 0,5 giây. Khi mặt xoay quá ≈ 32° (`FACE_POSE.matchYaw`) hoặc suy luận lỗi thì lần đó tính là "không có bằng chứng", không tính là lệch. Hai khuôn mặt cùng nhận một người thì không hiện tên cho cả hai (như cũ).
+- **Chưa kiểm được:** ngưỡng góc và hiệu quả nhận diện trên khuôn mặt thật. Máy làm việc không có camera với người thật; đã kiểm bằng test hình học (mô hình khuôn mặt chuẩn xoay theo từng góc) và bằng luồng camera giả trong trình duyệt (mở camera, tải mô hình, vòng lặp chạy, báo "Chưa thấy khuôn mặt", tắt camera). Cần thử với người lớn và với bé trước khi tin các ngưỡng.
+
+### 27.3 Kiểm chứng (2026-11-18)
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Frontend `npx tsc -b` | sạch |
+| Frontend `npm run lint` | **0 lỗi** (trước: 7) |
+| Frontend `npm test` (vitest) | **70/70** (trước: 36): thêm `visionPose.test.ts` 11, `visionTracking.test.ts` 13, `visionProfiles.test.ts` 10 |
+| Frontend `npm run build` | được |
+| Backend `npm run typecheck` | sạch |
+| Backend `npm test` | 430 test, 427 đạt; 3 test `gaitFeatures` (góc chính diện) đỏ từ trước (§12 mục 26) |
+| Backend `npm run test:e2e` | 53/53 |
+| Sandbox trên trình duyệt | đăng nhập; tải lại trang vẫn giữ phiên; trang Cộng đồng (đổi bộ lọc), Hồ sơ cá nhân (tuổi, ngày sinh), form đăng ký khuôn mặt với camera giả; mẫu v1 hiện "1/5 góc"; trang Bạn Bin mở được; không có lỗi console |
+
+### 27.4 File mới và file đã sửa
+
+- **Frontend, mới:** `src/state/useAuth.ts`, `src/lib/buddy/visionPose.ts`, `src/lib/buddy/faceEnrollment.ts`, `src/lib/buddy/visionPose.test.ts`, `src/lib/buddy/visionTracking.test.ts`, `src/lib/buddy/visionProfiles.test.ts`.
+- **Frontend, sửa:** `src/state/auth.tsx`, `src/components/children/FamilyFaceEnrollment.tsx`, `src/lib/buddy/` (`vision.ts`, `vision.worker.ts`, `visionProtocol.ts`, `visionProfiles.ts`, `visionTracking.ts`), `src/lib/questionnaires.ts`, `src/pages/` (`CommunityPage`, `CommunityPostDetailPage`, `ProfilePage`), 16 file đổi import `useAuth`, `README.md`.
+- **Frontend, xoá:** `src/components/PrivacyCard.tsx`, `src/pages/SettingsPage.tsx`, `src/App.css`, `src/assets/`, `public/icons.svg`.
+- **Backend, sửa:** `src/lib/questionnaires/copy.ts`.
+- **Gốc repo:** `README.md`, `DOCKER_DEPLOY.md`, `master_prompt.md`.
+- **Ngoài repo:** báo cáo kỹ thuật và chức năng toàn văn kèm nhận xét vận hành production, là một tài liệu Claude Docs của chủ dự án (không nằm trong repo).
+
+### 27.5 Việc cần làm
+
+- [ ] Thử đăng ký khuôn mặt đa góc nhìn bằng camera thật: một người lớn, rồi một bé. Xem từng góc có được chụp không, Bin có giữ đúng tên khi xoay đầu khoảng 20° không, và có nhận nhầm người không. Nếu góc "ngẩng/cúi" khó đạt thì nới `FACE_POSE.tiltMin`.
+- [ ] Phụ huynh đã đăng ký mẫu 1 góc: mở hồ sơ trẻ, lấy lại mẫu để có đủ góc.
+- [ ] Deploy frontend mới lên `khmt01` (backend chỉ đổi 3 hằng số không dùng).
+- [ ] **Git** (người dùng tự chạy): commit các thay đổi của phiên này (danh sách ở §27.4).
+- [ ] Vẫn mở từ trước: các mục ở §26.6.

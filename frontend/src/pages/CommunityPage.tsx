@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   Plus,
@@ -17,47 +17,56 @@ import { fetchCommunityPosts, fetchBookmarkedPosts } from '../lib/community'
 import { PostCard } from '../components/community/PostCard'
 import { CreatePostModal } from '../components/community/CreatePostModal'
 import { CommunityGuidelinesCard } from '../components/community/CommunityGuidelinesCard'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 const CATEGORIES: PostCategory[] = ['STORY', 'PARENTING', 'LIFESTYLE', 'EDUCATION', 'QA']
 
 export function CommunityPage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<CommunityPost[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [sort, setSort] = useState<'latest' | 'popular'>('latest')
   const [viewTab, setViewTab] = useState<'feed' | 'bookmarks'>('feed')
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
-  const loadPosts = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      if (viewTab === 'bookmarks') {
-        const bookmarked = await fetchBookmarkedPosts()
-        setPosts(bookmarked)
-      } else {
-        const res = await fetchCommunityPosts({
-          category: selectedCategory === 'ALL' ? undefined : selectedCategory,
-          sort,
-          search: search || undefined,
-        })
-        setPosts(res.posts)
-      }
-    } catch {
-      setError('Không thể tải bài viết. Vui lòng kiểm tra lại kết nối.')
-    } finally {
-      setLoading(false)
-    }
-  }, [viewTab, selectedCategory, sort, search])
+  // The list is "loading" until a response for the current filters has
+  // arrived, so the flag is derived instead of being set inside the effect,
+  // and a slow response for older filters can never replace a newer one.
+  const filterKey = `${viewTab}|${selectedCategory}|${sort}|${search}`
+  const loading = loadedKey !== filterKey
+  const error = loading ? null : loadError
 
   useEffect(() => {
-    void loadPosts()
-  }, [loadPosts])
+    let stale = false
+    const request =
+      viewTab === 'bookmarks'
+        ? fetchBookmarkedPosts()
+        : fetchCommunityPosts({
+            category: selectedCategory === 'ALL' ? undefined : selectedCategory,
+            sort,
+            search: search || undefined,
+          }).then((res) => res.posts)
+    request.then(
+      (list) => {
+        if (stale) return
+        setPosts(list)
+        setLoadError(null)
+        setLoadedKey(filterKey)
+      },
+      () => {
+        if (stale) return
+        setLoadError('Không thể tải bài viết. Vui lòng kiểm tra lại kết nối.')
+        setLoadedKey(filterKey)
+      },
+    )
+    return () => {
+      stale = true
+    }
+  }, [viewTab, selectedCategory, sort, search, filterKey])
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()

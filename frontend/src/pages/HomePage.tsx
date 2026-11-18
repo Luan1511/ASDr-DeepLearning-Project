@@ -4,7 +4,7 @@ import { AnalysisSteps } from '../components/AnalysisSteps'
 import { AIAssistantCard } from '../components/AIAssistantCard'
 import { RecentResultsCard } from '../components/RecentResultsCard'
 import { ScreeningUploadPanel } from '../components/ScreeningUploadPanel'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 
 export function HomePage() {
   const navigate = useNavigate()

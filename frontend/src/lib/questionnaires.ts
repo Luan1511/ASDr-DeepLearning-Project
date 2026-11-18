@@ -330,11 +330,6 @@ export const RESPONSE_MODE_LABEL: Record<QuestionnaireResponseMode, string> = {
 
 export const ANSWER_LABEL = { yes: 'Có', no: 'Không' } as const
 
-/** "M-CHAT-R/F · cách tính điểm mchat-rf-scoring-v1" */
-export function instrumentVersionLine(r: Pick<QuestionnaireResponseDto, 'scoringVersion'>) {
-  return `M-CHAT-R/F · cách tính điểm ${r.scoringVersion}`
-}
-
 // ---------------------------------------------------------------------------
 // Result states (mchat_admin.md §4.2) — never the per-item scoring to parents
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../state/auth'
+import { useAuth } from '../state/useAuth'
 import {
   Home,
   Video,

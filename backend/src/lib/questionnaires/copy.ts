@@ -8,11 +8,6 @@ import type { McHatEligibility } from './age'
 import { MCHAT_RF, type FollowUpSource, type McHatBand, type McHatOutcome, type Respondent } from './mchatRf'
 
 export const QUESTIONNAIRE_TITLE = 'Bảng hỏi sàng lọc M-CHAT-R/F (16–30 tháng tuổi)'
-export const RESULT_HEADER = 'Kết quả sàng lọc bằng bảng hỏi'
-
-export const ENTRY_INSTRUCTIONS =
-  'Mở bản M-CHAT-R/F tiếng Việt chính thức trên mchatscreen.com, đọc từng câu và chọn Có/Không trên phiếu. Sau đó nhập đúng câu trả lời theo số thứ tự câu bên dưới để hệ thống tính điểm. AIMBRACE không hiển thị nội dung câu hỏi.'
-export const ENTRY_HELP = 'Ứng dụng tự tính điểm — bạn không cần biết câu nào được tính điểm.'
 
 export const COPYRIGHT_NOTICE = `${MCHAT_RF.copyright}. Tải bản tiếng Việt chính thức tại mchatscreen.com.`
 
