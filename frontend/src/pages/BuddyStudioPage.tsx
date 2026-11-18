@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, MessageCircleHeart, Play, Square } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { BuddyCharacter } from '../components/buddy/BuddyCharacter'
+import { GuidePuppet } from '../components/exercise/GuidePuppet'
+import { DEMO_GUIDES } from '../lib/puppetDemo'
 import { ARM } from '../lib/buddy/geometry'
 import {
   BuddyAntenna,
   BuddyArm,
   BuddyBlush,
+  BuddyBoot,
   BuddyBrow,
   BuddyCore,
   BuddyEar,
@@ -109,6 +112,83 @@ function Tile({ label, viewBox, children, size = 'h-24' }: { label: string; view
   )
 }
 
+type FigureMode = { kind: 'demo'; id: string } | { kind: 'pose'; pose: 'idle' | 'cheer' | 'shrug' }
+
+/** The whole-body Bin that guides the exercises, with a few drawn movements to try him out. */
+function FullBodyShowcase() {
+  const [mode, setMode] = useState<FigureMode>({ kind: 'pose', pose: 'idle' })
+  const [run, setRun] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const demo = DEMO_GUIDES.find((d) => mode.kind === 'demo' && d.id === mode.id) ?? DEMO_GUIDES[0]
+  const chip = (active: boolean) =>
+    ['btn-duo-ghost !px-3 !py-2 !text-xs', active ? 'ring-2 ring-[#1E3F9E]' : ''].join(' ')
+  return (
+    <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-[320px_1fr]">
+      <div className="rounded-3xl bg-gradient-to-b from-[#EAF1FF] to-white">
+        <GuidePuppet
+          key={run}
+          guide={demo.guide}
+          pose={mode.kind === 'pose' ? mode.pose : 'demo'}
+          playing={mode.kind === 'demo' && playing}
+          title={mode.kind === 'demo' ? demo.label : 'Bin toàn thân'}
+          size={320}
+          onEnded={() => setPlaying(false)}
+        />
+      </div>
+      <div className="space-y-3">
+        <p className="text-sm font-semibold leading-relaxed text-duo-mute">
+          Trong bài tập, Bin có đủ thân, chân và giày. Đầu, thân, găng tay và khớp vai là cùng bản vẽ với Bin trò chuyện; tay
+          và chân co giãn theo khung xương của bài mẫu nên Bin làm được mọi động tác mà người làm mẫu đã quay.
+        </p>
+        <div>
+          <div className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-duo-mute">Động tác vẽ thử</div>
+          <div className="flex flex-wrap gap-2">
+            {DEMO_GUIDES.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={chip(mode.kind === 'demo' && mode.id === d.id)}
+                onClick={() => {
+                  setMode({ kind: 'demo', id: d.id })
+                  setRun((n) => n + 1)
+                  setPlaying(true)
+                }}
+              >
+                <Play className="h-3.5 w-3.5" /> {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-duo-mute">Tư thế có sẵn</div>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ['idle', 'Đứng chờ'],
+                ['cheer', 'Chúc mừng'],
+                ['shrug', 'Chưa nhìn rõ'],
+              ] as const
+            ).map(([pose, label]) => (
+              <button
+                key={pose}
+                type="button"
+                className={chip(mode.kind === 'pose' && mode.pose === pose)}
+                onClick={() => {
+                  setMode({ kind: 'pose', pose })
+                  setRun((n) => n + 1)
+                  setPlaying(false)
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="card-duo p-5">
@@ -177,6 +257,10 @@ export function BuddyStudioPage() {
         </div>
 
         <div className="space-y-6">
+          <Section title="Bin toàn thân (hướng dẫn bài tập)">
+            <FullBodyShowcase />
+          </Section>
+
           <Section title="Biểu cảm khuôn mặt">
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-9">
               {EXPRESSIONS.map((name) => (
@@ -261,6 +345,9 @@ export function BuddyStudioPage() {
               </Tile>
               <Tile label="Má hồng" viewBox="-20 -14 40 28">
                 <BuddyBlush amount={1} />
+              </Tile>
+              <Tile label="Giày (toàn thân)" viewBox="-22 -12 44 36">
+                <BuddyBoot />
               </Tile>
             </div>
 

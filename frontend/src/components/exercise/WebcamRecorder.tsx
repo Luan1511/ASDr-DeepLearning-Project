@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { CameraOff, Loader2 } from 'lucide-react'
 import type { CameraRecorderStatus } from '../../lib/recording'
 
@@ -11,14 +11,17 @@ export function WebcamRecorder({
   status,
   className,
   children,
+  previewRef,
 }: {
   stream: MediaStream | null
   status: CameraRecorderStatus
   className?: string
+  previewRef?: RefObject<HTMLVideoElement | null>
   /** Overlays (framing guide, countdown). */
   children?: ReactNode
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const localRef = useRef<HTMLVideoElement>(null)
+  const videoRef = previewRef ?? localRef
 
   useEffect(() => {
     const video = videoRef.current
@@ -28,7 +31,7 @@ export function WebcamRecorder({
     return () => {
       video.srcObject = null
     }
-  }, [stream])
+  }, [stream, videoRef])
 
   const recording = status === 'recording'
 

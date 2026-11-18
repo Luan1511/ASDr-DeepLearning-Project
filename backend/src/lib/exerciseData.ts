@@ -3,6 +3,7 @@
  * consent checks, progress summaries and admin statistics.
  */
 import { EXERCISE_CONSENT_SCOPES, EXERCISE_CONSENT_VERSION } from './consent'
+import type { MovementSummary } from '../services/exerciseMovement/types'
 
 type SessionStatus = 'QUEUED' | 'PROCESSING' | 'SCORED' | 'INSUFFICIENT' | 'FAILED'
 
@@ -63,6 +64,8 @@ export type ProgressSessionRow = {
     overall: number | null
     stars: number | null
     warnings?: string[]
+    /** Movement feedback of the attempt (templates compiled with a movement profile only). */
+    movement?: MovementSummary | null
   } | null
 }
 
@@ -73,6 +76,8 @@ export type ProgressPoint = {
   stars: number | null
   status: 'SCORED' | 'INSUFFICIENT'
   hasWarnings: boolean
+  /** Null when the template gives no movement feedback (or the attempt predates it). */
+  movement: MovementSummary | null
 }
 
 export type ExerciseProgress = {
@@ -132,6 +137,7 @@ export function summarizeExerciseProgress(rows: ProgressSessionRow[]): ExerciseP
         stars: scored ? (score.stars ?? starsFor(score.overall)) : null,
         status: scored ? 'SCORED' : 'INSUFFICIENT',
         hasWarnings: (score.warnings ?? []).length > 0,
+        movement: score.movement ?? null,
       })
       series.set(key, entry)
     }

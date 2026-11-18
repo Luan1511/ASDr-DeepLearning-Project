@@ -107,9 +107,9 @@ describe('feedback catalogue', () => {
 describe('buildFeedback', () => {
   it('opens with the band line and praises the best active part', () => {
     const r = buildFeedback(input({ parts: [part('leftArm', { active: true, score: 95, ratio: 1 }), ...PART_IDS.slice(1).map((p) => part(p))] }))
-    assert.deepEqual(r.child, [OPENING.VERY_CLOSE, 'Tay trái làm rất giống bạn Mầm!'])
-    assert.ok(r.parent.includes('Tay trái: điểm 95/100, biên độ bằng khoảng 1,0 lần bạn Mầm.'))
-    assert.ok(r.parent.includes('Nhịp: gần giống bạn Mầm.'))
+    assert.deepEqual(r.child, [OPENING.VERY_CLOSE, 'Tay trái làm rất giống bạn Bin!'])
+    assert.ok(r.parent.includes('Tay trái: điểm 95/100, biên độ bằng khoảng 1,0 lần bạn Bin.'))
+    assert.ok(r.parent.includes('Nhịp: gần giống bạn Bin.'))
   })
 
   it('picks the tip from the weakest part and its dominant feature', () => {
@@ -123,13 +123,13 @@ describe('buildFeedback', () => {
         ],
       }),
     )
-    assert.deepEqual(small.child, [OPENING.PROGRESSING, 'Tay phải làm rất giống bạn Mầm!', 'Thử đưa tay trái lên cao hơn nữa nhé!'])
+    assert.deepEqual(small.child, [OPENING.PROGRESSING, 'Tay phải làm rất giống bạn Bin!', 'Thử đưa tay trái lên cao hơn nữa nhé!'])
     const knee = buildFeedback(input({ band: 'CLOSE', parts: [...PART_IDS.slice(0, 3).map((p) => part(p)), part('rightLeg', { active: true, score: 60, ratio: 0.5, dominant: 'rThighLen' }), part('trunk')] }))
     assert.ok(knee.child.includes('Thử nâng gối phải cao hơn nhé!'), knee.child.join(' | '))
     const big = buildFeedback(input({ band: 'CLOSE', parts: [part('trunk', { active: true, score: 60, ratio: 2, dominant: 'lean' }), ...PART_IDS.slice(0, 4).map((p) => part(p))] }))
     assert.ok(big.child.includes('Người làm nhẹ nhàng hơn một chút nhé!'), big.child.join(' | '))
     const timing = buildFeedback(input({ band: 'CLOSE', parts: [part('rightArm', { active: true, score: 60, ratio: 1, worstWindowSec: [2.4, 3.9] }), ...PART_IDS.filter((p) => p !== 'rightArm').map((p) => part(p))] }))
-    assert.ok(timing.child.includes('Tay phải chưa giống bạn Mầm ở giây 2–4, cùng xem lại bạn Mầm làm nhé!'), timing.child.join(' | '))
+    assert.ok(timing.child.includes('Tay phải chưa giống bạn Bin ở giây 2–4, cùng xem lại bạn Bin làm nhé!'), timing.child.join(' | '))
   })
 
   it('adds one extra line in priority order and never more than three lines', () => {
@@ -152,9 +152,9 @@ describe('buildFeedback', () => {
     assert.equal(fast.child[2], EXTRA.faster)
     const late = buildFeedback(input({ band: 'CLOSE', lagSec: 2.4, practiceMode: 'FOLLOW_ALONG', parts: [...base, ...PART_IDS.slice(2).map((p) => part(p))] }))
     assert.equal(late.child[2], EXTRA.late)
-    assert.ok(late.parent.includes('Con bắt đầu sau bạn Mầm khoảng 2,4 giây.'))
+    assert.ok(late.parent.includes('Con bắt đầu sau bạn Bin khoảng 2,4 giây.'))
     const mirror = buildFeedback(input({ mirrorMode: true, parts: [part('leftArm', { active: true, score: 95, ratio: 1 }), ...PART_IDS.slice(1).map((p) => part(p))] }))
-    assert.deepEqual(mirror.child, [OPENING.VERY_CLOSE, 'Tay trái làm rất giống bạn Mầm!', EXTRA.mirror])
+    assert.deepEqual(mirror.child, [OPENING.VERY_CLOSE, 'Tay trái làm rất giống bạn Bin!', EXTRA.mirror])
   })
 
   it('does not blame the child for a part the demonstration also hides', () => {
@@ -164,7 +164,7 @@ describe('buildFeedback', () => {
     assert.ok(!allLines(r).some((line) => line.includes('Chưa thấy rõ')), allLines(r).join(' | '))
   })
 
-  it('INSUFFICIENT: Mầm shrugs and gives the matching setup hint', () => {
+  it('INSUFFICIENT: Bin shrugs and gives the matching setup hint', () => {
     const hidden = buildFeedback(
       input({
         status: 'INSUFFICIENT',
@@ -175,7 +175,7 @@ describe('buildFeedback', () => {
     )
     assert.deepEqual(hidden.child, [INSUFFICIENT_LEAD, 'Chưa thấy rõ chân của con. Đặt máy xa hơn để thấy cả người nhé.'])
     const short = buildFeedback(input({ status: 'INSUFFICIENT', band: null, reasons: ['TOO_FEW_FRAMES', 'VIDEO_TOO_SHORT'] }))
-    assert.equal(short.child[1], 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Mầm rồi mới dừng nhé.')
+    assert.equal(short.child[1], 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Bin rồi mới dừng nhé.')
     assert.equal(short.parent.length, 2)
   })
 })
@@ -195,7 +195,7 @@ describe('feedback on scored attempts', () => {
   it('mirror mode names parts from the child’s side', () => {
     const r = scoreAttempt('gio-tay-chao', { mirror: true })
     assert.equal(r.mode, 'mirror')
-    assert.ok(r.feedback.child.includes('Tay trái làm rất giống bạn Mầm!'), r.feedback.child.join(' | '))
+    assert.ok(r.feedback.child.includes('Tay trái làm rất giống bạn Bin!'), r.feedback.child.join(' | '))
     assert.ok(r.feedback.parent.some((line) => line.startsWith('Tay trái: điểm')))
     assert.ok(!allLines(r.feedback).some((line) => line.includes('Tay phải: điểm')))
     const tip = scoreAttempt('gio-tay-chao', { mirror: true, amplitude: 0.6 })

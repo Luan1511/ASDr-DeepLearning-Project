@@ -60,7 +60,7 @@ export function PendingResultsTray({ childId }: { childId: string }) {
       {current.pending.length > 0 && (
         <div className="flex items-center gap-2 text-sm font-extrabold text-duo-ink">
           <Loader2 className="h-4 w-4 animate-spin text-duo-green" />
-          Bạn Mầm đang chấm {current.pending.length} bài…
+          Bạn Bin đang chấm {current.pending.length} bài…
         </div>
       )}
       {current.recent.length > 0 && (

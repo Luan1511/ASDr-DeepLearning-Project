@@ -17,6 +17,9 @@ import { adminExercisesRouter } from './adminExercises'
 import { childQuestionnairesRouter, questionnaireResponsesRouter, questionnairesRouter } from './questionnaires'
 import { communityRouter } from './community'
 import { buddyRouter } from './buddy'
+import { childPersonalizationRouter } from './childPersonalization'
+import { childDoctorLinksRouter, doctorsRouter } from './doctors'
+import { doctorPortalRouter } from './doctorPortal'
 
 export const apiRouter = Router()
 
@@ -37,6 +40,11 @@ apiRouter.use('/exercises', exercisesRouter)
 apiRouter.use('/exercise-sessions', exerciseSessionsRouter)
 apiRouter.use('/children/:childId/questionnaires', childQuestionnairesRouter)
 apiRouter.use('/children/:childId', childExercisesRouter)
+// Giai đoạn 6 (personalisation) and 7 (sharing with a doctor).
+apiRouter.use('/children/:childId', childPersonalizationRouter)
+apiRouter.use('/children/:childId', childDoctorLinksRouter)
+apiRouter.use('/doctors', doctorsRouter)
+apiRouter.use('/doctor', doctorPortalRouter)
 apiRouter.use('/admin/exercises', adminExercisesRouter)
 apiRouter.use('/questionnaires', questionnairesRouter)
 apiRouter.use('/questionnaire-responses', questionnaireResponsesRouter)

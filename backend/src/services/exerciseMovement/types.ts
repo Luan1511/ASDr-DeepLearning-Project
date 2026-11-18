@@ -75,14 +75,33 @@ export function readMovementReference(value: unknown): MovementReference | null 
   return result.success ? result.data : null
 }
 
+/**
+ * Why a template has no usable movement reference:
+ *  - 'none'     the template was compiled without a movement profile;
+ *  - 'current'  the stored calibration matches MOVEMENT_VERSION;
+ *  - 'outdated' it was compiled by another version of the detectors. The
+ *               calibration scalars are version-specific, so the template has
+ *               to be compiled again before it gives movement feedback.
+ */
+export function movementReferenceState(value: unknown): 'none' | 'current' | 'outdated' {
+  if (value === undefined || value === null) return 'none'
+  return readMovementReference(value) ? 'current' : 'outdated'
+}
+
 function isMovementCode(code: string): code is MovementCode {
   return Object.prototype.hasOwnProperty.call(MOVEMENT_LABELS, code)
 }
 
 const code = z.string().refine(isMovementCode).transform(value => value as MovementCode)
 const label = z.string().min(1).max(180)
+/**
+ * Stored reports only carry labels, feedback text and time ranges, so a report
+ * written by an earlier detector version stays readable after MOVEMENT_VERSION
+ * moves on (a strict literal here used to make old attempts lose their feedback).
+ */
+const reportVersion = z.string().regex(/^exercise-errors-v\d+(\.\d+)*$/)
 const reportSchema = z.object({
-  version: z.literal(MOVEMENT_VERSION),
+  version: reportVersion,
   profile: z.enum(MOVEMENT_PROFILES),
   checks: z.array(z.object({
     code,
@@ -104,4 +123,23 @@ export type MovementReport = z.infer<typeof reportSchema>
 export function readMovementReport(value: unknown): MovementReport | null {
   const result = reportSchema.safeParse(value)
   return result.success ? result.data : null
+}
+
+/** Numbers of one attempt for the progress view: how much could be measured and what repeated. */
+export type MovementSummary = {
+  /** Criteria of the exercise's profile. */
+  checks: number
+  /** Criteria the recording allowed to measure. */
+  evaluated: number
+  /** Distinct criteria with at least one repeated error. */
+  flagged: number
+}
+
+export function summarizeMovementReport(report: MovementReport): MovementSummary {
+  const flagged = new Set(report.events.map(event => event.code))
+  return {
+    checks: report.checks.length,
+    evaluated: report.checks.filter(check => check.status === 'evaluated').length,
+    flagged: report.checks.filter(check => flagged.has(check.code)).length,
+  }
 }

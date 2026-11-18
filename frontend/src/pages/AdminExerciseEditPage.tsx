@@ -206,6 +206,12 @@ function TemplateCard({
               Góp ý theo bài {MOVEMENT_PROFILE_LABEL[t.movementProfile]}
             </div>
           )}
+          {t.movementOutdated && (
+            <div className="rounded-xl bg-yellow-50 px-3 py-2 text-xs font-bold text-yellow-900">
+              Phiên bản này được biên dịch với cách góp ý động tác cũ nên lượt tập mới chỉ có điểm bắt chước. Biên dịch lại từ
+              video mẫu để bật lại góp ý động tác.
+            </div>
+          )}
           <div className="text-xs font-bold text-duo-mute">
             Bộ phận cử động: {t.activeParts.map((p) => PART_LABEL[p]).join(', ') || '—'}
           </div>
@@ -896,7 +902,7 @@ export function AdminExerciseEditPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-sm font-semibold text-duo-mute">Bấm “Xem trước” ở một phiên bản để xem bạn Mầm làm mẫu.</div>
+              <div className="text-sm font-semibold text-duo-mute">Bấm “Xem trước” ở một phiên bản để xem bạn Bin làm mẫu.</div>
             )}
           </Card>
         </div>

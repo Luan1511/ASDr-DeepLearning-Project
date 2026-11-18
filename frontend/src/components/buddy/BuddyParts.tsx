@@ -1,6 +1,7 @@
 /**
- * Drawing of every part of "bạn Bin" (upper body only). Each part is drawn in its
- * own local frame so it can be shown alone (parts sheet) or posed by BuddyCharacter:
+ * Drawing of every part of "bạn Bin". Each part is drawn in its own local frame
+ * so it can be shown alone (parts sheet), posed by BuddyCharacter (upper body,
+ * chat) or by BuddyFigure (whole body, exercise guide):
  *  - arms hang along +y from the shoulder; elbow at y=ARM.upper, wrist at ARM.fore
  *    below the elbow; hands are drawn from the wrist with fingers along +y.
  *  - ears grow up (−y) from their base pivot.
@@ -330,6 +331,37 @@ export function BuddyHand({ shape }: { shape: HandShape }) {
         </g>
       )
   }
+}
+
+// ------------------------------------------------------------------ legs
+
+/**
+ * Boot from the ankle (0, 0), sole towards +y. Unlike the parts above it is
+ * drawn in figure units (100 = one torso length): the whole-body Bin stretches
+ * his limbs to the skeleton, so legs are plain capsules and only the boot is art.
+ * Glove-blue with a yellow sole, to match the gloves and cuffs.
+ */
+export function BuddyBoot() {
+  return (
+    <g>
+      <path
+        d="M-12.5 -2 C-12.5 -6.5 12.5 -6.5 12.5 -2 L14.5 9 C15.5 15.5 10 17 0 17 C-10 17 -15.5 15.5 -14.5 9 Z"
+        fill={C.glove}
+        stroke={C.outline}
+        strokeWidth={2.6}
+        strokeLinejoin="round"
+      />
+      <path d="M7.5 0 C10.5 4 11.5 9 10.2 12.5" stroke={C.gloveShade} strokeWidth={3} strokeLinecap="round" fill="none" opacity={0.7} />
+      <path d="M-8.5 0.5 C-9.6 3.5 -9.8 6.5 -9 9" stroke={C.belly} strokeWidth={2.2} strokeLinecap="round" fill="none" opacity={0.75} />
+      <path
+        d="M-14.7 10.4 C-15.2 15.8 -10 17 0 17 C10 17 15.2 15.8 14.7 10.4 C9 13.4 -9 13.4 -14.7 10.4 Z"
+        fill={C.yellow}
+        stroke={C.outline}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+    </g>
+  )
 }
 
 /** One whole arm: shoulder ball, upper arm, elbow, forearm, cuff and hand. */

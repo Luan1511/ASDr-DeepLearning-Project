@@ -122,7 +122,7 @@ describe('imitation-v1 scoring (synthetic cases of spec §7.1)', () => {
       const r = scoreAttempt(slug, { leadSec, score: { practiceMode: 'FOLLOW_ALONG', guideOffsetMs: 1500 } })
       between(r.overall, 90, 100, `${slug} late`, r)
       between(r.tempo.lagSec, 1.7, 2.3, `${slug} lag`, r)
-      assert.ok(r.feedback.parent.some((line) => line.startsWith('Con bắt đầu sau bạn Mầm')))
+      assert.ok(r.feedback.parent.some((line) => line.startsWith('Con bắt đầu sau bạn Bin')))
     }
   })
 

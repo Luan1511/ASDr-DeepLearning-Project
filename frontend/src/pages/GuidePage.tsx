@@ -52,7 +52,7 @@ export function GuidePage() {
             <div>• Chỉ tải video bạn có quyền chia sẻ và tránh quay kèm thông tin nhạy cảm (tên, địa chỉ, người khác).</div>
           </div>
         </Card>
-        <Card title="Tập vận động cùng bạn Mầm">
+        <Card title="Tập vận động cùng bạn Bin">
           <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
             <div>• Đặt máy cách con khoảng 2–3 mét, ngang tầm ngực con, thấy cả người từ đầu đến bàn chân; phòng đủ sáng.</div>
             <div>• Chỉ một mình con trong khung hình — bố mẹ đứng phía sau máy. Camera chỉ ghi hình, không ghi âm.</div>

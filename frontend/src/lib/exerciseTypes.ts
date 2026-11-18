@@ -73,6 +73,7 @@ export type ExerciseSummaryDto = {
  * [x0,y0,...,x14,y14] (null = joint missing) or null; sampled at `hz`.
  */
 export type GuideTemplateDto = {
+  liveProfile?: MovementProfile
   id: string
   version: number
   hz: 15
@@ -141,6 +142,16 @@ export type ExerciseSessionDto = {
   score: SessionScoreDto | null
 }
 
+/** Movement feedback numbers of one attempt (exercises compiled with a movement profile). */
+export type ExerciseMovementSummary = {
+  /** Criteria of the exercise's profile. */
+  checks: number
+  /** Criteria the recording allowed to measure. */
+  evaluated: number
+  /** Distinct criteria with at least one repeated error. */
+  flagged: number
+}
+
 export type ExerciseProgressPoint = {
   sessionId: string
   at: string
@@ -148,6 +159,8 @@ export type ExerciseProgressPoint = {
   stars: number | null
   status: 'SCORED' | 'INSUFFICIENT'
   hasWarnings: boolean
+  /** Null (or absent on an older backend) when the attempt has no movement feedback. */
+  movement?: ExerciseMovementSummary | null
 }
 
 export type ExerciseProgressSeries = {
@@ -193,6 +206,8 @@ export type AdminTemplateDto = {
   isCurrent: boolean
   movementProfile?: MovementProfile
   movementUnavailable?: string[]
+  /** Compiled by another version of the movement detectors: compile again to get movement feedback. */
+  movementOutdated?: boolean
 }
 
 export type AdminExerciseDto = Omit<ExerciseSummaryDto, 'template'> & {

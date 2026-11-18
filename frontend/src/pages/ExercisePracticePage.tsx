@@ -24,6 +24,7 @@ import { GuidePuppet } from '../components/exercise/GuidePuppet'
 import { HoldToExitButton } from '../components/exercise/HoldToExitButton'
 import { ImitationResultView } from '../components/exercise/ImitationResultView'
 import { WebcamRecorder } from '../components/exercise/WebcamRecorder'
+import { useLiveCoach } from '../lib/exerciseCoach/useLiveCoach'
 import { api, apiErrorCode } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
 import {
@@ -46,6 +47,7 @@ import type {
   RecordedVia,
 } from '../lib/exerciseTypes'
 import { formatNumber } from '../lib/format'
+import { fetchExercisePlan, type ExerciseSettingsDto } from '../lib/personalization'
 import {
   CameraError,
   cameraErrorMessage,
@@ -58,7 +60,7 @@ import type { ChildProfile } from '../lib/types'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
 import { readVideoMetadata } from '../lib/video'
 
-/** Recording starts this long before the guide in "làm cùng bạn Mầm" (the child settles first). */
+/** Recording starts this long before the guide in "làm cùng bạn Bin" (the child settles first). */
 const LEAD_MS = 1500
 const TAIL_MS = 1500
 const POLL_INTERVAL_MS = 2000
@@ -288,6 +290,41 @@ export function ExercisePracticePage() {
   const mirrored = data?.guide.mirrorPolicy !== 'ANATOMICAL_ONLY'
   const kidMode = phase === 'demo' || phase === 'countdown' || phase === 'recording'
   useWakeLock(kidMode)
+  const [voiceCoach, setVoiceCoach] = useState(true)
+  const liveProfile = data?.guide.liveProfile
+
+  // ---- personalisation: the child's profile pre-selects the settings ----------
+  const [suggested, setSuggested] = useState<Keyed<{ settings: ExerciseSettingsDto; nickname: string | null }> | null>(null)
+  // What the parent changed by hand is never overwritten by a suggestion.
+  const touchedRef = useRef({ rate: false, mode: false, coach: false })
+  useEffect(() => {
+    if (!child) return
+    const id = child.id
+    let stale = false
+    fetchExercisePlan(id, exerciseId).then(
+      (res) => {
+        if (stale || !res.settings) return
+        const s = res.settings
+        setSuggested({ childId: id, value: { settings: s, nickname: res.plan.nickname } })
+        if (!touchedRef.current.rate) setRate(s.playbackRate)
+        if (!touchedRef.current.mode && s.practiceMode) setMode(s.practiceMode)
+        if (!touchedRef.current.coach) setVoiceCoach(s.liveCoach)
+      },
+      () => {
+        // An older backend or no plan: the plain defaults stay.
+      },
+    )
+    return () => {
+      stale = true
+    }
+  }, [child, exerciseId])
+  const profileHint = suggested && child && suggested.childId === child.id ? suggested.value : null
+  const coachSpeaks = profileHint?.settings.coachVoice ?? true
+  const nickname = profileHint?.nickname ?? null
+  // What the profile pre-selected for THIS exercise (the coach only exists where the template has a movement profile).
+  const profileReasons = (profileHint?.settings.reasons ?? []).filter((r) => r.topic !== 'coach' || Boolean(liveProfile))
+
+  const coach = useLiveCoach(liveProfile, voiceCoach && !!camera.stream, phase === 'recording', coachSpeaks)
 
   const libraryHref = childId ? `/exercises?childId=${encodeURIComponent(childId)}` : '/exercises'
 
@@ -398,6 +435,7 @@ export function ExercisePracticePage() {
 
   function enterKidMode() {
     if (camera.status !== 'ready' || !framed) return
+    coach.unlockAudio()
     setNotice(null)
     requestFullscreen()
     if (mode === 'AFTER_DEMO') {
@@ -648,6 +686,8 @@ export function ExercisePracticePage() {
   }
 
   const puppetProps = { guide, mirrored, speed: rate, title: exercise.title } as const
+  // While recording, Bin's face follows the live coach (a smile for a praise, an encouraging look with a reminder).
+  const coachMood = phase === 'recording' ? coach.mood : 'neutral'
 
   // ---- kid mode --------------------------------------------------------------
   if (phase === 'demo') {
@@ -655,7 +695,9 @@ export function ExercisePracticePage() {
     return (
       <KidShell onExit={exitKidMode}>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 pb-6 text-center">
-          <div className="text-3xl font-black text-duo-green md:text-5xl">Xem bạn Mầm làm mẫu nhé!</div>
+          <div className="text-3xl font-black text-duo-green md:text-5xl">
+            {nickname ? `${nickname} ơi, xem bạn Bin làm mẫu nhé!` : 'Xem bạn Bin làm mẫu nhé!'}
+          </div>
           <GuidePuppet key={demoRun} {...puppetProps} pose="demo" playing={demoPlaying} size={size} onEnded={() => setDemoPlaying(false)} />
           <div className="max-w-2xl text-2xl font-black text-duo-ink md:text-3xl">{exercise.childPrompt}</div>
           <div className="flex flex-wrap justify-center gap-3">
@@ -681,10 +723,11 @@ export function ExercisePracticePage() {
     const puppetSize = followAlong
       ? Math.max(180, side ? Math.min(viewport.width * 0.45, viewport.height * 0.72) : Math.min(viewport.width * 0.88, viewport.height * 0.55))
       : Math.max(120, Math.min(viewport.width * 0.28, viewport.height * 0.3))
-    const prompt = followAlong ? 'Làm theo bạn Mầm nhé!' : 'Đến lượt con!'
+    const prompt = followAlong ? 'Làm theo bạn Bin nhé!' : nickname ? `Đến lượt ${nickname}!` : 'Đến lượt con!'
 
     const cameraView = (
       <WebcamRecorder
+        previewRef={coach.video}
         stream={camera.stream}
         status={camera.status}
         className={
@@ -703,7 +746,7 @@ export function ExercisePracticePage() {
         {followAlong ? (
           <div className={['flex min-h-0 flex-1 items-center justify-center gap-4 px-4', side ? 'flex-row' : 'flex-col'].join(' ')}>
             <div className="flex flex-1 items-center justify-center">
-              <GuidePuppet {...puppetProps} pose="demo" playing={guidePlaying} size={puppetSize} />
+              <GuidePuppet {...puppetProps} pose="demo" mood={coachMood} playing={guidePlaying} size={puppetSize} />
             </div>
             <div className={side ? 'flex flex-1 items-center' : ''}>{cameraView}</div>
           </div>
@@ -711,12 +754,23 @@ export function ExercisePracticePage() {
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-4">
             {cameraView}
             <div className="flex items-center gap-3">
-              <GuidePuppet {...puppetProps} pose="idle" playing={false} size={puppetSize} />
+              <GuidePuppet {...puppetProps} pose="idle" mood={coachMood} playing={false} size={puppetSize} />
               <div className="max-w-md text-left text-xl font-black text-duo-ink md:text-2xl">{exercise.childPrompt}</div>
             </div>
           </div>
         )}
 
+        {recording && coach.message && (
+          <div
+            className={[
+              'mx-auto rounded-2xl px-4 py-2 text-center text-lg font-bold',
+              coach.message.kind === 'praise' ? 'bg-yellow-50 text-yellow-900' : 'bg-duo-green-soft text-duo-green-dark',
+            ].join(' ')}
+            role="status"
+          >
+            {coach.message.text}
+          </div>
+        )}
         <div className="flex items-center gap-4 px-4 pb-5 pt-2">
           <div className="h-3 flex-1 overflow-hidden rounded-full bg-white shadow-card-inner" aria-hidden>
             <div className="h-3 rounded-full bg-duo-green transition-[width] duration-200" style={{ width: `${progress * 100}%` }} />
@@ -821,7 +875,7 @@ export function ExercisePracticePage() {
           <GuidePuppet {...puppetProps} pose="idle" playing={false} size={puppetSize} />
           <div className="flex items-center gap-3 text-2xl font-black text-duo-ink md:text-3xl" aria-live="polite">
             <Loader2 className="h-7 w-7 animate-spin text-duo-green" />
-            Bạn Mầm đang xem con tập… (thường mất 1–3 phút)
+            Bạn Bin đang xem con tập… (thường mất 1–3 phút)
           </div>
           {(session.mlBusy || ahead > 0) && (
             <p className="max-w-xl text-base font-bold text-duo-mute">
@@ -850,7 +904,7 @@ export function ExercisePracticePage() {
       return (
         <StageShell>
           <GuidePuppet {...puppetProps} pose="idle" playing={false} size={puppetSize} />
-          <div className="text-2xl font-black text-duo-ink md:text-3xl">Bạn Mầm chưa xem được video lần này</div>
+          <div className="text-2xl font-black text-duo-ink md:text-3xl">Bạn Bin chưa xem được video lần này</div>
           <p className="max-w-xl text-base font-bold leading-relaxed text-duo-ink">
             {session.errorMessage ?? 'Chưa chấm được do sự cố kỹ thuật. Bấm “Thử chấm lại” hoặc tập lại sau.'}
           </p>
@@ -901,7 +955,7 @@ export function ExercisePracticePage() {
 
   const demoCard = (
     <div className="card-duo flex flex-col items-center gap-3 p-5 text-center">
-      <div className="self-stretch text-left text-sm font-extrabold uppercase tracking-wide text-duo-ink">Bạn Mầm làm mẫu</div>
+      <div className="self-stretch text-left text-sm font-extrabold uppercase tracking-wide text-duo-ink">Bạn Bin làm mẫu</div>
       <GuidePuppet
         {...puppetProps}
         pose="demo"
@@ -913,22 +967,25 @@ export function ExercisePracticePage() {
       <p className="text-sm font-semibold leading-relaxed text-duo-mute">{exercise.description}</p>
       <button type="button" className="btn-duo-secondary" onClick={() => setPreviewPlaying(true)} disabled={previewPlaying}>
         <Play className="h-4 w-4" />
-        {previewPlaying ? 'Đang làm mẫu...' : 'Xem bạn Mầm làm mẫu'}
+        {previewPlaying ? 'Đang làm mẫu...' : 'Xem bạn Bin làm mẫu'}
       </button>
     </div>
   )
 
   const speedPicker = (
     <div>
-      <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-duo-mute">Tốc độ của bạn Mầm</div>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tốc độ của bạn Mầm">
+      <div className="mb-2 text-xs font-extrabold uppercase tracking-wide text-duo-mute">Tốc độ của bạn Bin</div>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tốc độ của bạn Bin">
         {([1, 0.75] as const).map((r) => (
           <button
             key={r}
             type="button"
             role="radio"
             aria-checked={rate === r}
-            onClick={() => setRate(r)}
+            onClick={() => {
+              touchedRef.current.rate = true
+              setRate(r)
+            }}
             className={[
               'rounded-full px-4 py-2 text-sm font-extrabold transition-all',
               rate === r ? 'bg-duo-green-soft text-duo-green-dark shadow-ring-green' : 'bg-duo-mist text-duo-mute hover:text-duo-ink',
@@ -949,7 +1006,7 @@ export function ExercisePracticePage() {
           <div className="card-duo space-y-4 p-5">
             <div className="text-sm font-extrabold uppercase tracking-wide text-duo-ink">Tải video quay sẵn</div>
             <ol className="list-decimal space-y-1.5 pl-5 text-sm font-semibold leading-relaxed text-duo-ink">
-              <li>Cho con xem bạn Mầm làm mẫu (nút bên cạnh).</li>
+              <li>Cho con xem bạn Bin làm mẫu (nút bên cạnh).</li>
               <li>Quay con làm lại động tác bằng điện thoại, quay ngang, thấy cả người con.</li>
               <li>Chọn video vừa quay ở dưới. Video dài tối đa {Math.floor(maxMs / 1000)} giây.</li>
             </ol>
@@ -988,6 +1045,18 @@ export function ExercisePracticePage() {
             <div className="text-sm font-extrabold uppercase tracking-wide text-duo-ink">Chuẩn bị camera</div>
             <div className="text-xs font-bold text-duo-mute">Tập cho: {child.fullName}</div>
           </div>
+
+          {profileReasons.length > 0 && (
+            <Notice tone="info">
+              <div className="font-extrabold">Đã chọn sẵn theo hồ sơ của {child.fullName}</div>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 font-semibold">
+                {profileReasons.map((reason) => (
+                  <li key={reason.text}>{reason.text}</li>
+                ))}
+              </ul>
+              <div className="mt-1 font-semibold text-duo-mute">Bạn vẫn có thể đổi ở bên dưới.</div>
+            </Notice>
+          )}
 
           {blockedMessage ? (
             <>
@@ -1037,7 +1106,10 @@ export function ExercisePracticePage() {
                       type="button"
                       role="radio"
                       aria-checked={mode === m}
-                      onClick={() => setMode(m)}
+                      onClick={() => {
+                        touchedRef.current.mode = true
+                        setMode(m)
+                      }}
                       className={[
                         'rounded-2xl px-4 py-3 text-left transition-all',
                         mode === m ? 'bg-duo-green-soft shadow-ring-green' : 'bg-duo-mist hover:bg-duo-line/40',
@@ -1046,8 +1118,8 @@ export function ExercisePracticePage() {
                       <div className="text-sm font-extrabold text-duo-ink">{PRACTICE_MODE_LABEL[m]}</div>
                       <div className="mt-0.5 text-xs font-semibold leading-relaxed text-duo-mute">
                         {m === 'FOLLOW_ALONG'
-                          ? 'Con làm cùng lúc với bạn Mầm trên màn hình (hợp với màn hình lớn).'
-                          : 'Con xem bạn Mầm làm trước, rồi tự làm lại (hợp với điện thoại).'}
+                          ? 'Con làm cùng lúc với bạn Bin trên màn hình (hợp với màn hình lớn).'
+                          : 'Con xem bạn Bin làm trước, rồi tự làm lại (hợp với điện thoại).'}
                       </div>
                     </button>
                   ))}
@@ -1055,6 +1127,26 @@ export function ExercisePracticePage() {
               </div>
 
               {speedPicker}
+
+              {liveProfile && (
+                <label className="flex cursor-pointer items-start gap-2 text-sm font-bold text-duo-ink">
+                  <input type="checkbox" className="mt-0.5 h-4 w-4 accent-duo-green" checked={voiceCoach}
+                    onChange={(event) => {
+                      touchedRef.current.coach = true
+                      setVoiceCoach(event.target.checked)
+                    }} />
+                  <span>
+                    {coachSpeaks ? 'Bin nhắc con trong lúc tập (bằng chữ và giọng nói)' : 'Bin nhắc con trong lúc tập (chỉ bằng chữ)'}
+                    <span className="mt-0.5 block text-xs font-semibold leading-relaxed text-duo-mute">
+                      Hình ảnh từ camera được phân tích ngay trên máy này để nhắc con, không gửi đi đâu và không lưu lại. Bin chỉ
+                      nhắc khi một lỗi lặp lại, và khen khi con làm đúng vài lần liền.
+                    </span>
+                  </span>
+                </label>
+              )}
+              {voiceCoach && coach.unavailable && (
+                <Notice tone="warn">Thiết bị chưa bật được lời nhắc trực tiếp. Bạn vẫn có thể quay và nhận điểm sau lượt tập.</Notice>
+              )}
 
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button type="button" className="btn-duo" disabled={!cameraReady || !framed} onClick={enterKidMode}>

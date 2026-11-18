@@ -59,8 +59,8 @@ const SIDE_WORD: Record<PartId, string> = { leftArm: 'trái', rightArm: 'phải'
 const LIMB_WORD: Record<PartId, string> = { leftArm: 'tay', rightArm: 'tay', leftLeg: 'chân', rightLeg: 'chân', trunk: 'người' }
 
 export const OPENING: Record<ImitationBand, string> = {
-  VERY_CLOSE: 'Tuyệt vời! Con làm rất giống bạn Mầm!',
-  CLOSE: 'Giỏi lắm! Con làm khá giống bạn Mầm rồi!',
+  VERY_CLOSE: 'Tuyệt vời! Con làm rất giống bạn Bin!',
+  CLOSE: 'Giỏi lắm! Con làm khá giống bạn Bin rồi!',
   PROGRESSING: 'Con đang tiến bộ đấy!',
   KEEP_PRACTISING: 'Cảm ơn con đã cố gắng! Mình cùng tập thêm nhé!',
 }
@@ -68,7 +68,7 @@ export const OPENING: Record<ImitationBand, string> = {
 /** Shown with every scored attempt (the effort star); not counted among the ≤ 3 lines. */
 export const EFFORT_LINE = 'Con đã cố gắng rất tốt!'
 
-export const BEST_PART = '{Part} làm rất giống bạn Mầm!'
+export const BEST_PART = '{Part} làm rất giống bạn Bin!'
 
 type TipKind = 'upper' | 'fore' | 'thigh' | 'thighLen' | 'shank' | 'lean' | 'rootDy' | 'rootDx'
 
@@ -83,35 +83,35 @@ export const TIP_MORE: Record<TipKind, string> = {
   rootDx: 'Thử bước sang ngang rộng hơn nhé!',
 }
 export const TIP_LESS = '{Part} làm nhẹ nhàng hơn một chút nhé!'
-export const TIP_TIMING = '{Part} chưa giống bạn Mầm ở giây {t1}–{t2}, cùng xem lại bạn Mầm làm nhé!'
+export const TIP_TIMING = '{Part} chưa giống bạn Bin ở giây {t1}–{t2}, cùng xem lại bạn Bin làm nhé!'
 
 export const EXTRA = {
   staticNotVisible: 'Chưa thấy rõ {limb} của con, đặt máy xa hơn để thấy cả người nhé.',
   staticMoving: 'Giữ yên {limb} khi làm động tác {activeLimb} nhé!',
-  slower: 'Con làm chậm hơn bạn Mầm một chút, lần sau thử nhanh hơn nhé!',
-  faster: 'Con làm nhanh quá, thử chậm lại cho giống bạn Mầm nhé!',
-  late: 'Lần sau mình bắt đầu cùng lúc với bạn Mầm nhé!',
+  slower: 'Con làm chậm hơn bạn Bin một chút, lần sau thử nhanh hơn nhé!',
+  faster: 'Con làm nhanh quá, thử chậm lại cho giống bạn Bin nhé!',
+  late: 'Lần sau mình bắt đầu cùng lúc với bạn Bin nhé!',
   mirror: 'Con làm theo kiểu soi gương, rất tốt!',
 } as const
 
-export const INSUFFICIENT_LEAD = 'Mầm chưa nhìn rõ con lần này.'
+export const INSUFFICIENT_LEAD = 'Bin chưa nhìn rõ con lần này.'
 export const INSUFFICIENT_MESSAGE: Record<ImitationReasonCode, string> = {
   TOO_FEW_FRAMES: 'Máy chưa nhìn thấy con đủ lâu. Đặt máy sao cho thấy cả người con, đủ sáng, rồi thử lại nhé.',
-  VIDEO_TOO_SHORT: 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Mầm rồi mới dừng nhé.',
+  VIDEO_TOO_SHORT: 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Bin rồi mới dừng nhé.',
   ACTIVE_PART_NOT_VISIBLE: 'Chưa thấy rõ {limb} của con. Đặt máy xa hơn để thấy cả người nhé.',
 }
 
 export const PARENT_LINE = {
-  activePart: '{Part}: điểm {score}/100, biên độ bằng khoảng {ratio} lần bạn Mầm.',
+  activePart: '{Part}: điểm {score}/100, biên độ bằng khoảng {ratio} lần bạn Bin.',
   activePartNotVisible: '{Part}: chưa thấy rõ trong video nên chưa chấm được.',
-  staticMoving: '{Part}: bạn Mầm giữ yên phần này nhưng con cử động khá nhiều.',
+  staticMoving: '{Part}: bạn Bin giữ yên phần này nhưng con cử động khá nhiều.',
   staticNotVisible: '{Part}: chưa thấy rõ trong video nên không tính vào điểm.',
-  tempoSlower: 'Nhịp: con làm chậm hơn bạn Mầm, thời gian dài gấp khoảng {ratio} lần.',
-  tempoFaster: 'Nhịp: con làm nhanh hơn bạn Mầm, thời gian chỉ bằng khoảng {ratio} lần.',
-  tempoClose: 'Nhịp: gần giống bạn Mầm.',
-  lagLate: 'Con bắt đầu sau bạn Mầm khoảng {sec} giây.',
-  lagEarly: 'Con bắt đầu trước bạn Mầm khoảng {sec} giây.',
-  mirror: 'Con làm theo kiểu soi gương (đổi bên trái và phải so với bạn Mầm); cách này vẫn được tính điểm.',
+  tempoSlower: 'Nhịp: con làm chậm hơn bạn Bin, thời gian dài gấp khoảng {ratio} lần.',
+  tempoFaster: 'Nhịp: con làm nhanh hơn bạn Bin, thời gian chỉ bằng khoảng {ratio} lần.',
+  tempoClose: 'Nhịp: gần giống bạn Bin.',
+  lagLate: 'Con bắt đầu sau bạn Bin khoảng {sec} giây.',
+  lagEarly: 'Con bắt đầu trước bạn Bin khoảng {sec} giây.',
+  mirror: 'Con làm theo kiểu soi gương (đổi bên trái và phải so với bạn Bin); cách này vẫn được tính điểm.',
 } as const
 
 /** Every raw catalogue string (for the banned-word test). */

@@ -1,6 +1,7 @@
 # AIMBRACE — Master Prompt (Handoff cho AI agent và thành viên nhóm)
 
-> **Cập nhật:** 2026-11-02, phiên 02/11: domain v2.2 + nhiễu camera ảo hiệu chỉnh theo OpenPose (§23.9) — hết dấu hiệu lệch đơn lẻ mạnh, nhưng kết hợp nhiều đặc trưng vẫn tách domain (RF ≈ 0,98). Trước đó: **domain v2** — một module tiền xử lý dùng chung cho train và ML server (`gait_domain.py`), lệch kỹ thuật đã sửa nhưng Kinect ↔ video vẫn tách được (AUC domain ≈ 1,0), chưa train, chưa deploy (§23.8). Trước đó cùng ngày: kiểm tra chiều cao (§23.7): **model không chỉ học chiều cao** — trong cùng dải chiều cao (chiều cao AUC 0,505) P vẫn đạt AUC 0,87–0,88; spinebase_acc thêm +0,10 AUC ngoài chiều cao (KTC > 0 ở cả 3 seed), bbox +0,055 (KTC chứa 0). **Chat mới: bắt đầu từ §23.9.** Phiên 31/10: cross-validation theo trẻ (`cv_stgcn.py`) trên split Kinect sạch — spinebase_acc AUC cấp trẻ 0,921 ± 0,008, bbox 0,884 ± 0,024, accuracy ≈ 0,83 (thấp hơn 8–10 điểm so với hai bài đã đăng); chưa loại được lối tắt chiều cao (§23.5–23.6). Phiên 30/10: nhân vật 2D "Bạn Bin" chat bằng văn bản qua Groq (§23.1), deploy lên `khmt01` (§23.2), **hướng 1 camera ảo + hướng 2 kênh bất biến** trong `NCKH_25-26` — giảm lệch domain mà không dùng 3D lúc suy luận, có hướng dẫn (§23.3). (Bàn giao cũ của phiên 30/10 ở §23.4.) Phiên 29/10: **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
+> **Cập nhật mới nhất:** 2026-11-17 (phiên thứ hai trong ngày, §26) — cải thiện bài tập (góp ý động tác trong tiến độ, nhắc trực tiếp có test và lời khen), **Bin toàn thân thay bạn Mầm** (§6.7.3), **cá nhân hoá hồ sơ trẻ** (§6.9, Giai đoạn 6) và **phía bác sĩ với danh sách bác sĩ mẫu** (§6.10, Giai đoạn 7). **Việc phải làm trước khi dùng: áp migration `20261117_personalization_doctors` lên DB chung và seed bác sĩ mẫu (§26.6).** Chat mới: bắt đầu từ §26; về mô hình ST-GCN từ §23.9; về hội thoại Bạn Bin từ §24. Trước đó cùng ngày: rà soát phần bài tập (§25). Bảng §2 còn vài ô cũ ở F1/F2/F5/F6 (tin §21 và §23.1/§24 hơn).
+> **Cập nhật trước đó:** 2026-11-02, phiên 02/11: domain v2.2 + nhiễu camera ảo hiệu chỉnh theo OpenPose (§23.9) — hết dấu hiệu lệch đơn lẻ mạnh, nhưng kết hợp nhiều đặc trưng vẫn tách domain (RF ≈ 0,98). Trước đó: **domain v2** — một module tiền xử lý dùng chung cho train và ML server (`gait_domain.py`), lệch kỹ thuật đã sửa nhưng Kinect ↔ video vẫn tách được (AUC domain ≈ 1,0), chưa train, chưa deploy (§23.8). Trước đó cùng ngày: kiểm tra chiều cao (§23.7): **model không chỉ học chiều cao** — trong cùng dải chiều cao (chiều cao AUC 0,505) P vẫn đạt AUC 0,87–0,88; spinebase_acc thêm +0,10 AUC ngoài chiều cao (KTC > 0 ở cả 3 seed), bbox +0,055 (KTC chứa 0). **Chat mới: bắt đầu từ §23.9.** Phiên 31/10: cross-validation theo trẻ (`cv_stgcn.py`) trên split Kinect sạch — spinebase_acc AUC cấp trẻ 0,921 ± 0,008, bbox 0,884 ± 0,024, accuracy ≈ 0,83 (thấp hơn 8–10 điểm so với hai bài đã đăng); chưa loại được lối tắt chiều cao (§23.5–23.6). Phiên 30/10: nhân vật 2D "Bạn Bin" chat bằng văn bản qua Groq (§23.1), deploy lên `khmt01` (§23.2), **hướng 1 camera ảo + hướng 2 kênh bất biến** trong `NCKH_25-26` — giảm lệch domain mà không dùng 3D lúc suy luận, có hướng dẫn (§23.3). (Bàn giao cũ của phiên 30/10 ở §23.4.) Phiên 29/10: **Đánh giá lại dữ liệu train:** nhãn của `Dataset_video` gần như trùng với cách quay (ASD: điện thoại cầm tay chĩa xuống, khung gốc 1080×1920; Typical: camera cố định ngang tầm, đã cắt khung) → không dùng bộ này nguyên trạng để fine-tune hay báo cáo; lối tắt "chân ngắn" là phối cảnh, không phải ngồi xổm; Kinect có 7 nhóm thư mục trùng; **domain Kinect ↔ video lệch gần như hoàn toàn** (Kinect 2D lật gương trái/phải, thang thời gian chênh ~10 lần, khớp thiếu (0,0) trong video) — §22.6; `Dataset_video` là video màu gốc của bộ Dryad (lệch cách quay có sẵn từ tác giả), Kinect lệch theo tuổi/giới (§22.7); tiền xử lý sửa được lệch kỹ thuật nhưng lệch từng khớp vẫn còn (§22.8). Xem §22. Trước đó: 2026-10-27 suy luận ST-GCN, deploy ML 2.0 + API key, calibration, chẩn đoán lối tắt chân/thân (§21); 2026-10-14 M-CHAT-R/F trong app (§20); 2026-10-13 DB chung, sidebar (§19); 2026-10-07 Giai đoạn 4 và bảng hỏi (§18).
 > **Nguồn:** đề cương "AIMBRACE – AI for Life 2026" (25/09/2026), khảo sát repo tại commit `c6b011e`, Giai đoạn 1–2 (người dùng đã commit trong `09d23fe`) và thay đổi chưa commit của phiên 2026-10-06 (Giai đoạn 3, §17), 2026-10-07 (Giai đoạn 4 + bảng hỏi, §18), 2026-10-13 (§19) và 2026-10-14 (§20).
 > **Vai trò:** nguồn sự thật (source of truth) khi tiếp quản repo. Đọc file liên quan trước khi sửa, giữ nguyên thay đổi đang có của người dùng, sửa hẹp và có kiểm chứng.
 > **Quy định của chủ dự án:** không dùng git trong project này (xem §13, §14). Mọi lệnh git để người dùng tự chạy, không được lưu bất cứ nội dung gì liên quan đến project này vào memory.
@@ -30,6 +31,9 @@
 21. [Nhật ký phiên 2026-10-27 (suy luận ST-GCN, máy GPU khmt01, deploy ML 2.0, calibration, chẩn đoán model)](#21-nhật-ký-phiên-2026-10-27-suy-luận-st-gcn-máy-gpu-khmt01-deploy-ml-20-calibration-chẩn-đoán-model)
 22. [Nhật ký phiên 2026-10-29 (đánh giá lại dữ liệu train ST-GCN, kiểm tra domain, Dryad) — bàn giao ở §22.9](#22-nhật-ký-phiên-2026-10-29-đánh-giá-lại-dữ-liệu-train-st-gcn)
 23. [Nhật ký phiên 2026-10-30 (nhân vật Bạn Bin, deploy, hướng 1 camera ảo + hướng 2 kênh bất biến; 31/10 cross-validation theo trẻ) — bàn giao ở §23.6](#23-nhật-ký-phiên-2026-10-30-nhân-vật-bạn-bin-deploy-hướng-1-camera-ảo--hướng-2-kênh-bất-biến)
+24. [Nhật ký Bạn Bin (2026-11-13)](#24-nhật-ký-bạn-bin-2026-11-13)
+25. [Nhật ký phiên 2026-11-17 (rà soát phần bài tập, cập nhật master prompt)](#25-nhật-ký-phiên-2026-11-17-rà-soát-phần-bài-tập-cập-nhật-master-prompt)
+26. [Nhật ký phiên 2026-11-17 (tiếp): cải thiện bài tập, Bin toàn thân, cá nhân hoá, phía bác sĩ](#26-nhật-ký-phiên-2026-11-17-tiếp-cải-thiện-bài-tập-bin-toàn-thân-cá-nhân-hoá-phía-bác-sĩ)
 
 ---
 
@@ -73,14 +77,14 @@ Ký hiệu: ✅ đã có, chạy được · 🟡 có một phần / chờ tri�
 | --- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | F1  | AI hỗ trợ sàng lọc ASD từ chuỗi skeleton                                              | ML`server_openpose.py` (ST-GCN + calibration), backend `screeningProcessor.ts` (hàng đợi), `screeningResult.ts`, UI `ScreeningUploadPanel`                                                                                                                                        | 🟡 (luồng hoàn chỉnh, đã chạy thật trên GPU ngày 2026-10-06; mô hình chưa được đánh giá lại; ML 2.0 chưa triển khai)                        |
 | F2  | Phân tích chuyển động không xâm lấn (camera thường + OpenPose 2D)                 | OpenPose BODY_25; đặc trưng dáng đi`gaitFeatures.ts`; làm mờ mặt `API/services/anonymize.py`                                                                                                                                                                                     | ✅ code (ML mới chưa triển khai lên máy GPU)                                                                                                                |
-| F3  | Bài tập tương tác: nhân vật hướng dẫn động tác                                 | Thư viện bài tập (`Exercise`/`ExerciseTemplate`, 6 bài dựng sẵn), nhân vật **bạn Mầm** (`GuidePuppet`, vẽ từ khung xương của mẫu, tốc độ 1×/chậm), ghi webcam (`WebcamRecorder`, MediaRecorder) hoặc tải video, Admin tạo mẫu từ video người lớn | 🟡 (code xong, e2e + UI với ML giả; chưa thử với ML thật — G0;`EXERCISE_MODE=admin_only`)                                                               |
-| F4  | Đánh giá mức độ bắt chước                                                          | `services/imitation/` (imitation-v1: góc khớp, DTW con, chế độ soi gương, điểm theo bộ phận, sao, phản hồi tiếng Việt), hàng đợi `exerciseProcessor.ts`                                                                                                                | 🟡 (hằng số cố định + test tổng hợp;**chưa hiệu chỉnh trên video thật** — C1)                                                                 |
+| F3  | Bài tập tương tác: nhân vật hướng dẫn động tác                                 | Thư viện bài tập (`Exercise`/`ExerciseTemplate`, 6 bài dựng sẵn), nhân vật **bạn Bin toàn thân** (thay bạn Mầm từ 2026-11-17; `GuidePuppet` + `components/buddy/BuddyFigure`, vẽ từ khung xương của mẫu, tốc độ 1×/chậm), ghi webcam (`WebcamRecorder`, MediaRecorder) hoặc tải video, Admin tạo mẫu từ video người lớn | 🟡 (code xong, e2e + UI với ML giả; chưa thử với ML thật — G0;`EXERCISE_MODE=admin_only`)                                                               |
+| F4  | Đánh giá mức độ bắt chước                                                          | `services/imitation/` (imitation-v1: góc khớp, DTW con, chế độ soi gương, điểm theo bộ phận, sao, phản hồi tiếng Việt), hàng đợi `exerciseProcessor.ts`; từ 2026-11-12 thêm `services/exerciseMovement/` (góp ý lỗi động tác lặp cho 3 dạng bài, §6.7.1); nhắc trực tiếp khi tập `frontend/src/lib/exerciseCoach/` (§6.7.2, chưa commit) | 🟡 (hằng số cố định + test tổng hợp;**chưa hiệu chỉnh trên video thật** — C1; góp ý động tác và nhắc trực tiếp cũng chưa thử trên video thật)                                                                 |
 | F5  | AI Agent: trợ lý phụ huynh, kiến thức ASD có nguồn                                   | `chatMock.ts` (regex); `server_llama.py` (chưa nối)                                                                                                                                                                                                                                    | 🟡 (mock)                                                                                                                                                        |
 | F6  | Nhân vật LLM + Speech-to-Speech                                                           | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
-| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác                                        | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
+| F7  | Cá nhân hóa độ khó/loại/tốc độ động tác | `ChildPersonalization` (hồ sơ do phụ huynh khai), `lib/personalization.ts` (luật gợi ý bài tập + cài đặt, có lý do bằng lời), `routes/childPersonalization.ts`; UI: thẻ "Cá nhân hoá" ở hồ sơ trẻ, "Gợi ý cho con" ở thư viện bài tập, cài đặt chọn sẵn ở trang tập (§6.9) | 🟡 (code + test + xem trong sandbox, 2026-11-17; ngưỡng luật chưa hiệu chỉnh trên dữ liệu thật; **migration chưa áp lên DB chung**) |
 | F8  | Theo dõi tiến trình qua các phiên                                                      | `ChildDetailPage`: `GaitTrendChart` (dáng đi) + `ChildExercisesSection` (`ExerciseProgressChart`: điểm luyện tập theo từng bài) + `ChildQuestionnairesSection` (lịch sử bảng hỏi)                                                                                      | 🟡 (đủ 3 nguồn dữ liệu; chưa có dữ liệu thật)                                                                                                          |
 | F9  | Dashboard người chăm sóc                                                                | `HomePage`, `ChildrenPage`/`ChildDetailPage`, `HistoryPage` (lọc theo trẻ, xoá), `AdminPage` (thống kê, hàng đợi, sức khoẻ ML)                                                                                                                                           | 🟡                                                                                                                                                               |
-| F10 | Kết nối cơ sở chuyên gia                                                               | —                                                                                                                                                                                                                                                                                           | ⬜                                                                                                                                                               |
+| F10 | Kết nối cơ sở chuyên gia | `DoctorProfile`, `DoctorChildLink`, `lib/doctorShare.ts`, `routes/doctors.ts` (phụ huynh), `routes/doctorPortal.ts` (bác sĩ, chỉ đọc), 8 bác sĩ mẫu (`lib/mockDoctors.ts`, `DOCTOR_MODE=demo`); UI `/doctors`, thẻ "Chia sẻ với bác sĩ" ở hồ sơ trẻ, phía bác sĩ `/doctor` (§6.10) | 🟡 (code + test + xem trong sandbox, 2026-11-17; chỉ có bác sĩ mẫu, chưa có quy trình cho bác sĩ thật; **migration chưa áp lên DB chung**) |
 | +   | (Bổ sung) Bảng hỏi phụ huynh M-CHAT-R/F (16–30 tháng), đánh giá thêm ngoài video | `lib/questionnaires/*` (chấm điểm, tuổi, engine Follow-Up bản 2025), `routes/questionnaires.ts`, trang `/questionnaires`                                                                                                                                                          | ✅ thử nội bộ (`MCHAT_MODE=inapp` từ 2026-10-14: 20 câu + Follow-Up trong app, đã kiểm chứng; đưa ra ngoài nhóm cần giấy phép tác giả — L1) |
 
 ---
@@ -132,7 +136,8 @@ Main/
 │  │                        screeningResult (ngưỡng/mức/khuyến nghị), gaitFeatures, consentService,
 │  │                        dataDeletion (xoá vĩnh viễn trẻ / lượt sàng lọc / lượt tập / bảng hỏi), aiMock, chatMock,
 │  │                        poseTracking (theo dõi người, tách nguyên văn từ gaitFeatures), imitation/ (imitation-v1),
-│  │                        exerciseProcessor (hàng đợi bài tập), mlCapabilities (ML có /health, nhận .webm không)
+│  │                        exerciseProcessor (hàng đợi bài tập), mlCapabilities (ML có /health, nhận .webm không),
+│  │                        exerciseMovement/ (góp ý lỗi động tác lặp: index.ts, types.ts + coordination/twists/jacks/kicks.js — §6.7.1)
 │  ├─ src/lib/              env, prisma, consent (nội dung đồng ý), serializers (+serializeChild), semaphore,
 │  │                        prismaErrors, childInput (kiểm tra họ tên/ngày sinh/ghi chú), screeningData
 │  │                        (subject ML, "có dữ liệu trên ML không", tóm tắt theo trẻ), exerciseInput, exerciseData,
@@ -145,7 +150,7 @@ Main/
 │  ├─ content/              mchat-rf.template.json (chỉ mã, không chữ) + README.md; mchat-rf.vi.json (nội dung có giấy phép) bị gitignore
 │  ├─ test/                 node:test — gaitFeatures (bộ dáng đi tổng hợp), screeningResult, semaphore, prismaErrors,
 │  │                        childInput, screeningData, poseTracking, imitation*, exercise*, mchatRf, questionnaire*,
-│  │                        mchatRfStructure, followUpEngine, mchatContent (21 file, 334 test);
+│  │                        mchatRfStructure, followUpEngine, mchatContent, buddyChat, exerciseMovement/* (26 file, 387 test — §25.3);
 │  │                        test/e2e/ (PostgreSQL tạm + ML giả bằng Node: exercise, questionnaire, questionnaireInApp — 40 test)
 │  └─ uploads/              video upload (gitignored; video được xoá sau khi phân tích thành công)
 ├─ frontend/src/
@@ -159,6 +164,8 @@ Main/
 │  │                        video (đọc thời lượng/kích thước trước upload), format (ngày, tuổi, nhãn),
 │  │                        gaitMetrics (định nghĩa chỉ số dáng đi dùng chung), children (thông báo lỗi hồ sơ/xoá),
 │  │                        exercises, exerciseTypes, useExerciseCapabilities, recording, puppet,
+│  │                        exerciseCoach/ (nhắc trực tiếp khi tập: useLiveCoach, rules, pose.worker — §6.7.2, chưa commit;
+│  │                        tài nguyên ở frontend/public/exercise-coach/: pose_landmarker_lite.task + 3 file .wav),
 │  │                        questionnaires, questionnaireTypes, useQuestionnairesEnabled
 │  ├─ pages/                Home, Screening, Children, ChildDetail, History, Admin, AdminSkeleton, Guide, Login, …
 │  │                        Exercises, ExercisePractice, ExerciseSession, AdminExercises, AdminExerciseEdit,
@@ -227,9 +234,12 @@ Tài khoản demo sau seed: Admin `admin@asdr.local` / `admin123`, User `	` / `u
 ### 5.3 Kiểm thử tự động (backend đạt ngày 2026-10-14; API/ và research_src/ đạt ngày 2026-10-27)
 
 ```bash
-cd backend && npm run typecheck && npm test            # 334 test
-cd backend && npm run test:e2e                         # 41 test: PostgreSQL tạm :55432 + backend :4100 + ML giả :8100 (không đụng DB chung)
-cd frontend && npx tsc -b && npm run build              # ESLint còn 2 lỗi có sẵn trong state/auth.tsx
+cd backend && npm run typecheck && npm test            # 430 test (2026-11-17 tối: 427 đạt, 3 thất bại có sẵn ở gaitFeatures góc chính diện — §12 mục 26)
+cd backend && npm run test:e2e                         # 53 test, đạt cả (2026-11-17 tối; thêm doctor.e2e.ts, hết chập chờn): PostgreSQL tạm :55432 + backend :4100 + ML giả :8100 (không đụng DB chung)
+cd frontend && npx tsc -b && npm run build              # ESLint còn 7 lỗi có sẵn (auth.tsx, Community*, ProfilePage), không có lỗi ở code mới
+cd frontend && npm test                                 # vitest, 36 test (luật nhắc trực tiếp, co giãn Bin toàn thân) — có từ 2026-11-17
+cd backend && npm run sandbox                           # thử bằng tay: PostgreSQL tạm + ML giả + backend :4100 + dữ liệu demo (không đụng DB chung);
+                                                        # terminal khác: cd frontend && npm run dev:sandbox → http://localhost:5175 (§26.5)
 cd API && python -m pytest tests -q                     # 38 test (OpenPose giả, checkpoint ngẫu nhiên; gồm test_stgcn_service: tracking, cửa sổ, chất lượng)
 cd research_src && python -m pytest tests -q            # 30 test (gồm calibrate --score-level sample)
 ```
@@ -305,7 +315,7 @@ Muốn phủ cả 20 câu Follow-Up: gửi nhiều lượt mức trung bình, m�
 - Mới `ConsentRecord` (userId, childId, version, scopes[] `VIDEO_PROCESSING` bắt buộc / `RESEARCH_USE` tuỳ chọn, `statement` JSON nguyên văn, grantedAt, revokedAt).
 - Mới `ScreeningJob` (videoId unique, status `QUEUED|RUNNING|SUCCEEDED|FAILED`, attempts, maxAttempts, runAfter, lockedBy, lockedAt, lastError).
 - **Giai đoạn 4** (migration `20261007_exercise_imitation`):
-  - `Exercise`: slug, tiêu đề, mô tả, `childPrompt` (lời bạn Mầm), độ khó, `bodyFocus`, `source` (dựng sẵn / admin), `status` `DRAFT|PUBLISHED|ARCHIVED`, `currentTemplateId`;
+  - `Exercise`: slug, tiêu đề, mô tả, `childPrompt` (lời bạn Bin), độ khó, `bodyFocus`, `source` (dựng sẵn / admin), `status` `DRAFT|PUBLISHED|ARCHIVED`, `currentTemplateId`;
   - `ExerciseTemplate`: bản mẫu có version, không sửa sau khi tạo — nguồn + `sourceAttestation` (admin xác nhận là người lớn tự quay), fps, `mirrorPolicy` `EITHER|ANATOMICAL_ONLY|MIRROR_ONLY`, `algorithmVersion`, `templateHash`, đoạn chuyển động, `guideTrack` (cho bạn Mầm), `features`, `quality`, `selfTest`;
   - `ExerciseSession`: một lượt tập đồng thời là một job hàng đợi — `status` `QUEUED|PROCESSING|SCORED|INSUFFICIENT|FAILED`, cách ghi / cách tập / tốc độ mẫu, thông tin file, `mlSubjectId` + thời điểm xoá, attempts/runAfter/lockedBy/lockedAt, `lastError` (chỉ admin), `errorMessage` (cho phụ huynh), `consentId`;
   - `SessionScore`: duy nhất theo `sessionId + algorithmVersion` — overall, stars, band, mode (thường/soi gương), reasonCodes, `detail` theo bộ phận.
@@ -388,7 +398,7 @@ Lỗi: JSON hỏng → 400 `INVALID_JSON`; Zod → 400; Multer → 413/400; lỗ
 - **Đồng ý riêng:** `ConsentRecord` có version `exercise-2026-10-07`, scope `EXERCISE_VIDEO`. Thu hồi consent sàng lọc không đụng tới consent bài tập và ngược lại. Thu hồi trong lúc lượt đang chờ → worker chuyển FAILED, xoá video, không gửi ML.
 - **Luồng phụ huynh:**
   1. `/exercises?childId=` → đồng ý ghi hình bài tập → chọn bài.
-  2. `/exercises/:id/practice`: xem bạn Mầm làm mẫu (puppet vẽ từ `guideTrack`, tốc độ bình thường / chậm hơn), checklist khung hình, cách tập "Làm cùng bạn Mầm" hoặc "Xem trước rồi làm theo", "Chế độ cho bé" (toàn màn hình, giữ nút để thoát).
+  2. `/exercises/:id/practice`: xem bạn Bin làm mẫu (puppet vẽ từ `guideTrack`, tốc độ bình thường / chậm hơn), checklist khung hình, cách tập "Làm cùng bạn Bin" hoặc "Xem trước rồi làm theo", "Chế độ cho bé" (toàn màn hình, giữ nút để thoát).
   3. Ghi webcam (MediaRecorder, `.webm`) hoặc tải video quay sẵn → `POST /exercise-sessions/upload` (kiểm tra consent trước khi nhận file; độ dài tối thiểu = max(1 giây, 0,6 × mẫu), tối đa theo mẫu và `EXERCISE_MAX_DURATION_SEC`).
   4. Worker (cùng mẫu với hàng đợi sàng lọc: `FOR UPDATE SKIP LOCKED`, heartbeat, phục hồi job chết, SQL an toàn múi giờ) gửi clip lên ML `/subjects/extract` với subject `ex_<sessionId>`, đọc keypoints, chấm imitation-v1, lưu `SessionScore`, rồi **xoá video gốc và subject trên ML**.
   5. `/exercise-sessions/:id`: điểm luyện tập 0–100 + sao, nhãn "Thử nghiệm", điểm và nhận xét theo bộ phận (tay trái/phải, chân, thân), gợi ý cho lần sau, "Video gốc: đã xoá". Dashboard trẻ có `ChildExercisesSection` + `ExerciseProgressChart` (một đường, kèm bảng).
@@ -397,6 +407,54 @@ Lỗi: JSON hỏng → 400 `INVALID_JSON`; Zod → 400; Multer → 413/400; lỗ
 - **ML 1.0:** không có `/health`, có thể không nhận `.webm`. `mlCapabilities.ts` dò và cache 60 giây; nếu ML trả lời là không nhận thì upload trả 415 `RECORDING_FORMAT_UNSUPPORTED` (frontend gợi ý tải MP4). `EXERCISE_WEBM_AS_MKV=true` chỉ sau khi G0 xác nhận.
 - **Cổng của chủ dự án:** G0 `npm run exercises:probe-ml` (một video người lớn với ML thật: webm, subject_id, fps); C1 `npm run exercises:calibrate` (người lớn tự quay làm đúng / sai / soi gương) trước khi đặt `EXERCISE_MODE=on`. Thuật toán chưa được kiểm chứng trên trẻ em.
 - **Dọn dữ liệu:** `npm run privacy:purge-exercise-uploads` (dry-run) / `-- --yes`.
+- **Từ 2026-11-12 có thêm hai lớp ngoài imitation-v1:** góp ý lỗi động tác sau lượt tập (§6.7.1, đã commit `aa06f69`) và nhắc trực tiếp trong lúc tập (§6.7.2, chưa commit). Cả hai chỉ áp dụng cho mẫu do Admin biên dịch từ video người lớn có chọn dạng bài; 6 bài dựng sẵn không dùng.
+
+#### 6.7.1 Góp ý lỗi động tác (`services/exerciseMovement/`, `exercise-errors-v0.3`)
+
+- **Mục đích:** với bài lặp theo chu kỳ, tìm lỗi lặp lại qua nhiều nhịp và đưa ra một câu góp ý. Không tạo điểm, không đổi imitation-v1, không phải chuẩn y khoa hay chuẩn theo tuổi.
+- **Bật theo từng mẫu:** khi biên dịch mẫu, Admin chọn "Góp ý theo bài tập" (`movementProfile` trong `compileTemplateSchema`: `jump-twists` | `jumping-jacks` | `high-kicks`; bỏ trống = chỉ chấm bắt chước). `buildTemplate` gọi `compileMovementReference` và lưu vài số hiệu chỉnh của mẫu vào `ExerciseTemplate.features.movement` (cột JSON sẵn có, không có migration). Bản xem trước (`dryRun`) trả `movementUnavailable` để Admin biết mẫu chưa đủ rõ cho tiêu chí nào.
+- **Chấm:** `exerciseProcessor` gọi `analyzeExerciseMovement` sau `scoreImitation` nếu mẫu có `movement`. Lỗi của bước này bị bỏ qua (chỉ `console.warn`), lượt vẫn có điểm bắt chước. Kết quả nằm trong `SessionScore.detail.movement`, cùng dòng với imitation-v1.
+- **Cách làm:** dùng lại chọn track và làm sạch của imitation (15 Hz), chuẩn hoá theo hông và chiều dài thân, tách "đợt" khi trẻ đứng yên ≥ 2 giây hoặc mất dấu ≥ 0,5 giây, lấy 0,6 giây đứng yên đầu đợt làm tư thế mốc. Chỉ điểm quan sát trực tiếp (không nội suy) mới được dùng để khẳng định một chi "giữ yên". Mỗi tiêu chí có trạng thái `evaluated` hoặc `unmeasurable`; lỗi chỉ được báo khi lặp ≥ 2 nhịp liên tiếp (lặp hướng xoay: ≥ 3).
+- **10 tiêu chí:**
+
+| Dạng bài        | Tiêu chí                                                                                                                                           | Điều kiện riêng                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `jump-twists`   | `ARM_LEG_COORDINATION_INVERTED` (tay–chân đảo pha so với mẫu), `TWIST_REPEAT_DIRECTION`, `TWIST_LEGS_STILL`, `TWIST_REVERSAL_DELAY`                | mẫu phải có quan hệ tay–chân rõ; tiêu chí nhịp cần fps ≥ 10  |
+| `jumping-jacks` | `JACKS_ARM_FOOT_OUT_OF_PHASE`, `JACKS_MISSING_FOOT_OPEN`, `JACKS_MISSING_FOOT_CLOSE`, `JACKS_ONE_ARM_IDLE`                                         | hai tiêu chí mở/khép chân cần tư thế khép chân ở đầu đợt     |
+| `high-kicks`    | `KICK_SAME_LEG_REPEATED`, `KICK_EXTENSION_MISSING`                                                                                                 | tiêu chí duỗi chân cần fps ≥ 12 và mẫu có ≥ 2 cú đá duỗi rõ |
+
+- **Hiển thị:** `serializeScore` trả `score.movement` (tiêu chí + sự kiện: nhãn, câu góp ý, khoảng thời gian, số nhịp; không có keypoint của trẻ — e2e có kiểm). Màn hình cho bé: sao (nếu có) + "Con đã cố gắng rất tốt!" + góp ý đầu tiên. Phụ huynh: mục "Góp ý động tác" (số tiêu chí đo được, lỗi theo giây, "Tiêu chí chưa đo được"); điểm bắt chước bị gập xuống mục "Điểm bắt chước tham khảo". Lượt `INSUFFICIENT` nhưng có tiêu chí đo được hiện nhãn "Đã có góp ý".
+- **Hằng số:** nằm rải trong các file detector (`SETTINGS` trong `coordination.js`, `LIMITS` trong `jacks.js`, hằng đầu file `kicks.js`, số trong `twists.js`); chưa có test snapshot như `IMITATION_V1`. Bốn file detector là CommonJS `.js` (`allowJs` trong `backend/tsconfig.json`).
+- **Bẫy phiên bản:** `MOVEMENT_VERSION` là `z.literal` trong cả schema của mẫu lẫn schema của báo cáo. Đổi version thì mẫu cũ đọc ra `null` (mất góp ý, không báo lỗi) và báo cáo của lượt cũ không còn hiện trên UI. Muốn đổi phải biên dịch lại mẫu hoặc cho schema nhận nhiều version.
+- **Giới hạn:** biểu đồ tiến độ (`loadProgressRows`, `ExerciseProgressChart`) vẫn vẽ điểm bắt chước `overall`, chưa dùng số lỗi động tác. Test (4 file `test/exerciseMovement/` + kịch bản e2e "movement profile") chỉ dùng khung xương tổng hợp; **chưa có số liệu trên video thật, chưa thử với trẻ**.
+
+#### 6.7.2 Nhắc trực tiếp khi tập (`frontend/src/lib/exerciseCoach/`, chưa commit tính đến 2026-11-17)
+
+- **Backend:** `GET /exercises/:id` chọn thêm `features` của mẫu; `serializeGuideTemplate` trả `guide.liveProfile` (chỉ tên dạng bài; với `jump-twists` chỉ trả khi mẫu có quan hệ tay–chân ngược nhau). Không có trường nào khác của `features` ra ngoài.
+- **Chạy hoàn toàn trên thiết bị:** `useLiveCoach` lấy khung hình từ video xem trước (thu nhỏ còn ≤ 480 px, mỗi 100 ms) gửi cho Web Worker `pose.worker.ts` chạy MediaPipe PoseLandmarker lite (`@mediapipe/tasks-vision`, model ở `frontend/public/exercise-coach/`). Không khung hình nào rời trình duyệt, không lưu gì.
+- **Luật (`rules.ts`):** chỉ chạy ở pha ghi hình, chỉ khi thấy đúng một người và đủ 10 điểm (vai, cổ tay, hông, gối, cổ chân; visibility ≥ 0,65); mất dấu ≥ 450 ms thì xoá trạng thái. Mỗi dạng bài một lời nhắc: `jumping-jacks` → "mở chân" (2 nhịp liên tiếp nâng tay mà không mở chân), `jump-twists` → "tay này cùng chân bên kia" (tay và gối cùng hướng trong khoảng 2,6 giây), `high-kicks` → "đổi chân" (hai cú liên tiếp cùng một chân). Hiện chữ 4,5 giây + phát file `.wav`; cách nhau ít nhất 6,5 giây.
+- **UI (`ExercisePracticePage`):** ô "Nhắc bằng giọng nói khi con tập" (mặc định bật, chỉ hiện khi mẫu có `liveProfile`); `unlockAudio()` gọi từ nút bắt đầu để qua quy tắc autoplay; worker hoặc model lỗi thì hiện thông báo và việc quay vẫn bình thường. `WebcamRecorder` nhận thêm `previewRef`.
+- **Giới hạn (chưa xử lý):**
+  - ngưỡng viết cứng trong `rules.ts`, tách rời bộ luật backend (§6.7.1), không dùng số hiệu chỉnh của mẫu và dùng model tư thế khác (MediaPipe so với OpenPose) → lời nhắc lúc tập có thể không khớp báo cáo sau lượt;
+  - không có test (frontend chưa có test runner); chưa chạy thử trên trình duyệt thật; chưa đo ảnh hưởng tới tốc độ khung hình của video đang ghi trên máy yếu;
+  - chỉ nhắc lỗi, không có lời khen; chưa hỏi ý kiến GVHD về việc nhắc bằng giọng nói giữa động tác với trẻ có dấu hiệu ASD;
+  - nội dung đồng ý `exercise-2026-10-07` chưa nhắc tới việc phân tích hình ảnh ngay trên thiết bị.
+- **Cập nhật 2026-11-17 tối (§26.2) — các mục dưới đây thay cho mô tả luật ở trên:**
+  - `rules.ts` viết lại, không còn ngưỡng tự đặt cho bật tách chân và đá chân: "mở chân" so với tư thế khép chân đo được trong lúc đứng (như `jacks.js`), "đổi chân" dùng đúng `REST_RISE`/`KICK_RISE`/khoảng nghỉ 4 giây của `kicks.js` và bỏ qua khi có một lần nhấc chân chưa rõ ở giữa; bật xoay giữ cách tính cũ nhưng ngưỡng (0,65) chặt hơn `strongRelation` của backend. `rules.test.ts` đọc hằng số trong các file backend và sẽ đỏ nếu backend đổi ngưỡng mà phía này chưa xem lại.
+  - Thêm **lời khen** (chỉ hiện chữ + Bin cười, không phát tiếng) sau 3 lần làm đúng liền; `CoachPacer` giãn cách: nhắc cách nhau ≥ 6,5 giây, khen chỉ khi 9 giây trước đó không nói gì.
+  - `useLiveCoach(profile, enabled, recording, voice)` trả `{ video, message: { kind, text } | null, mood, unavailable, unlockAudio }`; `voice=false` (trẻ nhạy cảm với âm thanh, §6.9) chỉ nhắc bằng chữ. Hết 2 lỗi lint cũ của file này.
+  - Vẫn chưa làm được: thử trên camera thật, đo ảnh hưởng tới video đang ghi, hỏi ý kiến GVHD.
+
+#### 6.7.3 Bạn Bin toàn thân làm mẫu (từ 2026-11-17, thay bạn Mầm)
+
+- **Vì sao:** nhân vật hướng dẫn bài tập giờ là cùng một robot Bin với phần trò chuyện (`/buddy`). Bin trò chuyện chỉ có thân trên; bài tập cần cả người nên Bin được thiết kế thêm chân, giày và cách co giãn theo khung xương.
+- **Cấu trúc:** `components/buddy/BuddyFigure.tsx` (SVG) dùng lại nguyên bản vẽ của `BuddyParts.tsx` cho đầu (mũ, tai, ăng-ten, tai nghe, mặt), thân, găng tay, khớp vai; tay và chân là các "capsule" kéo từ khớp tới khớp (đường viền + màu + vệt bóng), khớp gối/khuỷu, đai vàng ở cổ tay và cổ chân, giày `BuddyBoot` (mới, trong `BuddyParts.tsx`). Thân được ánh xạ affine theo hai vai và hông; đầu cứng theo trục cột sống.
+- **Điều khiển:** `GuidePuppet.tsx` (giữ nguyên props cũ, thêm `mood`) tính pose từ `guideTrack` như trước (`lib/puppet.ts`) rồi gọi `figure.setPose(...)` — ghi thẳng thuộc tính SVG mỗi khung hình, không render lại React. Biểu cảm lấy từ thư viện biểu cảm của Bin trò chuyện (`lib/buddy/expressions.json`): làm mẫu/đứng chờ = `neutral`, chúc mừng = `proud`, chưa nhìn rõ = `curious`, được khen = `happy`, đang nhắc = `encourage`; mắt chớp mỗi ~3,6 giây (tắt khi người dùng chọn giảm chuyển động).
+- **Chân trước/sau thân:** chân có hai bản (sau và trước thân); khi gối nâng gần ngang hông (bước đều, đá chân) bản phía trước được hiện để chân không bị thân che.
+- **Co giãn theo mẫu:** `lib/buddy/figure.ts` `fitFigure` tính một tỉ lệ cho cả bài (mọi khung hình + tư thế chúc mừng/nhún vai) để tai, ăng-ten, tay giơ cao và chân dang rộng không bị cắt ở mép; có test (`figure.test.ts`).
+- **Xem thử:** `/admin/buddy` có mục "Bin toàn thân (hướng dẫn bài tập)" với 4 động tác vẽ thử (`lib/puppetDemo.ts`: bật tách chân, bước đều, nghiêng người, giơ tay chào) và 3 tư thế có sẵn.
+- **Tên trong dữ liệu cũ:** lời nhắn/nhận xét đã lưu với tên "bạn Mầm" (`SessionScore.detail.feedback`, `Exercise.childPrompt`, `description`) được đổi sang "bạn Bin" khi đọc (`rebrandGuide` trong `lib/exerciseSerializers.ts`); không sửa dữ liệu trong DB.
+
 
 ### 6.8 Bảng hỏi phụ huynh M-CHAT-R/F (`lib/questionnaires/`, `routes/questionnaires.ts`)
 
@@ -412,6 +470,31 @@ Lỗi: JSON hỏng → 400 `INVALID_JSON`; Zod → 400; Multer → 413/400; lỗ
 - **Test bằng tay:** §5.5.
 
 ---
+
+### 6.9 Cá nhân hoá hồ sơ trẻ (Giai đoạn 6, từ 2026-11-17)
+
+- **Dữ liệu:** bảng `ChildPersonalization` (1 dòng tuỳ chọn cho mỗi trẻ, xoá theo trẻ): `nickname`, `interests[]`, `communication`, `sensory[]` (`SOUND|LIGHT|TOUCH|CROWD|CHANGE`), `calming`, `goals`, `focusAreas[]` (`ARMS|LEGS|TRUNK`), `guideSpeed` (`AUTO|NORMAL|SLOW`), `practiceMode` (`AUTO|FOLLOW_ALONG|AFTER_DEMO`), `liveCoach` (null = tự động), `weeklyGoal` (1–7 ngày tập/tuần). Do phụ huynh khai; **không dùng để sàng lọc**, không gửi cho LLM, chỉ chia sẻ với bác sĩ khi phụ huynh chọn scope `PERSONALIZATION` (§6.10).
+- **API (JWT, chủ hồ sơ):** `GET/PUT /api/children/:childId/personalization` (PUT thay cả form; trường bỏ trống về mặc định; Zod `.strict()`), `GET /api/children/:childId/exercise-plan[?exerciseId=]` (cần `EXERCISE_MODE` cho phép) → `{ plan: { nickname, level, weekly: { goal, daysPractised, weekStart }, recommendations[] }, settings? }`.
+- **Luật (`lib/personalization.ts`, thuần hàm, ngưỡng trong `PLAN_RULES`: 50 / 60 / 80 điểm, cửa sổ 3 lần):**
+  - *Mức đang tập* = độ khó cao nhất có ≥ 2 lần được chấm với trung bình 3 lần gần nhất ≥ 60 (mặc định Dễ).
+  - *Gợi ý* (tối đa 3, mỗi gợi ý có `kind` + lý do bằng lời): `START` (trẻ chưa tập: các bài Dễ, ưu tiên vùng phụ huynh chọn), `CONTINUE` (bài đang tập dở hoặc lần gần nhất < 80), `REVIEW` (2 lần gần nhất < 50: tập lại chậm hơn), `STEP_UP` (3 lần gần nhất ở mức hiện tại đều ≥ 80: thử một bài mức trên), `NEW` (bài chưa tập ở mức hiện tại trở xuống).
+  - *Cài đặt cho một bài* (`suggestExerciseSettings`): tốc độ chậm khi phụ huynh chọn, hoặc (tự động) 2 lần gần nhất < 60, hoặc lần đầu tập bài mức Vừa trở lên; cách tập theo lựa chọn của phụ huynh; `liveCoach` theo lựa chọn (mặc định bật); `coachVoice=false` khi trẻ nhạy cảm với âm thanh. Mỗi cài đặt khác mặc định kèm `reasons[{ topic: speed|mode|coach, text }]`. Lựa chọn rõ ràng của phụ huynh luôn thắng luật tự động.
+  - *Mục tiêu tuần:* số ngày khác nhau có lượt tập trong tuần (thứ Hai 00:00 giờ Việt Nam).
+- **UI:** thẻ "Cá nhân hoá cho {tên}" ở `/children/:id` (`ChildPersonalizationSection`: xem + form sửa); "Gợi ý cho {tên gọi ở nhà}" + thanh mục tiêu tuần ở `/exercises` (`ExercisePlanSection`); trang tập áp sẵn tốc độ / cách tập / bật-tắt nhắc theo hồ sơ (không ghi đè thứ phụ huynh vừa đổi tay), hiện hộp "Đã chọn sẵn theo hồ sơ của …" với lý do, và Bin gọi trẻ bằng tên ở nhà trong chế độ cho bé.
+- **DB chưa có bảng:** `GET/PUT …/personalization` trả 503 `DATABASE_MIGRATION_REQUIRED` (thẻ hiện thông báo "đang được chuẩn bị"); `exercise-plan` vẫn chạy với mặc định.
+- **Chưa làm:** hiệu chỉnh ngưỡng trên dữ liệu thật; dùng sở thích của trẻ trong nội dung (cố ý chưa nối với Bạn Bin chat để không gửi thông tin trẻ ra dịch vụ ngoài).
+
+### 6.10 Chia sẻ hồ sơ với bác sĩ (Giai đoạn 7, từ 2026-11-17)
+
+- **Chế độ:** `DOCTOR_MODE` = `off` (ẩn) / `demo` (mặc định: liệt kê bác sĩ mẫu, giao diện ghi rõ "bác sĩ mẫu") / `on` (chỉ bác sĩ thật; tài khoản mẫu bị chặn). Frontend hỏi `GET /api/doctors/capabilities`.
+- **Dữ liệu (không đổi enum `UserRole`, để code cũ trên DB chung không gặp giá trị lạ):** `DoctorProfile` (gắn 1–1 với `User` role USER; `isMock`, `acceptingNew`, chuyên môn, nơi làm việc, tỉnh thành…) — tài khoản là bác sĩ khi có dòng này; `DoctorChildLink` (bác sĩ ↔ trẻ: `scopes[]`, `version`, `statement` = nguyên văn nội dung phụ huynh đã đồng ý, `message`, `grantedAt`, `revokedAt`, `lastViewedAt`, `viewCount`). Xoá trẻ / tài khoản xoá theo (cascade).
+- **Scope:** `PROFILE` (bắt buộc: họ tên, ngày sinh, giới tính, ghi chú, tên phụ huynh), `PERSONALIZATION`, `SCREENING` (mức, điểm sàng lọc, chỉ số dáng đi, chất lượng video), `QUESTIONNAIRE` (điểm, mức, số thứ tự mục — không có chữ của câu hỏi), `EXERCISE` (tiến độ luyện tập). **Không bao giờ có video, tên file, `rawAiResponse`.** Phiên bản nội dung đồng ý: `doctor-share-2026-11-17`.
+- **API phụ huynh:** `GET /api/doctors` (kèm `links` của chính phụ huynh, `cities`, `specialties`), `GET /api/doctors/:id`, `GET /api/doctors/share-statement`, `GET/POST /api/children/:childId/doctor-links`, `DELETE /api/children/:childId/doctor-links/:linkId`. Cấp lại cho cùng bác sĩ = thu hồi link cũ + tạo link mới (đổi scope). Xem và thu hồi luôn dùng được, kể cả khi `DOCTOR_MODE=off`.
+- **API bác sĩ (`requireAuth` + `requireDoctorsEnabled` + `requireDoctor`, chỉ đọc):** `GET /api/doctor/me`, `GET /api/doctor/patients`, `GET /api/doctor/patients/:linkId` (chỉ link ACTIVE của chính bác sĩ; chỉ dữ liệu thuộc scope; mỗi lần mở ghi `lastViewedAt` + `viewCount` để phụ huynh thấy). Link đã thu hồi hoặc của bác sĩ khác trả 404 như không tồn tại. `/auth/login` và `/auth/me` trả thêm `user.doctor` (null nếu không phải bác sĩ, tính năng tắt, hoặc DB chưa có bảng).
+- **Bác sĩ mẫu:** 8 người trong `lib/mockDoctors.ts` (tên và nơi làm việc bịa, email `@asdr.local`, `isMock=true`). Tạo bằng `npm run doctors:seed-mock` (xem trước) / `-- --yes` (ghi); mật khẩu của tài khoản mới lấy từ `MOCK_DOCTOR_PASSWORD`, không đặt thì dùng mặc định ghi trong `scripts/seedMockDoctors.ts`. `prisma/seed.ts` (DB mới) cũng tạo. **Chỉ dùng cho môi trường thử.**
+- **UI phụ huynh:** menu "Bác sĩ" → `/doctors` (tìm không dấu, lọc tỉnh/chuyên môn, hộp thoại đồng ý: chọn trẻ, chọn phần chia sẻ, đọc nội dung, lời nhắn); thẻ "Chia sẻ với bác sĩ" ở `/children/:id` (ai đang xem, phần nào, bác sĩ mở lần gần nhất khi nào, nút ngừng chia sẻ, lịch sử).
+- **UI bác sĩ:** tài khoản bác sĩ chỉ thấy menu "Hồ sơ được chia sẻ" (+ Kiến thức, Hướng dẫn, Cài đặt); `/doctor` (danh sách), `/doctor/patients/:linkId` (hồ sơ chỉ đọc theo scope: cá nhân hoá, sàng lọc dáng đi, bảng hỏi, biểu đồ luyện tập; ghi rõ phần phụ huynh không chia sẻ; có disclaimer "tham khảo, không phải chẩn đoán").
+- **Chưa làm:** quy trình tạo/xác minh bác sĩ thật (hiện phải tạo `DoctorProfile` trực tiếp trong DB), bác sĩ ghi nhận xét cho phụ huynh, đặt lịch, thông báo cho bác sĩ khi có hồ sơ mới.
 
 ## 7. ML service (`API/`)
 
@@ -508,7 +591,7 @@ Phát hiện quan trọng:
 
 ### 9.1 Routes
 
-`/login`, `/register` (public) · `/`, `/screening` (`?childId=` chọn sẵn trẻ), `/children` (ChildrenPage), `/children/:id` (ChildDetailPage), `/history`, `/exercises` (`?childId=`), `/exercises/:exerciseId/practice`, `/exercise-sessions/:id`, `/questionnaires`, `/children/:id/questionnaires/mchat`, `/questionnaire-responses/:id`, `/questionnaire-responses/:id/follow-up`, `/assistant`, `/knowledge`, `/knowledge/:slug`, `/guide`, `/settings` (ProtectedRoute) · `/admin`, `/admin/skeleton`, `/admin/exercises`, `/admin/exercises/:id`, `/admin/exercises/recorder-probe` (AdminRoute). Các trang mới được lazy-load. Sidebar (sửa 2026-10-13, §19): nhóm chính Trang chủ · Hồ sơ trẻ · Sàng lọc · Bảng hỏi (khi `MCHAT_MODE` khác `off`) · Bài tập (khi `capabilities.available`) · Lịch sử; nhóm hỗ trợ Trợ lý AI · Kiến thức · Hướng dẫn; ghim ở đáy: Quản trị (chỉ ADMIN; các mục con Tổng quan / Skeleton / Bài tập chỉ hiện khi đang ở `/admin/*`) · Cài đặt. Thanh điều hướng mobile: Home, Sàng lọc, Trẻ, Lịch sử, AI, Học (thay bằng "Tập" khi bài tập dùng được).
+`/login`, `/register` (public) · `/`, `/screening` (`?childId=` chọn sẵn trẻ), `/children` (ChildrenPage), `/children/:id` (ChildDetailPage), `/history`, `/exercises` (`?childId=`), `/exercises/:exerciseId/practice`, `/exercise-sessions/:id`, `/questionnaires`, `/children/:id/questionnaires/mchat`, `/questionnaire-responses/:id`, `/questionnaire-responses/:id/follow-up`, `/assistant`, `/knowledge`, `/knowledge/:slug`, `/guide`, `/settings` (ProtectedRoute) · `/admin`, `/admin/skeleton`, `/admin/exercises`, `/admin/exercises/:id`, `/admin/exercises/recorder-probe` (AdminRoute) · `/doctors` (ProtectedRoute; phụ huynh kết nối bác sĩ) · `/doctor`, `/doctor/patients/:linkId` (DoctorRoute: tài khoản có `user.doctor`; tài khoản bác sĩ vào `/` được chuyển sang `/doctor`). Các trang mới được lazy-load. Sidebar (sửa 2026-10-13, §19): nhóm chính Trang chủ · Hồ sơ trẻ · Sàng lọc · Bảng hỏi (khi `MCHAT_MODE` khác `off`) · Bài tập (khi `capabilities.available`) · Lịch sử; nhóm hỗ trợ Trợ lý AI · Kiến thức · Hướng dẫn; ghim ở đáy: Quản trị (chỉ ADMIN; các mục con Tổng quan / Skeleton / Bài tập chỉ hiện khi đang ở `/admin/*`) · Cài đặt. Thanh điều hướng mobile: Home, Sàng lọc, Trẻ, Lịch sử, AI, Học (thay bằng "Tập" khi bài tập dùng được).
 
 ### 9.2 Hành vi chính
 
@@ -542,7 +625,7 @@ Phát hiện quan trọng:
   - form login điền sẵn tài khoản demo;
   - lời gọi `GET /chat/models` (backend không có);
   - `BehaviorChart` (chỉ để vẽ 4 điểm giả).
-- **Bài tập (Giai đoạn 4):** thư viện theo trẻ (đồng ý ghi hình riêng), trang tập với bạn Mầm, kết quả lượt tập, mục bài tập + biểu đồ tiến độ trên dashboard trẻ; Admin: danh sách bài, đồng bộ bài dựng sẵn, tạo mẫu từ video người lớn (cổng chất lượng, cắt đoạn), publish, thống kê, thử ghi hình (recorder probe). Chi tiết §6.7.
+- **Bài tập (Giai đoạn 4):** thư viện theo trẻ (đồng ý ghi hình riêng), trang tập với bạn Bin, kết quả lượt tập, mục bài tập + biểu đồ tiến độ trên dashboard trẻ; Admin: danh sách bài, đồng bộ bài dựng sẵn, tạo mẫu từ video người lớn (cổng chất lượng, cắt đoạn), publish, thống kê, thử ghi hình (recorder probe). Chi tiết §6.7. Từ 2026-11-12: Admin chọn dạng bài để có "Góp ý động tác" trên trang kết quả (§6.7.1); đang làm dở (chưa commit): lời nhắc bằng chữ và giọng nói ngay trong lúc tập (§6.7.2).
 - **Bảng hỏi:** trang `/questionnaires` (chọn trẻ theo độ tuổi, kết quả gần nhất, nhắc Follow-Up còn dở), nhập theo phiếu (`entry`) hoặc hỏi từng câu (`inapp`: một câu mỗi màn hình, phím C/K, xem lại trước khi gửi), Follow-Up từng bước, trang kết quả, mục bảng hỏi trên dashboard trẻ, thẻ trạng thái ở Admin. Chi tiết §6.8.
 - **Guide:** hướng dẫn quay dáng đi (6–10 giây, quay ngang, thấy bàn chân, một mình trẻ) và quyền riêng tư (thêm: quyền xoá từng lượt / cả hồ sơ, kể cả dữ liệu trên máy phân tích).
 
@@ -674,7 +757,7 @@ git status          # kiểm tra lại trước khi commit
 5. *(đã xong 27/10)* Chọn người: ML giờ theo dõi một người xuyên clip (điểm track ưu tiên dài, tự tin, thấy chân) và trả `quality`/`reliable`; backend chưa hiển thị hai trường này.
 6. **Chỉ số dáng đi:** chưa có chuẩn theo tuổi; nhón gót là thử nghiệm; quay chính diện chỉ có nhịp bước.
 7. *(hết từ 27/10 với ML 2.0)* fps lấy từ probe OpenCV của ML; chỉ còn thiếu khi máy dev trỏ vào ML cũ.
-8. **Bài tập chưa thử với ML thật (G0) và chưa hiệu chỉnh (C1):** imitation-v1 chỉ được kiểm bằng khung xương tổng hợp và ML giả. Giữ `EXERCISE_MODE=admin_only` cho tới khi chạy `npm run exercises:probe-ml` (video người lớn) và `npm run exercises:calibrate`. Chưa kiểm chứng trên trẻ em; điểm chỉ để khích lệ.
+8. **Bài tập chưa thử với ML thật (G0) và chưa hiệu chỉnh (C1):** imitation-v1 chỉ được kiểm bằng khung xương tổng hợp và ML giả. Giữ `EXERCISE_MODE=admin_only` cho tới khi chạy `npm run exercises:probe-ml` (video người lớn) và `npm run exercises:calibrate`. Chưa kiểm chứng trên trẻ em; điểm chỉ để khích lệ. Cập nhật 2026-11-17: góp ý lỗi động tác (§6.7.1) và nhắc trực tiếp (§6.7.2) cũng chỉ mới kiểm bằng khung xương tổng hợp hoặc chưa kiểm — xem mục 22–27.
 9. **Giấy phép M-CHAT-R/F (L1):** dùng điện tử cần tác giả cho phép. Từ 2026-10-14 chủ dự án quyết bật `inapp` (20 câu + Follow-Up) **chỉ để thử nội bộ**; trước khi đưa app cho người ngoài nhóm phải có thư cho phép và ghi vào `licenseRef` (hiện `chua co - chi thu noi bo`). Câu 13 bản 2025 có câu thăm dò không có trong bản tiếng Việt 2015; chủ dự án đã tự điền ô này — cần ghi lại nguồn.
 
 ### P2
@@ -694,6 +777,28 @@ git status          # kiểm tra lại trước khi commit
 19. Biểu đồ xu hướng chỉ cảnh báo khi trộn góc quay (ngang/chính diện), chưa tách riêng theo góc quay; trục X theo thứ tự lần quay (không theo thời gian thực).
 20. Lượt tập chỉ so sánh được trong cùng phiên bản mẫu; publish mẫu mới làm lượt đang mở trang tập cũ nhận 409 `TEMPLATE_OUTDATED` (frontend tải lại mẫu).
 21. Bản nháp bảng hỏi lưu `sessionStorage` theo trẻ (mất khi đóng tab, có thể còn sau khi đăng xuất trong cùng tab).
+
+### Bổ sung 2026-11-17 (rà soát phần bài tập, §25)
+
+22. **(P1) Nhắc trực tiếp khi tập chưa có test và chưa chạy thử** (§6.7.2): `exerciseCoach/rules.ts` không có test nào, chưa thử trên trình duyệt thật, chưa đo ảnh hưởng tới video đang ghi. Mặc định đang bật.
+23. **(P1) Hai bộ luật độc lập cho cùng một lỗi:** backend `exerciseMovement` (OpenPose, so với mẫu) và frontend `rules.ts` (MediaPipe, ngưỡng cứng). Lời nhắc lúc tập có thể trái với báo cáo sau lượt.
+24. **(P2) Biểu đồ tiến độ theo dõi thước đo yếu với bài có góp ý động tác:** vẫn vẽ điểm bắt chước `overall` trong khi trang kết quả đã gập điểm đó xuống mục tham khảo; số lỗi động tác theo lượt chưa được dùng.
+25. **(P2) Bẫy `MOVEMENT_VERSION`** (§6.7.1): đổi version làm mẫu cũ mất góp ý và báo cáo cũ biến khỏi UI mà không có cảnh báo.
+26. **(P2) Test đang đỏ (không thuộc phần bài tập):** `test/gaitFeatures.test.ts` có 3 test góc chính diện thất bại — `gaitFeatures.ts` (file sửa lần cuối 2026-10-16, sau khi test được viết) không còn chuỗi cảnh báo "chính diện" mà test chờ, và kết quả hai preset `frontal`, `frontal-noisy-extra` lệch khỏi `test/fixtures/gaitGolden.json`. Chưa tìm nguyên nhân sâu hơn; cần quyết định sửa code hay cập nhật test/golden.
+27. *(đã xử lý 2026-11-17 tối, §26.2)* **(P3) E2E chập chờn:** kịch bản 3 của `exercise.e2e.ts` ("temporary template upload must be deleted") đôi khi thất bại và kéo theo kịch bản 15 và "extra". `routes/adminExercises.ts` xoá file tạm trong `finally` mà không chờ (`fs.promises.unlink(...)` không `await`), nên phản hồi có thể về trước khi file bị xoá.
+
+---
+
+### Cập nhật 2026-11-17 tối (phiên §26)
+
+- Mục 22: đã có 31 test cho `rules.ts`; **vẫn chưa thử trên camera thật**. Mục 23: luật trực tiếp đã dùng chung ngưỡng với backend và có test đối chiếu; vẫn là hai bản cài đặt. Mục 24, 25, 27: đã xử lý. Mục 26: còn nguyên.
+
+28. **(P0, vận hành) Migration `20261117_personalization_doctors` chưa áp lên DB chung và chưa seed bác sĩ mẫu** — lúc 23h ngày 17/11 DB chung không kết nối được (P1001). Trước khi áp: phần mới báo "chưa sẵn sàng", phần cũ chạy bình thường (đã kiểm bằng e2e). Lệnh ở §26.6.
+29. **(P1) Phía bác sĩ mới ở mức demo:** chỉ có bác sĩ mẫu với mật khẩu thử; chưa có quy trình tạo/xác minh bác sĩ thật. Không mở `DOCTOR_MODE=demo` trên môi trường có dữ liệu trẻ thật mà người ngoài nhóm truy cập được: đặt `off`, hoặc `on` sau khi có quy trình cho bác sĩ thật.
+30. **(P2) Luật cá nhân hoá chưa hiệu chỉnh:** ngưỡng 50/60/80 và cách chọn tốc độ là lựa chọn ban đầu, chưa có dữ liệu thật; đổi ngưỡng trong `PLAN_RULES`.
+31. **(P2) Bin toàn thân chưa thử với mẫu quay từ người thật** (mới thử với 6 bài tổng hợp và 4 động tác vẽ thử); góc quay nghiêng hoặc khớp bị che có thể cho hình dáng lạ.
+32. **(P3) `viewCount` đếm mỗi lần tải trang hồ sơ** (ở chế độ dev React StrictMode gọi hai lần nên đếm đôi).
+33. **(P3, có sẵn) Trang hồ sơ trẻ cuộn ngang trên mobile** do một tooltip ẩn rộng 304 px (`InfoTooltip`); không thuộc phần mới.
 
 ---
 
@@ -768,7 +873,7 @@ Xong (§6.7):
 
 - Model `Exercise`, `ExerciseTemplate`, `ExerciseSession`, `SessionScore` (migration đã áp lên DB chung).
 - 6 bài dựng sẵn; Admin tạo mẫu từ video người lớn (attestation, cổng chất lượng, cắt đoạn, version, publish).
-- Nhân vật hướng dẫn **bạn Mầm** (vẽ từ khung xương mẫu), ghi webcam / tải video, chế độ cho bé.
+- Nhân vật hướng dẫn **bạn Bin** (vẽ từ khung xương mẫu), ghi webcam / tải video, chế độ cho bé. Từ 2026-11-17 là **bạn Bin toàn thân** (§6.7.3), đồng bộ với nhân vật trò chuyện.
 - imitation-v1: chuẩn hoá, góc khớp, subsequence DTW, soi gương, điểm 0–100 + sao + phản hồi theo bộ phận.
 - Hàng đợi bài tập bền vững; xoá video + subject ML sau khi chấm; consent riêng; xoá dữ liệu theo trẻ / theo lượt.
 - Tiến độ theo từng bài trên dashboard trẻ.
@@ -777,6 +882,7 @@ Còn:
 
 - G0 (thử với ML thật) và C1 (hiệu chỉnh với video người lớn) rồi mới bật `EXERCISE_MODE=on`;
 - thử với trẻ thật (cần quy trình đồng ý của nhóm/GVHD);
+- (bổ sung 2026-11-12/17) góp ý lỗi động tác (§6.7.1) và nhắc trực tiếp khi tập (§6.7.2): thử trên video thật của người lớn, viết test cho `exerciseCoach/rules.ts`, thống nhất ngưỡng giữa hai bộ luật, đưa số lỗi động tác vào biểu đồ tiến độ (§12 mục 22–27);
 - cá nhân hoá độ khó dựa trên điểm (Giai đoạn 6).
 
 **Thay đổi trong `API/` của Giai đoạn 4:** không có (dùng `/subjects/extract`, keypoints, `DELETE /subjects/{id}` sẵn có).
@@ -797,13 +903,17 @@ Còn: gửi email xin phép (L1); khi được phép, điền file nội dung, `
 - Tool đọc dữ liệu trẻ đúng `userId`.
 - Nhân vật + STT/TTS tiếng Việt. *(Nhân vật 2D chat bằng văn bản đã có — §23.1; còn STT/TTS.)*
 
-### Giai đoạn 6 — Cá nhân hóa (F7)
+### Giai đoạn 6 — Cá nhân hóa (F7) 🟡 (code, 2026-11-17, chưa commit — §6.9)
 
-Luật đơn giản, giải thích được, trước khi dùng bandit hoặc mô hình học.
+Xong: hồ sơ cá nhân hoá do phụ huynh khai, luật gợi ý bài tập và cài đặt có lý do bằng lời, mục tiêu tuần, áp vào thư viện và trang tập.
 
-### Giai đoạn 7 — Chuyên gia (F10)
+Còn: hiệu chỉnh ngưỡng trên dữ liệu thật; chỉ khi đó mới cân nhắc bandit hoặc mô hình học.
 
-Role `EXPERT`, `ExpertOrganization`, `ExpertLink` (phụ huynh cấp/thu hồi quyền theo từng trẻ), trang chuyên gia, đặt lịch.
+### Giai đoạn 7 — Chuyên gia (F10) 🟡 (code, 2026-11-17, chưa commit — §6.10)
+
+Xong: `DoctorProfile` + `DoctorChildLink` (thay cho role `EXPERT`/`ExpertLink` dự kiến, để không đổi enum trên DB chung), phụ huynh cấp/thu hồi quyền theo từng trẻ và từng phần hồ sơ, phía bác sĩ chỉ đọc, 8 bác sĩ mẫu.
+
+Còn: tổ chức/cơ sở chuyên gia, quy trình cho bác sĩ thật, nhận xét của bác sĩ, đặt lịch.
 
 ---
 
@@ -819,6 +929,11 @@ Role `EXPERT`, `ExpertOrganization`, `ExpertLink` (phụ huynh cấp/thu hồi q
    - chấm bắt chước qua `services/imitation/index.ts` (không sửa hằng số `IMITATION_V1`; muốn đổi thì tạo `algorithmVersion` mới);
    - hàng đợi bài tập qua `exerciseProcessor.ts`; khả năng của ML qua `mlCapabilities.ts`; helper route bài tập (`requireExercisesEnabled`, `findOwnedChild`, `loadProgressRows`) nằm trong `routes/exercises.ts`;
    - dữ liệu bài tập trả cho phụ huynh/admin qua `lib/exerciseSerializers.ts` (không lộ `filePath`, `mlSubjectId`, `lastError`, đặc trưng mẫu);
+   - góp ý lỗi động tác qua `services/exerciseMovement/index.ts` (`compileMovementReference`, `analyzeExerciseMovement`); mã tiêu chí và nhãn ở `exerciseMovement/types.ts`; không đổi `MOVEMENT_VERSION` khi chưa xử lý mẫu và báo cáo cũ (§6.7.1);
+   - nhắc trực tiếp khi tập qua `frontend/src/lib/exerciseCoach/` (`useLiveCoach`, `rules.ts`); khung hình camera không được rời trình duyệt (§6.7.2); đổi ngưỡng trong `rules.ts` thì giữ cho `rules.test.ts` (đối chiếu hằng số backend) xanh;
+   - nhân vật hướng dẫn qua `components/exercise/GuidePuppet.tsx` → `components/buddy/BuddyFigure.tsx`; bản vẽ bộ phận của Bin chỉ nằm trong `BuddyParts.tsx` (dùng chung cho Bin trò chuyện và Bin toàn thân); tỉ lệ co giãn qua `lib/buddy/figure.ts` (§6.7.3);
+   - cá nhân hoá qua `lib/personalization.ts` (`personalizationSchema`, `suggestExerciseSettings`, `buildExercisePlan`); mọi gợi ý phải kèm lý do bằng lời và không được ghi đè lựa chọn của phụ huynh (§6.9);
+   - chia sẻ với bác sĩ qua `lib/doctorShare.ts` + `middleware/requireDoctor.ts`; route phía bác sĩ (`routes/doctorPortal.ts`) chỉ đọc, luôn lọc theo link ACTIVE của chính bác sĩ và theo scope, không trả video / tên file / `rawAiResponse`; thêm loại dữ liệu mới cho bác sĩ = thêm scope + cập nhật nội dung đồng ý (đổi `DOCTOR_SHARE_VERSION`) (§6.10);
    - chấm M-CHAT-R/F qua `lib/questionnaires/mchatRf.ts`, tuổi qua `age.ts`, Follow-Up qua `followUpEngine.ts`, nội dung có giấy phép qua `mchatContent.ts`; văn bản kết quả qua `copy.ts`;
    - log lỗi qua `lib/errorLog.ts` (không log tên trẻ, tên file, nội dung body);
    - kiểm tra dữ liệu hồ sơ trẻ qua `lib/childInput.ts`;
@@ -1815,3 +1930,134 @@ Tạm dừng tinh chỉnh hành vi hội thoại theo quyết định của ch�
 **Trạng thái**. Bản prompt trên mới được duyệt qua mô phỏng bằng văn bản trong chat. Prompt backend tại `backend/src/lib/buddyScript.ts` vẫn là bản trước. Phần giọng nói trong mã nguồn đã có luồng rảnh tay, giữ tối đa 32 tin nhắn gần nhất và cho sửa bản chép lời. Luồng rảnh tay đã được thử trên trình duyệt bằng hai lượt âm thanh tổng hợp với một lần bật mic. Tiến trình demo đã được dừng sau lượt thử trước.
 
 **Hướng tiếp theo đã trao đổi** là tương tác qua webcam sau giai đoạn giọng nói. Webcam chưa được tích hợp trong Bạn Bin. Khi tiếp tục, xác định tình huống tương tác bằng hình ảnh đầu tiên để giới hạn phạm vi thử.
+
+## 25. Nhật ký phiên 2026-11-17 (rà soát phần bài tập, cập nhật master prompt)
+
+### 25.1 Diễn biến
+
+- Yêu cầu: đọc master prompt và chức năng bài tập rồi nhận xét; sau đó cập nhật master prompt cho khớp code bài tập hiện tại. **Không sửa code.**
+- Master prompt lúc đó không nhắc tới `services/exerciseMovement/` (commit `aa06f69`, 2026-11-12) và `frontend/src/lib/exerciseCoach/` (chưa commit); phần đầu file và mục lục dừng ở phiên 02/11.
+- Agent đã chạy lệnh git chỉ đọc (`status`, `diff`, `log`, `ls-files`) ở đầu phiên, trước khi đọc tới quy định §14.1; sau đó không dùng git nữa. Không lưu gì vào memory.
+
+### 25.2 Working tree lúc rà (quan sát đầu phiên)
+
+Chưa commit, tất cả thuộc phần nhắc trực tiếp (§6.7.2):
+
+- đã sửa: `backend/src/lib/exerciseSerializers.ts`, `backend/src/routes/exercises.ts`, `frontend/src/components/exercise/WebcamRecorder.tsx`, `frontend/src/lib/exerciseTypes.ts`, `frontend/src/pages/ExercisePracticePage.tsx`;
+- mới: `frontend/src/lib/exerciseCoach/` (3 file), `frontend/public/exercise-coach/` (model `.task` 5,8 MB + 3 file `.wav`).
+
+### 25.3 Kiểm chứng
+
+| Hạng mục                                                                  | Kết quả                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Backend `npm run typecheck`                                               | sạch                                                                                                                                                                                                                     |
+| Backend `npm test` (26 file)                                              | 387 test: 384 đạt, **3 thất bại** — đều ở `test/gaitFeatures.test.ts`, góc chính diện (§12 mục 26); chạy hai lần cùng kết quả                                                                                           |
+| Riêng phần bài tập (`imitationScoring`, `exerciseSerializers`, `exerciseMovement/*`) | 87/87                                                                                                                                                                                                         |
+| Backend `npm run test:e2e` (PostgreSQL tạm, ML giả; không đụng DB chung)  | 42 test: lần chạy đầy đủ 39 đạt, 3 thất bại (kịch bản 3, 15, "extra" của `exercise.e2e.ts`); chạy riêng `exercise.e2e.ts` hai lần đều 26/26 → **chập chờn** (§12 mục 27). Kịch bản "movement profile" đạt ở mọi lần chạy |
+| Frontend `npx tsc -b`                                                     | **thất bại trên máy dev**: `frontend/node_modules` thiếu `@mediapipe/tasks-vision` và `onnxruntime-web` (đã khai báo trong `package.json`) → cần `npm install`; chưa chạy lại sau khi cài nên chưa biết còn lỗi kiểu nào khác |
+| Chưa kiểm chứng                                                           | nhắc trực tiếp trên trình duyệt thật; góp ý lỗi động tác trên video thật; G0 và C1 (không có thông tin mới trong phiên này)                                                                                             |
+
+### 25.4 Thay đổi trong phiên
+
+Chỉ sửa `master_prompt.md`: dòng cập nhật đầu file, mục lục (thêm §24, §25), bảng §2 (ô F4), §4 (cây thư mục, số test), §5.3 (số test), §6.7 (thêm §6.7.1 và §6.7.2), §9.2, §12 (mục 8 + mục 22–27), §13 (Giai đoạn 4 "Còn"), §14.2, và mục này. Các phần khác của file không được rà lại.
+
+**Thay đổi trong `API/`:** không có.
+
+### 25.5 Checklist việc cần làm (bổ sung, không thay các checklist trước)
+
+- [ ] `cd frontend && npm install`, rồi `npx tsc -b && npm run build`.
+- [ ] Thử nhắc trực tiếp trên trình duyệt thật (người lớn, một mẫu cho mỗi dạng bài): lời nhắc có đúng lúc không, video ghi có bị rớt khung hình không. Sau đó quyết định để mặc định bật hay tắt; hỏi GVHD về việc nhắc bằng giọng nói giữa động tác.
+- [ ] Viết test cho `exerciseCoach/rules.ts` (cần test runner cho frontend, hoặc tách luật thành module thuần chạy được bằng `node:test`).
+- [ ] Thống nhất hai bộ luật (§12 mục 23): ít nhất dùng chung định nghĩa lỗi và ghi rõ chỗ nào cố ý khác.
+- [ ] Đưa số lỗi động tác theo lượt vào tiến độ của bài có góp ý động tác (§12 mục 24).
+- [ ] Xử lý bẫy `MOVEMENT_VERSION` trước lần đổi version tiếp theo (§12 mục 25).
+- [ ] Quyết định với 3 test `gaitFeatures` đang đỏ (§12 mục 26) và `await` việc xoá file tạm ở `adminExercises.ts` (§12 mục 27).
+- [ ] G0 và C1 vẫn mở (§12 mục 8); thêm video thật cho ba dạng bài của §6.7.1 vào cùng đợt quay.
+- [ ] Tài liệu: file này đã khoảng 300 KB, vượt giới hạn đọc một lần của công cụ agent. Cân nhắc tách nhật ký phiên (§16–§25) sang `docs/sessions/`, đưa quy định "không dùng git" và "không lưu memory" vào `CLAUDE.md` để agent được nạp tự động, và sửa các ô đã cũ trong bảng §2.
+- [ ] **Git** (người dùng tự chạy): commit phần §25.2 khi đã thử xong, cùng `master_prompt.md`.
+
+## 26. Nhật ký phiên 2026-11-17 (tiếp): cải thiện bài tập, Bin toàn thân, cá nhân hoá, phía bác sĩ
+
+### 26.1 Yêu cầu và diễn biến
+
+- Yêu cầu của chủ dự án (theo thứ tự, làm liền không hỏi lại, báo cáo khi xong): (1) cải thiện chức năng bài tập; (2) thay nhân vật "bạn Mầm" bằng robot Bin cho đồng bộ, thiết kế toàn thân cho Bin; (3) đẩy mạnh cá nhân hoá hồ sơ của trẻ; (4) xây phía bác sĩ: danh sách bác sĩ mẫu, bác sĩ nhận được hồ sơ của trẻ khi phụ huynh kết nối.
+- Máy bị tắt đột ngột hai lần trong phiên (khoảng 16h và 22h30); mỗi lần đều chạy tiếp từ trạng thái trên đĩa, không mất thay đổi nào.
+- Agent không dùng git, không lưu gì vào memory. Để biết file nào đã đổi, agent chép một bản mã nguồn ra thư mục tạm của hệ điều hành lúc đầu phiên rồi so sánh (bản chép nằm ngoài repo).
+- **Thay đổi trong `API/`:** không có.
+
+### 26.2 Bài tập: đã làm
+
+- **Lỗi e2e chập chờn (§12 mục 27):** `routes/adminExercises.ts` xoá file tạm của video mẫu xong mới trả lời (trước đây không chờ). Sau khi sửa, cả 4 bộ e2e chạy đủ 53/53 hai lần liên tiếp.
+- **Bẫy `MOVEMENT_VERSION` (mục 25):** báo cáo góp ý động tác đã lưu đọc được với mọi phiên bản `exercise-errors-v…` (`readMovementReport`); mẫu biên dịch bằng phiên bản khác không còn im lặng mất góp ý mà trả `movementOutdated: true` cho Admin, trang sửa bài tập hiện lời nhắc biên dịch lại (`movementReferenceState`).
+- **Tiến độ có góp ý động tác (mục 24):** mỗi lượt trong `exercise-progress` có thêm `movement: { checks, evaluated, flagged } | null` (`summarizeMovementReport`). `ExerciseProgressChart` vẽ thêm một biểu đồ nhỏ "số tiêu chí cần luyện thêm" bên dưới biểu đồ điểm (hai biểu đồ, mỗi cái một trục) và thêm cột trong bảng.
+- **Nhắc trực tiếp (mục 22, 23):** xem phần "Cập nhật 2026-11-17 tối" trong §6.7.2.
+- **Nhãn tiếng Việt** cho ba dạng bài ở trang Admin ("Bật xoay người", "Bật tách chân", "Đá chân cao").
+
+### 26.3 Bin toàn thân thay bạn Mầm
+
+Chi tiết ở §6.7.3. Đã đổi tên ở mọi chuỗi giao diện, lời nhận xét do backend sinh (`imitation/feedback.ts`, `builtinExercises.ts`) và các test liên quan; dữ liệu cũ trong DB được đổi tên khi đọc. Trong `master_prompt.md`, các mục nhật ký cũ (§16–§25) vẫn ghi "bạn Mầm" vì là lịch sử.
+
+### 26.4 Cá nhân hoá và phía bác sĩ
+
+Chi tiết ở §6.9 và §6.10. Điểm thiết kế cần nhớ:
+
+- **Chỉ thêm 3 bảng mới**, không sửa bảng cũ, không đổi enum: trên DB chưa áp migration, đăng nhập và mọi trang cũ vẫn chạy; phần mới trả 503 `DATABASE_MIGRATION_REQUIRED` hoặc tự ẩn (đã kiểm bằng e2e kịch bản 11).
+- **Bác sĩ là tài khoản có `DoctorProfile`**, không phải một role mới.
+- **Mọi quyền đọc của bác sĩ đi qua một link đang hiệu lực và scope của link đó**; phụ huynh thu hồi là mất quyền ngay; nội dung đã đồng ý được lưu nguyên văn theo từng lần cấp.
+- **Bác sĩ mẫu là dữ liệu thử**, được ghi rõ ở danh sách, hộp thoại đồng ý, thẻ ở hồ sơ trẻ và phía bác sĩ.
+
+### 26.5 Kiểm chứng
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Backend `npm run typecheck` | sạch |
+| Backend `npm test` (29 file) | 430 test: 427 đạt, 3 thất bại **có sẵn** ở `gaitFeatures` góc chính diện (§12 mục 26), không liên quan phiên này |
+| Backend `npm run test:e2e` (4 file) | 53/53 (42 cũ + 11 kịch bản mới trong `doctor.e2e.ts`: cá nhân hoá, gợi ý bài tập, danh sách bác sĩ, đăng nhập bác sĩ, cấp/đổi/thu hồi quyền, từng scope, xoá trẻ, `DOCTOR_MODE` off/on, DB chưa có bảng mới) |
+| Frontend `npx tsc -b`, `npm run build` | sạch |
+| Frontend `npm test` (vitest, mới) | 36/36 (`exerciseCoach/rules.test.ts` 31, `buddy/figure.test.ts` 5) |
+| Frontend `npm run lint` | 7 lỗi, đều có sẵn (trước phiên là 9; 2 lỗi của `useLiveCoach.ts` đã hết) |
+| Quy trình áp migration lên DB chung (§5.4) | diễn tập trên một cụm PostgreSQL tạm ở trạng thái trước thay đổi: khác biệt DB ↔ schema đúng bằng migration mới, áp trong một transaction, `migrate resolve`, không còn lệch, chạy lần hai bị từ chối nguyên khối |
+| Giao diện, xem bằng trình duyệt tích hợp trong sandbox (`npm run sandbox` + `npm run dev:sandbox`, 1366×900 và 375×812) | hồ sơ trẻ: thẻ cá nhân hoá (xem, sửa, lưu), biểu đồ điểm + biểu đồ góp ý động tác, thẻ chia sẻ với bác sĩ; `/doctors`: danh sách, hộp thoại đồng ý, chia sẻ thành công; phía bác sĩ: danh sách, hồ sơ chỉ đọc đủ 4 phần; `/exercises`: gợi ý + mục tiêu tuần; trang tập: Bin toàn thân, hộp "đã chọn sẵn theo hồ sơ", làm mẫu chạy; `/admin/buddy`: mục Bin toàn thân |
+| **Chưa kiểm chứng** | chạy trên DB chung (không kết nối được); camera thật (trình duyệt tích hợp không có camera): nhắc trực tiếp, chế độ cho bé khi ghi hình; mẫu bài tập quay từ người thật; thiết bị di động thật; ML thật (sandbox dùng ML giả) |
+
+Môi trường thử đã dọn: không còn tiến trình nào ở các cổng 4100, 5175, 8100, 55432; file xem thử tạm của frontend đã xoá.
+
+### 26.6 Việc cần làm
+
+- [ ] **Áp migration lên DB chung và tạo bác sĩ mẫu** (agent không làm được vì DB không kết nối được lúc cuối phiên). Trong `backend/`, khi Tailscale và DB đã lên:
+
+```bash
+# 0) Kiểm tra: khác biệt duy nhất giữa DB và schema phải là 3 bảng mới (ChildPersonalization, DoctorProfile, DoctorChildLink)
+npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script
+# 1) Áp trong một transaction (file này = migration.sql bọc trong BEGIN/COMMIT)
+npx prisma db execute --file scripts/sql/apply_20261117_personalization_doctors.sql --schema prisma/schema.prisma
+# 2) Ghi nhận và kiểm tra lại (lệnh thứ hai phải thoát với mã 0: không còn khác biệt)
+npx prisma migrate resolve --applied 20261117_personalization_doctors
+npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code
+# 3) Bác sĩ mẫu: lần đầu chỉ xem trước, lần hai mới ghi
+npm run doctors:seed-mock
+npm run doctors:seed-mock -- --yes
+```
+
+  Nếu bước 0 in ra thứ gì khác ngoài 3 bảng mới thì dừng lại (DB đang lệch theo cách khác). Sau đó khởi động lại backend. DB mới hoàn toàn (Docker, máy cá nhân) thì chỉ cần `npm run prisma:deploy` rồi `npm run prisma:seed` hoặc `npm run doctors:seed-mock -- --yes`. Trên `khmt01` (DB riêng): chạy `npx prisma migrate status` trước để biết dùng cách nào.
+- [ ] Máy khác trong nhóm: `cd frontend && npm install` (thêm `vitest`), `cd backend && npm run prisma:generate`.
+- [ ] Thử trên camera thật với người lớn: Bin toàn thân trong chế độ cho bé, nhắc trực tiếp và lời khen (cần một mẫu có chọn dạng bài), video ghi có bị rớt khung hình không. Hỏi GVHD về việc nhắc/khen giữa động tác.
+- [ ] Quyết định `DOCTOR_MODE` cho từng môi trường (§12 mục 29) và mật khẩu của tài khoản bác sĩ mẫu trên môi trường có người ngoài truy cập.
+- [ ] Vẫn mở từ trước: G0, C1 (§12 mục 8); 3 test `gaitFeatures` đỏ (mục 26); tách nhật ký phiên khỏi file này (đã hơn 330 KB); đưa quy định "không dùng git" vào `CLAUDE.md`.
+- [ ] **Git** (người dùng tự chạy): commit toàn bộ thay đổi của §25 và §26 (danh sách file ở §26.7). Kiểm tra `git status` không có `.env`, `backend/content/mchat-rf.vi.json`.
+
+### 26.7 File mới và file đã sửa trong phiên
+
+- **Backend, mới:** `prisma/migrations/20261117_personalization_doctors/`, `scripts/seedMockDoctors.ts`, `scripts/sql/apply_20261117_personalization_doctors.sql`, `src/lib/personalization.ts`, `src/lib/doctorShare.ts`, `src/lib/mockDoctors.ts`, `src/middleware/requireDoctor.ts`, `src/routes/childPersonalization.ts`, `src/routes/doctors.ts`, `src/routes/doctorPortal.ts`, `test/personalization.test.ts`, `test/doctorShare.test.ts`, `test/exerciseMovementTypes.test.ts`, `test/e2e/doctor.e2e.ts`, `test/e2e/sandbox.ts`.
+- **Backend, sửa:** `prisma/schema.prisma`, `prisma/seed.ts`, `package.json` (test mới, `doctors:seed-mock`, `sandbox`), `.env.example`, `src/lib/env.ts` (`DOCTOR_MODE`), `src/lib/exerciseData.ts`, `src/lib/exerciseSerializers.ts`, `src/routes/adminExercises.ts`, `src/routes/auth.ts`, `src/routes/exercises.ts`, `src/routes/index.ts`, `src/services/exerciseMovement/types.ts`, `src/services/imitation/builtinExercises.ts`, `src/services/imitation/feedback.ts`, `src/types/express.d.ts`, `test/exerciseData.test.ts`, `test/exerciseSerializers.test.ts`, `test/imitationFeedback.test.ts`, `test/imitationScoring.test.ts`.
+- **Frontend, mới:** `tsconfig.test.json`, `src/components/DoctorRoute.tsx`, `src/components/buddy/BuddyFigure.tsx`, `src/components/children/ChildPersonalizationSection.tsx`, `src/components/children/ChildDoctorLinksSection.tsx`, `src/components/exercise/ExercisePlanSection.tsx`, `src/lib/buddy/figure.ts`, `src/lib/buddy/figure.test.ts`, `src/lib/doctors.ts`, `src/lib/personalization.ts`, `src/lib/puppetDemo.ts`, `src/lib/exerciseCoach/rules.test.ts`, `src/pages/DoctorsPage.tsx`, `src/pages/DoctorHomePage.tsx`, `src/pages/DoctorPatientPage.tsx`.
+- **Frontend, sửa:** `package.json` + `package-lock.json` (`vitest`, script `test`, `dev:sandbox`), `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `src/App.tsx`, `src/layouts/DashboardLayout.tsx`, `src/components/Sidebar.tsx`, `src/components/buddy/BuddyParts.tsx`, `src/components/children/ChildExercisesSection.tsx`, `src/components/exercise/` (`ExerciseCard`, `ExerciseMetadataForm`, `ExerciseProgressChart`, `GuidePuppet`, `ImitationResultView`, `PendingResultsTray`, `TemplateTrimTimeline`), `src/lib/` (`exerciseCoach/pose.worker.ts`, `exerciseCoach/rules.ts`, `exerciseCoach/useLiveCoach.ts`, `exerciseTypes.ts`, `exercises.ts`, `puppet.ts`, `types.ts`), `src/pages/` (`AdminExerciseEditPage`, `BuddyStudioPage`, `ChildDetailPage`, `ExercisePracticePage`, `ExerciseSessionPage`, `ExercisesPage`, `GuidePage`, `HomePage`).
+- **Gốc repo:** `.env.example`, `docker-compose.yml` (`DOCTOR_MODE`), `.claude/launch.json` (thêm `frontend-sandbox`), `master_prompt.md`.
+- Phần nhắc trực tiếp chưa commit từ trước phiên (§25.2) vẫn nằm trong working tree, giờ đã được viết lại như mô tả ở §6.7.2.
+
+### 26.8 Bàn giao cho chat mới
+
+1. Đọc dòng "Cập nhật mới nhất" đầu file, rồi §6.7 (kể cả §6.7.1–§6.7.3), §6.9, §6.10, §12 (mục 22–33) và mục này.
+2. Việc chặn mọi thứ khác: §26.6 mục đầu (migration + bác sĩ mẫu trên DB chung). Sau khi làm, mở `/children/:id` kiểm tra thẻ "Cá nhân hoá" và "Chia sẻ với bác sĩ", mở `/doctors`, đăng nhập bằng một tài khoản bác sĩ mẫu (email trong `backend/src/lib/mockDoctors.ts`).
+3. Muốn xem giao diện mà không đụng DB chung: `cd backend && npm run sandbox`, terminal khác `cd frontend && npm run dev:sandbox` → `http://localhost:5175`. Tài khoản và mật khẩu của sandbox được in ra khi sandbox sẵn sàng (định nghĩa trong `backend/test/e2e/sandbox.ts`); dừng bằng Ctrl+C.
+4. Hướng làm tiếp hợp lý: thử trên camera thật (Bin, nhắc trực tiếp), quy trình cho bác sĩ thật + nhận xét của bác sĩ, hiệu chỉnh luật cá nhân hoá khi có dữ liệu, rồi G0/C1.

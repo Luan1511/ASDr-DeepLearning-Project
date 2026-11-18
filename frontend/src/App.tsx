@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
+import { DoctorRoute } from './components/DoctorRoute'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { HomePage } from './pages/HomePage'
@@ -31,6 +32,9 @@ const QuestionnaireFollowUpPage = lazy(() =>
   import('./pages/QuestionnaireFollowUpPage').then((m) => ({ default: m.QuestionnaireFollowUpPage })),
 )
 const BuddyPage = lazy(() => import('./pages/BuddyPage').then((m) => ({ default: m.BuddyPage })))
+const DoctorsPage = lazy(() => import('./pages/DoctorsPage').then((m) => ({ default: m.DoctorsPage })))
+const DoctorHomePage = lazy(() => import('./pages/DoctorHomePage').then((m) => ({ default: m.DoctorHomePage })))
+const DoctorPatientPage = lazy(() => import('./pages/DoctorPatientPage').then((m) => ({ default: m.DoctorPatientPage })))
 const BuddyStudioPage = lazy(() => import('./pages/BuddyStudioPage').then((m) => ({ default: m.BuddyStudioPage })))
 const CommunityPage = lazy(() => import('./pages/CommunityPage').then((m) => ({ default: m.CommunityPage })))
 const CommunityPostDetailPage = lazy(() =>
@@ -278,6 +282,32 @@ export default function App() {
           <AdminRoute>
             <AdminExerciseEditPage />
           </AdminRoute>
+        }
+      />
+
+      {/* Giai đoạn 7: parents share the record of a child; doctors read what was shared. */}
+      <Route
+        path="/doctors"
+        element={
+          <ProtectedRoute>
+            <DoctorsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor"
+        element={
+          <DoctorRoute>
+            <DoctorHomePage />
+          </DoctorRoute>
+        }
+      />
+      <Route
+        path="/doctor/patients/:linkId"
+        element={
+          <DoctorRoute>
+            <DoctorPatientPage />
+          </DoctorRoute>
         }
       />
 

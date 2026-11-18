@@ -146,6 +146,31 @@ describe('summarizeExerciseProgress', () => {
   it('handles no rows', () => {
     assert.deepEqual(summarizeExerciseProgress([]), [])
   })
+
+  it('carries the movement feedback numbers of each attempt', () => {
+    const movement = { checks: 4, evaluated: 3, flagged: 1 }
+    const [p] = summarizeExerciseProgress([
+      { id: 'm1', status: 'SCORED', createdAt: day(1), exercise: ex1, template: t1, score: { ...scored(60), movement } },
+      // The imitation score may be missing while the movement checks were still measurable.
+      {
+        id: 'm2',
+        status: 'INSUFFICIENT',
+        createdAt: day(2),
+        exercise: ex1,
+        template: t1,
+        score: { ...insufficient, movement: { checks: 4, evaluated: 2, flagged: 0 } },
+      },
+      { id: 'm3', status: 'SCORED', createdAt: day(3), exercise: ex1, template: t1, score: scored(70) },
+    ])
+    assert.deepEqual(
+      p.series[0].points.map((pt) => [pt.sessionId, pt.movement]),
+      [
+        ['m1', movement],
+        ['m2', { checks: 4, evaluated: 2, flagged: 0 }],
+        ['m3', null],
+      ],
+    )
+  })
 })
 
 describe('summarizeExerciseStats', () => {

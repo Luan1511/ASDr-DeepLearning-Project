@@ -7,6 +7,8 @@ export type User = {
   role: UserRole
   /** Returned by /auth/me and /auth/login. */
   createdAt?: string
+  /** Set when the account is a doctor (Giai đoạn 7): the app then opens the doctor side. */
+  doctor?: { id: string; displayName: string; title: string; specialty: string; isMock: boolean } | null
 }
 
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'UNSPECIFIED'

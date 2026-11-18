@@ -446,58 +446,77 @@ adminExercisesRouter.post(
   templateUpload.single('video'),
   asyncHandler(async (req, res) => {
     const file = req.file
+    // The adult's upload must be gone from disk before the client hears back,
+    // so the answer is computed first and only sent after the unlink finished.
+    let reply: { status: number; body: Record<string, unknown> }
     try {
-      if (!isAttested(req.body?.attestation)) return res.status(422).json({ error: 'ATTESTATION_REQUIRED' })
-      if (!file) return res.status(400).json({ error: 'MISSING_FILE' })
-      const body = templateSourceBodySchema.parse(req.body)
-
-      const caps = await getMlCapabilities()
-      const mlUpload = chooseMlUpload({
-        ext: path.extname(file.filename),
-        legacy: caps.legacy,
-        webmAsMkv: env.EXERCISE_WEBM_AS_MKV,
-      })
-      if (mlUpload === 'UNSUPPORTED') return res.status(415).json({ error: 'RECORDING_FORMAT_UNSUPPORTED' })
-
-      const subjectId = `tpl_${randomUUID()}`
-      const extract = await openposeService.extractSubject({
-        filePath: file.path,
-        originalFilename: mlUpload.filename,
-        mimeType: mlUpload.mimeType,
-        subjectId,
-        timeoutMs: env.EXERCISE_EXTRACT_TIMEOUT_MS,
-      })
-      if (extract.subject_id && extract.subject_id !== subjectId) {
-        // ML 1.0 ignored subject_id: the result cannot be recognised as a
-        // template source later, so do not leave it on the ML server.
-        await deleteTemplateSourceOnMl(extract.subject_id).catch(() => {})
-        return res.status(502).json({
-          error: 'ML_SERVER_ERROR',
-          message: 'The ML server ignored subject_id; template sources need an ML server that honours it (gate G0).',
-        })
-      }
-
-      let keypoints
-      try {
-        keypoints = await openposeService.getSubjectKeypoints(subjectId)
-      } catch (error) {
-        await deleteTemplateSourceOnMl(subjectId).catch(() => {})
-        throw error
-      }
-      const numFrames = keypoints.frames?.length ?? keypoints.num_frames ?? 0
-      const mlFps = sanitizeFps(keypoints.video?.fps ?? extract.video?.fps ?? null)
-      const durationFps = mlFps === null ? fpsFromDuration(numFrames, body.durationMs) : null
-      return res.status(201).json({
-        sourceSubjectId: subjectId,
-        numFrames,
-        fps: mlFps ?? durationFps,
-        fpsSource: mlFps !== null ? 'ml' : durationFps !== null ? 'duration' : null,
-      })
+      reply = await extractTemplateSource(file, req.body)
     } finally {
-      if (file?.path) fs.promises.unlink(file.path).catch(() => {})
+      if (file?.path) await fs.promises.unlink(file.path).catch(() => {})
     }
+    return res.status(reply.status).json(reply.body)
   }),
 )
+
+async function extractTemplateSource(
+  file: Express.Multer.File | undefined,
+  rawBody: unknown,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  if (!isAttested((rawBody as { attestation?: unknown } | undefined)?.attestation)) {
+    return { status: 422, body: { error: 'ATTESTATION_REQUIRED' } }
+  }
+  if (!file) return { status: 400, body: { error: 'MISSING_FILE' } }
+  const body = templateSourceBodySchema.parse(rawBody)
+
+  const caps = await getMlCapabilities()
+  const mlUpload = chooseMlUpload({
+    ext: path.extname(file.filename),
+    legacy: caps.legacy,
+    webmAsMkv: env.EXERCISE_WEBM_AS_MKV,
+  })
+  if (mlUpload === 'UNSUPPORTED') return { status: 415, body: { error: 'RECORDING_FORMAT_UNSUPPORTED' } }
+
+  const subjectId = `tpl_${randomUUID()}`
+  const extract = await openposeService.extractSubject({
+    filePath: file.path,
+    originalFilename: mlUpload.filename,
+    mimeType: mlUpload.mimeType,
+    subjectId,
+    timeoutMs: env.EXERCISE_EXTRACT_TIMEOUT_MS,
+  })
+  if (extract.subject_id && extract.subject_id !== subjectId) {
+    // ML 1.0 ignored subject_id: the result cannot be recognised as a
+    // template source later, so do not leave it on the ML server.
+    await deleteTemplateSourceOnMl(extract.subject_id).catch(() => {})
+    return {
+      status: 502,
+      body: {
+        error: 'ML_SERVER_ERROR',
+        message: 'The ML server ignored subject_id; template sources need an ML server that honours it (gate G0).',
+      },
+    }
+  }
+
+  let keypoints
+  try {
+    keypoints = await openposeService.getSubjectKeypoints(subjectId)
+  } catch (error) {
+    await deleteTemplateSourceOnMl(subjectId).catch(() => {})
+    throw error
+  }
+  const numFrames = keypoints.frames?.length ?? keypoints.num_frames ?? 0
+  const mlFps = sanitizeFps(keypoints.video?.fps ?? extract.video?.fps ?? null)
+  const durationFps = mlFps === null ? fpsFromDuration(numFrames, body.durationMs) : null
+  return {
+    status: 201,
+    body: {
+      sourceSubjectId: subjectId,
+      numFrames,
+      fps: mlFps ?? durationFps,
+      fpsSource: mlFps !== null ? 'ml' : durationFps !== null ? 'duration' : null,
+    },
+  }
+}
 
 adminExercisesRouter.post(
   '/:id/templates',

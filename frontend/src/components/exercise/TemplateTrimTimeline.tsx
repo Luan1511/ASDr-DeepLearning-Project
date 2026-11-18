@@ -289,7 +289,7 @@ export function TemplateTrimTimeline({
             />
           </div>
           <div className="min-w-0 flex-1 space-y-3">
-            <div className="text-sm font-extrabold text-duo-ink">Xem trước bạn Mầm làm mẫu</div>
+            <div className="text-sm font-extrabold text-duo-ink">Xem trước bạn Bin làm mẫu</div>
             <div className="text-xs font-bold tabular-nums text-duo-mute">
               Đoạn {secText(preview.range.startSec)} → {secText(preview.range.endSec)} • {secText(guideDuration)}
             </div>

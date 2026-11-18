@@ -26,7 +26,7 @@ function validate(v: FormValues): string | null {
   if (!v.description.trim() || v.description.trim().length > LIMITS.description)
     return `Mô tả cho phụ huynh cần từ 1 đến ${LIMITS.description} ký tự.`
   if (!v.childPrompt.trim() || v.childPrompt.trim().length > LIMITS.childPrompt)
-    return `Lời bạn Mầm cần từ 1 đến ${LIMITS.childPrompt} ký tự.`
+    return `Lời bạn Bin cần từ 1 đến ${LIMITS.childPrompt} ký tự.`
   if (v.bodyFocus.length === 0) return 'Chọn ít nhất một nhóm cơ thể.'
   if (!Number.isInteger(v.sortOrder)) return 'Thứ tự hiển thị phải là số nguyên.'
   return null
@@ -119,7 +119,7 @@ export function ExerciseMetadataForm({
 
       <label className="block">
         <span className="mb-1 flex justify-between text-xs font-extrabold uppercase tracking-wide text-duo-mute">
-          <span>Lời bạn Mầm nói với con</span>
+          <span>Lời bạn Bin nói với con</span>
           <span className="tabular-nums">
             {values.childPrompt.length}/{LIMITS.childPrompt}
           </span>

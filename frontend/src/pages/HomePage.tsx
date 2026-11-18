@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { AnalysisSteps } from '../components/AnalysisSteps'
 import { AIAssistantCard } from '../components/AIAssistantCard'
@@ -10,6 +10,9 @@ export function HomePage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const firstName = user?.name.split(' ').at(-1) ?? 'bạn'
+
+  // A doctor account starts on the doctor side (the records shared with them).
+  if (user?.doctor) return <Navigate to="/doctor" replace />
 
   return (
     <DashboardLayout>

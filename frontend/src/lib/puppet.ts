@@ -1,6 +1,7 @@
 /**
- * Geometry of the guide character "bạn Mầm": decoding the template's normalised
- * skeleton, interpolation at animation time, mirroring and the procedural
+ * Skeleton geometry of the exercise guide "bạn Bin" (drawn by
+ * components/buddy/BuddyFigure): decoding the template's normalised skeleton,
+ * interpolation at animation time, mirroring and the procedural
  * idle/cheer/shrug poses. Units are torso lengths (L), y up, mid-hip root at (0,0).
  */
 import { useSyncExternalStore } from 'react'

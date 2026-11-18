@@ -148,7 +148,7 @@ export function ExerciseSessionPage() {
                 <div className="space-y-2 text-sm font-semibold leading-relaxed text-duo-ink">
                   <div className="flex items-center gap-2 font-extrabold">
                     <Loader2 className="h-4 w-4 animate-spin text-duo-green" />
-                    Bạn Mầm đang xem con tập… (thường mất 1–3 phút)
+                    Bạn Bin đang xem con tập… (thường mất 1–3 phút)
                   </div>
                   {session.status === 'QUEUED' && (session.queuePosition || session.mlBusy) && (
                     <div className="text-duo-mute">
@@ -191,7 +191,7 @@ export function ExerciseSessionPage() {
                 </div>
                 {session.practiceMode === 'FOLLOW_ALONG' && (
                   <div className="flex justify-between gap-3">
-                    <dt className="font-bold text-duo-mute">Tốc độ bạn Mầm</dt>
+                    <dt className="font-bold text-duo-mute">Tốc độ bạn Bin</dt>
                     <dd className="text-right font-extrabold text-duo-ink">{session.playbackRate < 1 ? 'Chậm hơn' : 'Bình thường'}</dd>
                   </div>
                 )}

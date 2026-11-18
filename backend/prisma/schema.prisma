@@ -25,6 +25,8 @@ model User {
   exerciseSessions       ExerciseSession[]
   questionnaireResponses QuestionnaireResponse[]
   uploads                VideoUpload[]
+  doctorProfile          DoctorProfile?
+  doctorLinksGranted     DoctorChildLink[]
 }
 
 model ChildProfile {
@@ -41,8 +43,76 @@ model ChildProfile {
   exerciseSessions       ExerciseSession[]
   questionnaireResponses QuestionnaireResponse[]
   uploads                VideoUpload[]
+  personalization        ChildPersonalization?
+  doctorLinks            DoctorChildLink[]
 
   @@index([userId])
+}
+
+/// What the parent told the app about the child so the experience can adapt
+/// (Giai đoạn 6). One optional row per child; never used for screening.
+model ChildPersonalization {
+  childId       String       @id
+  nickname      String?
+  interests     String[]
+  communication String?
+  sensory       String[]
+  calming       String?
+  goals         String?
+  focusAreas    String[]
+  guideSpeed    String       @default("AUTO")
+  practiceMode  String       @default("AUTO")
+  liveCoach     Boolean?
+  weeklyGoal    Int?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  child         ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+/// A doctor / specialist account (Giai đoạn 7). `isMock` marks the sample
+/// doctors used to try the sharing flow.
+model DoctorProfile {
+  id           String            @id @default(uuid())
+  userId       String            @unique
+  displayName  String
+  title        String
+  specialty    String
+  workplace    String
+  city         String
+  bio          String
+  languages    String[]
+  isMock       Boolean           @default(false)
+  acceptingNew Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  links        DoctorChildLink[]
+
+  @@index([city])
+}
+
+/// A parent's grant: this doctor may read the listed parts of this child's
+/// record until `revokedAt`. `statement` is the exact text the parent agreed to.
+model DoctorChildLink {
+  id           String        @id @default(uuid())
+  doctorId     String
+  childId      String
+  grantedById  String
+  scopes       String[]
+  version      String
+  statement    Json
+  message      String?
+  grantedAt    DateTime      @default(now())
+  revokedAt    DateTime?
+  lastViewedAt DateTime?
+  viewCount    Int           @default(0)
+  child        ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  doctor       DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  grantedBy    User          @relation(fields: [grantedById], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, revokedAt])
+  @@index([childId])
+  @@index([grantedById])
 }
 
 model VideoUpload {

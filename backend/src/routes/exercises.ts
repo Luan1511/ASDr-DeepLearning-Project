@@ -8,6 +8,7 @@ import { serializeExercise, serializeGuideTemplate } from '../lib/exerciseSerial
 import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { getCurrentExerciseConsentStatement } from '../services/consentService'
+import { readMovementReport, summarizeMovementReport } from '../services/exerciseMovement/types'
 import { getMlCapabilities } from '../services/mlCapabilities'
 
 /** Parent exercise library + exercise consent statement. */
@@ -72,7 +73,9 @@ export async function loadProgressRows(where: { childId: string; exerciseId?: { 
   })
   return sessions.map((s) => {
     const score = s.scores[0]
-    const warnings = (score?.detail as { quality?: { warnings?: unknown } } | null)?.quality?.warnings
+    const detail = score?.detail as { quality?: { warnings?: unknown }; movement?: unknown } | null
+    const warnings = detail?.quality?.warnings
+    const movement = readMovementReport(detail?.movement)
     return {
       id: s.id,
       status: s.status,
@@ -86,6 +89,7 @@ export async function loadProgressRows(where: { childId: string; exerciseId?: { 
             overall: score.overall,
             stars: score.stars,
             warnings: Array.isArray(warnings) ? warnings.filter((w): w is string => typeof w === 'string') : [],
+            movement: movement ? summarizeMovementReport(movement) : null,
           }
         : null,
     }
@@ -173,7 +177,7 @@ exercisesRouter.get(
       where: { id: id.data, status: ExerciseStatus.PUBLISHED },
       select: {
         ...exerciseCardSelect,
-        currentTemplate: { select: { ...templateSummarySelect, templateHash: true, guideTrack: true } },
+        currentTemplate: { select: { ...templateSummarySelect, templateHash: true, guideTrack: true, features: true } },
       },
     })
     if (!exercise?.currentTemplate) return res.status(404).json({ error: 'EXERCISE_NOT_FOUND' })

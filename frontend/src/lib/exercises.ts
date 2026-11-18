@@ -232,8 +232,8 @@ export const BODY_FOCUS_LABEL: Record<BodyFocus, string> = { ARMS: 'Tay', LEGS: 
 export const DIFFICULTY_LABEL: Record<1 | 2 | 3, string> = { 1: 'Dễ', 2: 'Vừa', 3: 'Khó hơn' }
 
 export const BAND_LABEL: Record<ImitationBand, string> = {
-  VERY_CLOSE: 'Rất giống bạn Mầm',
-  CLOSE: 'Khá giống bạn Mầm',
+  VERY_CLOSE: 'Rất giống bạn Bin',
+  CLOSE: 'Khá giống bạn Bin',
   PROGRESSING: 'Con đang tiến bộ',
   KEEP_PRACTISING: 'Cùng luyện thêm nhé',
 }
@@ -245,13 +245,13 @@ export const MIRROR_POLICY_LABEL: Record<MirrorPolicy, string> = {
 }
 
 export const MOVEMENT_PROFILE_LABEL: Record<MovementProfile, string> = {
-  'jump-twists': 'Jump Twists',
-  'jumping-jacks': 'Jumping Jacks',
-  'high-kicks': 'High Kicks',
+  'jump-twists': 'Bật xoay người (jump twists)',
+  'jumping-jacks': 'Bật tách chân (jumping jacks)',
+  'high-kicks': 'Đá chân cao (high kicks)',
 }
 
 export const PRACTICE_MODE_LABEL: Record<PracticeMode, string> = {
-  FOLLOW_ALONG: 'Làm cùng bạn Mầm',
+  FOLLOW_ALONG: 'Làm cùng bạn Bin',
   AFTER_DEMO: 'Xem trước rồi làm theo',
 }
 
@@ -268,7 +268,7 @@ export const EXERCISE_DISCLAIMER =
 
 export const REASON_MESSAGE: Record<ImitationReasonCode, string> = {
   TOO_FEW_FRAMES: 'Máy chưa nhìn thấy con đủ lâu. Đặt máy sao cho thấy cả người con, đủ sáng, rồi thử lại nhé.',
-  VIDEO_TOO_SHORT: 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Mầm rồi mới dừng nhé.',
+  VIDEO_TOO_SHORT: 'Đoạn quay hơi ngắn. Cùng làm hết bài với bạn Bin rồi mới dừng nhé.',
   ACTIVE_PART_NOT_VISIBLE: 'Chưa thấy rõ tay hoặc chân của con. Đặt máy xa hơn để thấy cả người nhé.',
 }
 
@@ -276,7 +276,7 @@ export const WARNING_MESSAGE: Record<ImitationWarningCode, string> = {
   MULTI_PERSON: 'Có nhiều người trong khung hình; điểm có thể chưa chính xác. Lần sau chỉ để mình con trước camera.',
   NOT_FACING: 'Con nên đứng quay mặt về phía camera để chấm chính xác hơn.',
   FPS_UNCERTAIN: 'Không đo chính xác được tốc độ khung hình; nhận xét về nhịp có thể chưa chính xác.',
-  TEMPO_LIMIT: 'Nhịp làm của con khác khá nhiều so với bạn Mầm; nhận xét về nhịp chỉ mang tính gợi ý.',
+  TEMPO_LIMIT: 'Nhịp làm của con khác khá nhiều so với bạn Bin; nhận xét về nhịp chỉ mang tính gợi ý.',
   ROLL_UNCERTAIN: 'Máy quay hơi nghiêng; hãy đặt máy thẳng ở lần sau.',
   MIRRORED_VIDEO: 'Video có vẻ đã bị lật như gương (tuỳ chọn của camera điện thoại); điểm vẫn được tính.',
   LOW_MOTION: 'Lần này con chưa cử động nhiều; mình cùng thử lại nhé!',

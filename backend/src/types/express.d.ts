@@ -1,4 +1,4 @@
-import type { UserRole } from '@prisma/client'
+import type { DoctorProfile, UserRole } from '@prisma/client'
 
 declare global {
   namespace Express {
@@ -9,6 +9,8 @@ declare global {
         name: string
         role: UserRole
       }
+      /** Set by requireDoctor: the doctor profile of the signed-in account. */
+      doctor?: DoctorProfile
     }
   }
 }

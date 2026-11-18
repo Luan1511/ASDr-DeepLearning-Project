@@ -35,7 +35,7 @@ function tempoLines(score: SessionScoreDto): string[] {
     else if (ratio <= 0.83) lines.push(`Con làm nhanh hơn mẫu khoảng ${formatNumber(1 / ratio, 1)} lần.`)
     else lines.push('Nhịp làm của con gần giống mẫu.')
   }
-  if (lagSec !== null && lagSec > 1.5) lines.push(`Con bắt đầu sau bạn Mầm khoảng ${formatNumber(lagSec, 1)} giây.`)
+  if (lagSec !== null && lagSec > 1.5) lines.push(`Con bắt đầu sau bạn Bin khoảng ${formatNumber(lagSec, 1)} giây.`)
   return lines
 }
 
@@ -54,7 +54,7 @@ function ChildView({ score }: { score: SessionScoreDto }) {
         )}
         {!hasMeasurement && (
           <p className="mx-auto max-w-xl text-base font-bold text-duo-ink">
-            Lần sau mình đặt máy sao cho Mầm thấy cả tay và chân nhé.
+            Lần sau mình đặt máy sao cho Bin thấy cả tay và chân nhé.
           </p>
         )}
       </div>
@@ -64,7 +64,7 @@ function ChildView({ score }: { score: SessionScoreDto }) {
     const reasons = [...new Set(score.reasonCodes)].slice(0, 2)
     return (
       <div className="space-y-3 text-center">
-        <div className="text-2xl font-black text-duo-ink md:text-3xl">Mầm chưa nhìn rõ con lần này</div>
+        <div className="text-2xl font-black text-duo-ink md:text-3xl">Bin chưa nhìn rõ con lần này</div>
         {reasons.map((code) => (
           <p key={code} className="mx-auto max-w-xl text-lg font-bold leading-relaxed text-duo-ink">
             {reasonMessage(code, score)}

@@ -6,6 +6,7 @@ import { Card } from '../components/Card'
 import { ChildAvatar } from '../components/ChildAvatar'
 import { ExerciseCard } from '../components/exercise/ExerciseCard'
 import { ExerciseConsentPanel } from '../components/exercise/ExerciseConsentPanel'
+import { ExercisePlanSection } from '../components/exercise/ExercisePlanSection'
 import { PendingResultsTray } from '../components/exercise/PendingResultsTray'
 import { api } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
@@ -74,7 +75,7 @@ export function ExercisesPage() {
         <div>
           <h1 className="text-2xl font-black text-duo-ink">Bài tập vận động</h1>
           <p className="mt-1 text-sm font-semibold text-duo-mute">
-            Con xem bạn Mầm làm mẫu rồi bắt chước theo. Mỗi bài chỉ khoảng 10–30 giây.
+            Con xem bạn Bin làm mẫu rồi bắt chước theo. Mỗi bài chỉ khoảng 10–30 giây.
           </p>
         </div>
 
@@ -98,7 +99,7 @@ export function ExercisesPage() {
           <div className="card-duo px-6 py-10 text-center">
             <div className="text-base font-black text-duo-ink">Chưa có hồ sơ trẻ nào</div>
             <p className="mx-auto mt-1 max-w-md text-sm font-semibold text-duo-mute">
-              Tạo hồ sơ cho con trước, rồi quay lại đây để cùng con tập với bạn Mầm.
+              Tạo hồ sơ cho con trước, rồi quay lại đây để cùng con tập với bạn Bin.
             </p>
             <Link to="/children" className="btn-duo mt-5">
               <UserPlus className="h-4 w-4" />
@@ -142,6 +143,8 @@ export function ExercisesPage() {
             </Card>
 
             <PendingResultsTray childId={child.id} />
+
+            <ExercisePlanSection childId={child.id} childName={child.fullName} canPractise={hasConsent} />
 
             {listError && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{listError}</div>}
 

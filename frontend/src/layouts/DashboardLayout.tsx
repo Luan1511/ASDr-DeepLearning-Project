@@ -2,8 +2,9 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar'
 import { HeaderBar } from '../components/HeaderBar'
-import { Home, Video, History, Baby, Bot, BookOpen, PersonStanding, type LucideIcon } from 'lucide-react'
+import { Home, Video, History, Baby, Bot, BookOpen, PersonStanding, Settings, Users, type LucideIcon } from 'lucide-react'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
+import { useAuth } from '../state/auth'
 
 interface MobileItem {
   to: string
@@ -31,9 +32,17 @@ const exerciseMobileItems: MobileItem[] = [
   { to: '/history', label: 'Lịch sử', icon: History },
 ]
 
+// A doctor account only works on the doctor side.
+const doctorMobileItems: MobileItem[] = [
+  { to: '/doctor', label: 'Hồ sơ', icon: Users },
+  { to: '/knowledge', label: 'Học', icon: BookOpen },
+  { to: '/settings', label: 'Cài đặt', icon: Settings },
+]
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const caps = useExerciseCapabilities()
-  const navItems = caps?.available ? exerciseMobileItems : mobileItems
+  const { user } = useAuth()
+  const navItems = user?.doctor ? doctorMobileItems : caps?.available ? exerciseMobileItems : mobileItems
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex">
@@ -47,7 +56,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 bg-white shadow-nav-bar md:hidden">
+      <nav
+        className={[
+          'fixed inset-x-0 bottom-0 z-20 grid bg-white shadow-nav-bar md:hidden',
+          navItems.length === 3 ? 'grid-cols-3' : 'grid-cols-6',
+        ].join(' ')}
+      >
         {navItems.map((it) => {
           const Icon = it.icon
           return (

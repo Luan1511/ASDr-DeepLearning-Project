@@ -14,7 +14,14 @@ import {
 } from '../services/imitation'
 import { BUILTIN_TITLE_PREFIX } from './exerciseInput'
 import { starsFor } from './exerciseData'
-import { CHECK_CODES, MOVEMENT_LABELS, readMovementReference, readMovementReport, type MovementCode } from '../services/exerciseMovement/types'
+import {
+  CHECK_CODES,
+  MOVEMENT_LABELS,
+  movementReferenceState,
+  readMovementReference,
+  readMovementReport,
+  type MovementCode,
+} from '../services/exerciseMovement/types'
 
 type MirrorPolicy = 'EITHER' | 'ANATOMICAL_ONLY' | 'MIRROR_ONLY'
 
@@ -26,7 +33,7 @@ export type TemplateSummaryRow = Pick<
   ExerciseTemplate,
   'id' | 'version' | 'durationSec' | 'mirrorPolicy' | 'lateralized' | 'activeParts'
 >
-export type GuideTemplateRow = TemplateSummaryRow & { guideTrack: Prisma.JsonValue }
+export type GuideTemplateRow = TemplateSummaryRow & { guideTrack: Prisma.JsonValue; features?: Prisma.JsonValue }
 export type ScoreRow = Pick<
   SessionScore,
   'algorithmVersion' | 'status' | 'overall' | 'stars' | 'band' | 'mode' | 'reasonCodes' | 'detail' | 'createdAt'
@@ -81,9 +88,20 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
 }
 
+/**
+ * The guide character was renamed from "bạn Mầm" to "bạn Bin" (2026-11-17).
+ * Feedback lines and prompts written before that are stored with the old name;
+ * they are shown with the current one.
+ */
+export function rebrandGuide(text: string): string {
+  return text.replace(/([Bb]ạn) Mầm/g, '$1 Bin').replace(/^Mầm (?=chưa nhìn rõ)/, 'Bin ')
+}
+
 function serializeMovementSetup(features: unknown) {
-  const movement = readMovementReference(asRecord(features).movement)
-  if (!movement) return {}
+  const raw = asRecord(features).movement
+  const movement = readMovementReference(raw)
+  // Compiled by another detector version: the admin has to compile the template again.
+  if (!movement) return movementReferenceState(raw) === 'outdated' ? { movementOutdated: true } : {}
   let unavailable: readonly MovementCode[] = []
   if (movement.profile === 'jump-twists') {
     if (movement.reference.pattern.relation === 'uncertain') unavailable = CHECK_CODES['jump-twists']
@@ -142,8 +160,8 @@ function serializeExerciseMetadata(exercise: ExerciseRow) {
     id: exercise.id,
     slug: exercise.slug,
     title: exercise.title,
-    description: exercise.description,
-    childPrompt: exercise.childPrompt,
+    description: rebrandGuide(exercise.description),
+    childPrompt: rebrandGuide(exercise.childPrompt),
     difficulty: difficulty(exercise.difficulty),
     bodyFocus: exercise.bodyFocus.filter((f): f is 'ARMS' | 'LEGS' | 'TRUNK' => ['ARMS', 'LEGS', 'TRUNK'].includes(f)),
     source: (exercise.source === 'BUILTIN_SYNTHETIC' ? 'BUILTIN_SYNTHETIC' : 'ADMIN') as 'ADMIN' | 'BUILTIN_SYNTHETIC',
@@ -161,6 +179,9 @@ export function serializeExercise(exercise: ExerciseRow, template: TemplateSumma
 /** The demonstration skeleton for the guide character (normalised, adult or synthetic). */
 export function serializeGuideTemplate(t: GuideTemplateRow) {
   const track = asRecord(t.guideTrack)
+  const movement = readMovementReference(asRecord(t.features).movement)
+  const liveProfile = movement && (movement.profile !== 'jump-twists' || movement.reference.pattern.relation === 'opposed')
+    ? movement.profile : undefined
   const frames = Array.isArray(track.frames)
     ? track.frames.map((frame) => (Array.isArray(frame) ? numberOrNullArray(frame) : null))
     : []
@@ -170,6 +191,7 @@ export function serializeGuideTemplate(t: GuideTemplateRow) {
     joints: numberOrNullArray(track.joints).filter((j): j is number => j !== null),
     frames,
     neutral: numberOrNullArray(track.neutral),
+    ...(liveProfile ? { liveProfile } : {}),
   }
 }
 
@@ -197,7 +219,7 @@ function serializePart(raw: unknown) {
   }
 }
 
-/** INSUFFICIENT never carries a number or stars (the child sees "Mầm chưa nhìn rõ"). */
+/** INSUFFICIENT never carries a number or stars (the child sees "Bin chưa nhìn rõ"). */
 export function serializeSessionScore(score: Omit<ScoreRow, 'createdAt'>) {
   const detail = asRecord(score.detail)
   const quality = asRecord(detail.quality)
@@ -222,7 +244,10 @@ export function serializeSessionScore(score: Omit<ScoreRow, 'createdAt'>) {
       PartId,
       ReturnType<typeof serializePart>
     >,
-    feedback: { child: strings(feedback.child).slice(0, 3), parent: strings(feedback.parent) },
+    feedback: {
+      child: strings(feedback.child).slice(0, 3).map(rebrandGuide),
+      parent: strings(feedback.parent).map(rebrandGuide),
+    },
     ...(movement ? { movement } : {}),
   }
 }

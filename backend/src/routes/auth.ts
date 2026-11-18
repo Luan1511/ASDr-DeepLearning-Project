@@ -6,8 +6,29 @@ import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { requireAuth } from '../middleware/auth'
+import { isSchemaOutdatedError } from '../lib/prismaErrors'
 
 export const authRouter = Router()
+
+/**
+ * The doctor profile of an account, for the UI to open the doctor side.
+ * Signing in must keep working on a database without the doctor tables and
+ * when the feature is off, so both simply mean "not a doctor".
+ */
+async function doctorOf(userId: string) {
+  if (env.DOCTOR_MODE === 'off') return null
+  try {
+    const doctor = await prisma.doctorProfile.findUnique({
+      where: { userId },
+      select: { id: true, displayName: true, title: true, specialty: true, isMock: true },
+    })
+    if (!doctor || (doctor.isMock && env.DOCTOR_MODE !== 'demo')) return null
+    return doctor
+  } catch (error) {
+    if (isSchemaOutdatedError(error)) return null
+    throw error
+  }
+}
 
 const registerSchema = z.object({
   name: z.string().min(1),
@@ -66,7 +87,7 @@ authRouter.post(
 
     return res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, doctor: await doctorOf(user.id) },
     })
   }),
 )
@@ -80,7 +101,7 @@ authRouter.get(
       where: { id: userId },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     })
-    return res.json({ user })
+    return res.json({ user: user ? { ...user, doctor: await doctorOf(user.id) } : user })
   }),
 )
 

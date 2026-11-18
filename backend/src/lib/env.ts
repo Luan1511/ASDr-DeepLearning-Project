@@ -61,6 +61,10 @@ const envSchema = z.object({
   MCHAT_MODE: z.enum(['off', 'entry', 'inapp']).default('off'),
   // Licensed text for inapp (gitignored); relative to the backend folder unless absolute.
   MCHAT_CONTENT_PATH: z.string().trim().min(1).default('content/mchat-rf.vi.json'),
+  // Giai đoạn 7 (sharing a child's record with a doctor). off = hidden; demo = the
+  // sample doctors of `npm run doctors:seed-mock` are listed and labelled as sample
+  // data; on = real doctors only (the sample accounts stop working).
+  DOCTOR_MODE: z.enum(['off', 'demo', 'on']).default('demo'),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -104,4 +108,5 @@ export const env: Env = envSchema.parse({
   EXERCISE_WEBM_AS_MKV: process.env.EXERCISE_WEBM_AS_MKV,
   MCHAT_MODE: process.env.MCHAT_MODE || undefined,
   MCHAT_CONTENT_PATH: process.env.MCHAT_CONTENT_PATH || undefined,
+  DOCTOR_MODE: process.env.DOCTOR_MODE || undefined,
 })

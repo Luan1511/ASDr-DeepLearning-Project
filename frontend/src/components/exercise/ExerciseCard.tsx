@@ -77,7 +77,7 @@ export function ExerciseCard({
         ) : (
           <Link to={practiceHref} className="btn-duo w-full">
             <Play className="h-4 w-4" />
-            Tập với bạn Mầm
+            Tập với bạn Bin
           </Link>
         )}
       </div>

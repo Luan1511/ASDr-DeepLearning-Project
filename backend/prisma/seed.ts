@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import { PrismaClient, RiskLevel, ScreeningStatus, UserRole, Gender, ChatRole } from '@prisma/client'
+import { seedMockDoctors } from '../src/lib/mockDoctors'
 
 const prisma = new PrismaClient()
 
@@ -205,7 +206,10 @@ async function main() {
     skipDuplicates: true,
   })
 
-  console.log('Seed completed:', { adminEmail, userEmail, child1: child1.fullName, child2: child2.fullName })
+  // Sample doctors for DOCTOR_MODE=demo (same accounts as `npm run doctors:seed-mock -- --yes`).
+  const doctors = await seedMockDoctors(prisma, await bcrypt.hash(process.env.MOCK_DOCTOR_PASSWORD || 'doctor123', 10))
+
+  console.log('Seed completed:', { adminEmail, userEmail, child1: child1.fullName, child2: child2.fullName, sampleDoctors: doctors.total })
 }
 
 main()

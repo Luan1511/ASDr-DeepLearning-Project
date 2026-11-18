@@ -197,6 +197,33 @@ describe('serializeSessionScore INSUFFICIENT', () => {
     assert.deepEqual(dto.reasonCodes, ['ACTIVE_PART_NOT_VISIBLE'])
   })
 
+  it('shows feedback stored under the old guide name with the current one', () => {
+    const dto = serializeSessionScore({
+      ...scoreRow,
+      detail: {
+        ...detail,
+        feedback: {
+          child: ['Tuyệt vời! Con làm rất giống bạn Mầm!', 'Mầm chưa nhìn rõ con lần này.'],
+          parent: ['Nhịp: gần giống bạn Mầm.', 'Trẻ học mầm non vẫn tập được.'],
+        },
+      },
+    })
+    assert.deepEqual(dto.feedback.child, ['Tuyệt vời! Con làm rất giống bạn Bin!', 'Bin chưa nhìn rõ con lần này.'])
+    assert.deepEqual(dto.feedback.parent, ['Nhịp: gần giống bạn Bin.', 'Trẻ học mầm non vẫn tập được.'])
+  })
+
+  it('keeps the movement feedback of an attempt scored by an earlier detector version', () => {
+    const movement = {
+      version: 'exercise-errors-v0.2',
+      profile: 'high-kicks',
+      checks: [{ code: 'KICK_SAME_LEG_REPEATED', label: 'Đổi chân sau mỗi cú đá', status: 'evaluated' }],
+      events: [],
+    }
+    const dto = serializeSessionScore({ ...scoreRow, detail: { ...detail, movement } })
+    assert.equal(dto.movement?.version, 'exercise-errors-v0.2')
+    assert.equal(dto.movement?.checks.length, 1)
+  })
+
   it('survives a malformed detail', () => {
     const dto = serializeSessionScore({ ...scoreRow, detail: null })
     assert.deepEqual(dto.warnings, [])
@@ -242,6 +269,29 @@ describe('exercise and template DTOs', () => {
       { code: 'TEMPLATE_ACTIVE_DURATION', ok: true, value: 6, threshold: '2–30 s' },
     ])
     assert.deepEqual(dto.stats, { attempts: 3, insufficientRate: 0.5 })
+  })
+
+  it('tells the admin when a template was compiled by another movement detector version', () => {
+    const outdated = {
+      ...templateRow,
+      features: { movement: { version: 'exercise-errors-v0.1', profile: 'jumping-jacks', guideSourceFps: 30, reference: {} } },
+    }
+    const dto = serializeAdminExercise({ ...exerciseRow, templates: [outdated] })
+    assertNoForbiddenKeys(dto)
+    assert.equal(dto.templates[0].movementOutdated, true)
+    assert.equal(dto.templates[0].movementProfile, undefined)
+    // A template without a movement profile is not "outdated".
+    const plain = serializeAdminExercise({ ...exerciseRow, templates: [templateRow] })
+    assert.equal(plain.templates[0].movementOutdated, undefined)
+  })
+
+  it('shows prompts stored under the old guide name with the current one', () => {
+    const dto = serializeExercise(
+      { ...exerciseRow, childPrompt: 'Vẫy chào bạn Mầm nào!', description: 'Bước đều cùng bạn Mầm.' },
+      templateRow,
+    )
+    assert.equal(dto.childPrompt, 'Vẫy chào bạn Bin nào!')
+    assert.equal(dto.description, 'Bước đều cùng bạn Bin.')
   })
 
   it('gives a draft without a published template a null template', () => {

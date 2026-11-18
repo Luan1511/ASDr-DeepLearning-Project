@@ -15,8 +15,11 @@ import {
   MessageSquareHeart,
   LogOut,
   Smile,
+  Stethoscope,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
+import { useDoctorCapabilities } from '../lib/doctors'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
 import { useQuestionnairesEnabled } from '../lib/useQuestionnairesEnabled'
 
@@ -94,6 +97,9 @@ export function Sidebar() {
   const { pathname } = useLocation()
   const caps = useExerciseCapabilities()
   const questionnaires = useQuestionnairesEnabled()
+  const doctorCaps = useDoctorCapabilities()
+  // A doctor account works on the doctor side only: its own short menu.
+  const isDoctor = Boolean(user?.doctor)
 
   const isQuestionnairePath = (p: string) =>
     p === '/questionnaires' ||
@@ -110,7 +116,15 @@ export function Sidebar() {
   const isCommunityPath = (p: string) =>
     p === '/community' || p.startsWith('/community/')
 
-  const mainItems: NavItem[] = [
+  const doctorItems: NavItem[] = [
+    {
+      to: '/doctor',
+      label: 'Hồ sơ được chia sẻ',
+      icon: Users,
+      isActive: (p) => p === '/doctor' || p.startsWith('/doctor/'),
+    },
+  ]
+  const parentItems: NavItem[] = [
     { to: '/', label: 'Trang chủ', icon: Home, end: true },
     {
       to: '/children',
@@ -145,8 +159,11 @@ export function Sidebar() {
       icon: MessageSquareHeart,
       isActive: isCommunityPath,
     },
+    ...(doctorCaps?.available ? [{ to: '/doctors', label: 'Bác sĩ', icon: Stethoscope }] : []),
     { to: '/history', label: 'Lịch sử', icon: History },
   ]
+  const mainItems = isDoctor ? doctorItems : parentItems
+  const shownHelpItems = isDoctor ? helpItems.filter((it) => it.to === '/knowledge' || it.to === '/guide') : helpItems
   const isAdmin = user?.role === 'ADMIN'
   const inAdmin = pathname === '/admin' || pathname.startsWith('/admin/')
 
@@ -171,7 +188,7 @@ export function Sidebar() {
         <Divider />
 
         <div className="flex flex-col gap-0.5">
-          {helpItems.map((it) => (
+          {shownHelpItems.map((it) => (
             <NavRow key={it.to} item={it} currentPath={pathname} />
           ))}
         </div>
@@ -258,7 +275,7 @@ export function Sidebar() {
                       {user.name}
                     </div>
                     <div className="text-[11px] font-bold uppercase tracking-wide text-duo-mute">
-                      {user.role === 'ADMIN' ? 'Quản trị viên' : 'Hồ sơ cá nhân'}
+                      {user.role === 'ADMIN' ? 'Quản trị viên' : isDoctor ? 'Tài khoản bác sĩ' : 'Hồ sơ cá nhân'}
                     </div>
                   </div>
                 </button>

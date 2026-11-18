@@ -11,6 +11,8 @@ import { RiskPill } from '../components/RiskPill'
 import { ScreeningResultView } from '../components/ScreeningResultView'
 import { ChildQuestionnairesSection } from '../components/children/ChildQuestionnairesSection'
 import { ChildExercisesSection } from '../components/children/ChildExercisesSection'
+import { ChildPersonalizationSection } from '../components/children/ChildPersonalizationSection'
+import { ChildDoctorLinksSection } from '../components/children/ChildDoctorLinksSection'
 import { api, apiErrorCode } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
 import { clearFamilyFaceSamples, updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
@@ -382,6 +384,9 @@ function ChildDetail({ id }: { id: string }) {
               </div>
             </div>
 
+            {/* Renders nothing on a backend without the personalisation feature. */}
+            <ChildPersonalizationSection childId={child.id} childName={child.fullName} />
+
             <Card title="Xu hướng chỉ số dáng đi">
               <GaitTrendChart screenings={screenings} />
             </Card>
@@ -427,12 +432,14 @@ function ChildDetail({ id }: { id: string }) {
             {/* Each renders nothing while its feature is off for this user. */}
             <ChildQuestionnairesSection childId={child.id} childName={child.fullName} dateOfBirth={child.dateOfBirth} />
             <ChildExercisesSection childId={child.id} childName={child.fullName} />
+            <ChildDoctorLinksSection childId={child.id} childName={child.fullName} />
 
             <div className="card-duo p-5">
               <div className="text-sm font-extrabold uppercase tracking-wide text-duo-red">Xoá hồ sơ và dữ liệu</div>
               <p className="mt-2 text-sm font-semibold leading-relaxed text-duo-ink">
-                Xoá vĩnh viễn hồ sơ của trẻ cùng mọi lần sàng lọc, kết quả, lượt tập, câu trả lời bảng hỏi, xác nhận đồng ý, video
-                còn lưu trên máy chủ và dữ liệu khung xương trên máy chủ phân tích. Không thể khôi phục.
+                Xoá vĩnh viễn hồ sơ của trẻ cùng mọi lần sàng lọc, kết quả, lượt tập, câu trả lời bảng hỏi, thông tin cá nhân hoá,
+                kết nối với bác sĩ, xác nhận đồng ý, video còn lưu trên máy chủ và dữ liệu khung xương trên máy chủ phân tích.
+                Không thể khôi phục.
               </p>
               {!confirmingDelete ? (
                 <button

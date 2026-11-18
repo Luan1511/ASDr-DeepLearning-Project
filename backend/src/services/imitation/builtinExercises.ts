@@ -113,7 +113,7 @@ const META: BuiltinMeta[] = [
     title: 'Giơ tay phải chào',
     description:
       'Con giơ tay phải lên cao, vẫy chào rồi hạ tay xuống. Nếu con làm theo kiểu soi gương (dùng tay trái) thì vẫn được tính điểm.',
-    childPrompt: 'Giơ tay lên thật cao và vẫy chào bạn Mầm nào!',
+    childPrompt: 'Giơ tay lên thật cao và vẫy chào bạn Bin nào!',
     difficulty: 1,
     bodyFocus: ['ARMS'],
     experimental: false,
@@ -156,7 +156,7 @@ const META: BuiltinMeta[] = [
     title: 'Bước đều tại chỗ',
     description:
       'Con nâng gối trái rồi gối phải, bước đều tại chỗ. Camera đặt phía trước khó thấy rõ động tác nâng gối nên cách chấm bài này đang được thử nghiệm thêm.',
-    childPrompt: 'Một, hai, một, hai! Mình bước đều tại chỗ cùng bạn Mầm nhé!',
+    childPrompt: 'Một, hai, một, hai! Mình bước đều tại chỗ cùng bạn Bin nhé!',
     difficulty: 3,
     bodyFocus: ['LEGS'],
     experimental: true,

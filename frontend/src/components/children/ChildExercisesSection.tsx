@@ -156,12 +156,12 @@ export function ChildExercisesSection({ childId, childName }: { childId: string;
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-semibold leading-relaxed text-duo-ink">
             {practiced.length === 0
-              ? `${childName} chưa tập bài nào. Cùng con làm theo bạn Mầm các động tác vận động vui nhộn nhé!`
-              : `Các bài ${childName} đã tập cùng bạn Mầm.`}
+              ? `${childName} chưa tập bài nào. Cùng con làm theo bạn Bin các động tác vận động vui nhộn nhé!`
+              : `Các bài ${childName} đã tập cùng bạn Bin.`}
           </p>
           <Link to={practiceLink} className="btn-duo">
             <PersonStanding className="h-4 w-4" />
-            Tập với bạn Mầm
+            Tập với bạn Bin
           </Link>
         </div>
 
