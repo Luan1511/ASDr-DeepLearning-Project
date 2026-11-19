@@ -50,10 +50,11 @@ luồng Groq hiện hành, vì vậy nên dùng giọng người lớn khi thử
 đánh giá cách xử lý dữ liệu với nhóm. Có thể thử các câu ngắn, ngập ngừng
 giữa câu, ngắt lời lúc Bin đang nói và thu hồi quyền mic để kiểm tra fallback.
 
-Bạn Bin dùng tối đa 32 tin nhắn gần nhất trong tab đang trò chuyện. Chuyển
-hồ sơ hoặc rời trang sẽ bắt đầu lại. Mỗi lượt tạo một đoạn thoại ngắn để
-đọc liền mạch. Khi dịch vụ chat tạm lỗi, nút **Thử lại** gửi lại lượt hiện
-tại với ngữ cảnh đang có.
+Bạn Bin lưu 32 tin nhắn gần nhất trên trình duyệt, riêng theo tài khoản và
+hồ sơ trẻ, trong 30 ngày kể từ lượt trò chuyện cuối. Khi vào lại trang,
+lịch sử và hồ sơ vừa chọn được khôi phục. Nút **Xóa lịch sử** xóa cuộc trò
+chuyện của hồ sơ đang chọn sau khi xác nhận. Khi dịch vụ chat tạm lỗi,
+nút **Thử lại** gửi lại lượt hiện tại với ngữ cảnh đang có.
 Nếu bản chép lời sai, **Sửa lời vừa nói** thay câu vừa nhận và tạo lại lời
 đáp của Bin từ câu đã sửa.
 

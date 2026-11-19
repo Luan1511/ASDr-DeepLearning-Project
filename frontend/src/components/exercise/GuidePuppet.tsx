@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { BuddyFigure, type BuddyFigureHandle } from '../buddy/BuddyFigure'
-import { fitFigure } from '../../lib/buddy/figure'
+import { fitFigure, retargetBinPose } from '../../lib/buddy/figure'
 import type { ExpressionName, HandShape } from '../../lib/buddy/types'
 import type { GuideTemplateDto } from '../../lib/exerciseTypes'
 import {
   buildPuppetTrack,
+  J,
   cheerPose,
   idlePose,
   mirrorFrame,
@@ -78,16 +79,20 @@ export function GuidePuppet({
   const reducedMotion = usePrefersReducedMotion()
   const { hz, joints, frames, neutral } = guide
   const track = useMemo(() => buildPuppetTrack({ hz, joints, frames, neutral }), [hz, joints, frames, neutral])
+  const groundY = useMemo(() => {
+    const neutral = retargetBinPose(track.neutral)
+    return Math.min(neutral[J.rAnkle].y, neutral[J.lAnkle].y)
+  }, [track])
   // One scale for the whole exercise (demonstration and waiting poses alike), so Bin never changes size on screen.
   const fit = useMemo(
     () =>
       fitFigure(
         [track.neutral, ...track.frames, cheerPose(track.neutral, 0.18, true), shrugPose(track.neutral, 0.5, true)].map((p) =>
-          plantFeet(p, track.groundY),
+          plantFeet(retargetBinPose(p), groundY),
         ),
-        track.groundY,
+        groundY,
       ),
-    [track],
+    [track, groundY],
   )
 
   const onEndedRef = useRef(onEnded)
@@ -98,7 +103,8 @@ export function GuidePuppet({
   useLayoutEffect(() => {
     const bin = figure.current
     if (!bin) return
-    const render = (p: PuppetPose) => bin.setPose(plantFeet(mirrored ? p : mirrorFrame(p), track.groundY), track.groundY)
+    const render = (p: PuppetPose) =>
+      bin.setPose(plantFeet(retargetBinPose(mirrored ? p : mirrorFrame(p)), groundY), groundY)
     bin.setBlink(0)
 
     let raf = 0
@@ -140,7 +146,7 @@ export function GuidePuppet({
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [track, playing, speed, mirrored, pose, reducedMotion])
+  }, [track, groundY, playing, speed, mirrored, pose, reducedMotion])
 
   const { expression, hands } = look(pose, mood)
   return (

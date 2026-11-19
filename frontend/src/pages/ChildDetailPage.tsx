@@ -16,6 +16,7 @@ import { ChildDoctorLinksSection } from '../components/children/ChildDoctorLinks
 import { api, apiErrorCode } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
 import { clearFamilyFaceSamples, updateFamilyFaceSamples, type FamilyFaceUpdates } from '../lib/buddy/visionProfiles'
+import { clearBuddyHistory, loadLastBuddyChild, rememberBuddyChild } from '../lib/buddy/history'
 import {
   GAIT_VIEW_LABEL,
   GENDER_LABEL,
@@ -276,7 +277,12 @@ function ChildDetail({ id }: { id: string }) {
     try {
       await api.delete(`/children/${id}`)
       const facesCleared = !user || clearFamilyFaceSamples(user.id, id)
-      navigate('/children', { replace: true, state: { deletedName: data.child.fullName, faceCleanupFailed: !facesCleared } })
+      const historyCleared = !user || clearBuddyHistory(user.id, id)
+      if (user && loadLastBuddyChild(user.id) === id) rememberBuddyChild(user.id, '')
+      navigate('/children', {
+        replace: true,
+        state: { deletedName: data.child.fullName, faceCleanupFailed: !facesCleared, historyCleanupFailed: !historyCleared },
+      })
     } catch (e) {
       setDeleteError(childApiErrorMessage(e, 'Không xoá được hồ sơ. Vui lòng thử lại.'))
       setDeleting(false)

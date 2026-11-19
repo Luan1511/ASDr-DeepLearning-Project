@@ -30,7 +30,7 @@ function allow(userId: string, bucket = recent, limit = MAX_PER_WINDOW, now = Da
 }
 
 const audioTypes = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav']
-const utterance = z.object({ text: z.string().trim().min(1).max(160) })
+const utterance = z.object({ text: z.string().trim().min(1) })
 
 buddyRouter.get('/voice', (_req, res) => res.json({ enabled: Boolean(env.BUDDY_VOICE_URL) }))
 

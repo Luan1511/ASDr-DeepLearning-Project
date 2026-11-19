@@ -27,11 +27,11 @@ describe('sanitizeBuddyScript', () => {
     assert.deepEqual(script?.suggestions, [])
   })
 
-  it('drops empty steps, caps the count and the text length', () => {
+  it('drops empty steps, caps the step count and keeps the complete speech', () => {
     const long = 'a'.repeat(400)
     const script = sanitizeBuddyScript({ steps: [{ say: '' }, null, ...Array.from({ length: 9 }, () => ({ say: long }))] })
     assert.equal(script?.steps.length, MAX_STEPS)
-    assert.ok(script!.steps[0].say.length <= 160)
+    assert.equal(script!.steps[0].say, long)
   })
 
   it('returns null when nothing is playable', () => {
@@ -60,6 +60,15 @@ describe('buddy chat input', () => {
   it('includes the age in the system prompt only when known', () => {
     assert.match(buildSystemPrompt(5), /Bạn nhỏ 5 tuổi/)
     assert.doesNotMatch(buildSystemPrompt(), /Bạn nhỏ \d+ tuổi/)
+  })
+
+  it('accepts complete buddy history beyond 500 characters', () => {
+    const text = 'Bin kể tiếp câu chuyện. '.repeat(60).trim()
+    const input = buddyChatInputSchema.parse({
+      messages: [{ role: 'buddy', text }, { role: 'child', text: 'Rồi sao nữa?' }],
+    })
+    assert.equal(input.messages[0].text, text)
+    assert.equal(buddyChatInputSchema.safeParse({ messages: [{ role: 'child', text }] }).success, false)
   })
 
   it('keeps observations tied to each role without inferring a speaker', () => {

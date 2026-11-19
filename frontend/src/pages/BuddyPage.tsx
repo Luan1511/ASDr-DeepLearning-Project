@@ -5,6 +5,7 @@ import { BuddyCharacter } from '../components/buddy/BuddyCharacter'
 import { BuddyCamera, type BuddyCameraHandle } from '../components/buddy/BuddyCamera'
 import { api } from '../lib/api'
 import { askBuddy, recentBuddyMessages, type BuddyMessage, type BuddyVisionContext } from '../lib/buddy/api'
+import { clearBuddyHistory, loadBuddyHistory, loadLastBuddyChild, rememberBuddyChild, saveBuddyHistory } from '../lib/buddy/history'
 import { BuddyDirector, useBuddyFrame } from '../lib/buddy/engine'
 import { buddyVoiceEnabled, openBuddyMic, speakBuddyLine, transcribeBuddyTurn, type BuddyMic, type BuddyVoiceTiming } from '../lib/buddy/voice'
 import type { BuddyScript } from '../lib/buddy/types'
@@ -62,10 +63,22 @@ export function BuddyPage() {
     if (!userId) return
     const request = new AbortController()
     api.get('/children', { signal: request.signal })
-      .then((res) => setFamily({ userId, profiles: res.data.children ?? [] }))
+      .then((res) => {
+        if (request.signal.aborted) return
+        const profiles: ChildProfile[] = res.data.children ?? []
+        setFamily({ userId, profiles })
+        const previous = loadLastBuddyChild(userId)
+        if (previous && profiles.some((child) => child.id === previous)) {
+          setParams((current) => current.has('childId') ? current : { childId: previous }, { replace: true })
+        }
+      })
       .catch(() => undefined)
     return () => request.abort()
-  }, [userId])
+  }, [userId, setParams])
+
+  useEffect(() => {
+    if (userId && childId) rememberBuddyChild(userId, childId)
+  }, [userId, childId])
 
   return (
     <BuddyConversation
@@ -74,7 +87,10 @@ export function BuddyPage() {
       userId={userId ?? ''}
       childId={childId}
       showStudio={user?.role === 'ADMIN'}
-      onChildChange={(id) => setParams(id ? { childId: id } : {}, { replace: true })}
+      onChildChange={(id) => {
+        rememberBuddyChild(userId ?? '', id)
+        setParams(id ? { childId: id } : {}, { replace: true })
+      }}
     />
   )
 }
@@ -94,7 +110,8 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
 
   useEffect(() => { profile.current = child }, [child])
 
-  const messages = useRef<BuddyMessage[]>([])
+  const [savedHistory] = useState(() => loadBuddyHistory(userId, childId))
+  const messages = useRef<BuddyMessage[]>(savedHistory)
   const activeTurn = useRef<AbortController | null>(null)
   const voiceSession = useRef<VoiceSession | null>(null)
   const camera = useRef<BuddyCameraHandle>(null)
@@ -106,8 +123,12 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
   const busy = phase === 'thinking'
   const recording = phase === 'recording' || phase === 'permission'
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS)
-  const [canRetry, setCanRetry] = useState(false)
-  const [lastChild, setLastChild] = useState<{ text: string; fromVoice: boolean } | null>(null)
+  const [canRetry, setCanRetry] = useState(savedHistory.at(-1)?.role === 'child')
+  const [lastChild, setLastChild] = useState<{ text: string; fromVoice: boolean } | null>(() => {
+    const message = savedHistory.filter(({ role }) => role === 'child').at(-1)
+    return message ? { text: message.text, fromVoice: false } : null
+  })
+  const [historyWarning, setHistoryWarning] = useState('')
   const [editingTranscript, setEditingTranscript] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -160,7 +181,16 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!activeTurn.current) void director.runScript(greeting(firstName))
+      if (activeTurn.current) return
+      if (messages.current.length > 0) {
+        const previous = messages.current.filter(({ role }) => role === 'buddy').at(-1)
+        if (previous) {
+          const now = performance.now()
+          const duration = director.say(previous.text, now)
+          director.say(previous.text, now - duration)
+        }
+        director.setExpression('listening')
+      } else void director.runScript(greeting(firstName))
     }, 500)
     return () => clearTimeout(timer)
   }, [director, firstName])
@@ -194,8 +224,16 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
 
   function finishTurn(turn: AbortController, session: VoiceSession | null) {
     if (turn.signal.aborted) return
+    if (activeTurn.current === turn) activeTurn.current = null
     if (session) listenAgain(session, SPEAKER_TAIL_MS)
     else setPhase('idle')
+  }
+
+  function rememberHistory(history: BuddyMessage[]) {
+    messages.current = recentBuddyMessages(history)
+    setHistoryWarning(saveBuddyHistory(userId, childId, messages.current)
+      ? ''
+      : 'Trình duyệt chưa lưu được lịch sử. Bin có thể quên khi bạn rời trang.')
   }
 
   async function respond(raw: string, turn: AbortController, voice: AudioContext | null, source: TurnSource, vision?: BuddyVisionContext) {
@@ -216,7 +254,7 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
     const history = source === 'retry'
       ? messages.current
       : recentBuddyMessages([...messages.current, { role: 'child', text: outbound }])
-    messages.current = history
+    rememberHistory(history)
     const { script, fallback } = await askBuddy(
       history,
       { age: activeChild ? ageInYears(activeChild.dateOfBirth) : undefined },
@@ -236,7 +274,7 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
     await director.runScript(script, (index, step) => {
       if (turn.signal.aborted || fallback || !step.say) return
       shown[index] = step.say
-      messages.current = [...history, { role: 'buddy', text: shown.join(' ') }]
+      rememberHistory([...history, { role: 'buddy', text: shown.join(' ') }])
       setSuggestions(script.suggestions ?? [])
     }, voice ? async (line, start) => {
       try {
@@ -347,6 +385,19 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
     listenAgain(session, SPEAKER_TAIL_MS)
   }
 
+  function resetHistory() {
+    if (!window.confirm('Xóa lịch sử trò chuyện với Bin của hồ sơ này trên trình duyệt này?')) return
+    stopVoice()
+    messages.current = []
+    setHistoryWarning(clearBuddyHistory(userId, childId) ? '' : 'Trình duyệt chưa xóa được lịch sử. Hãy thử lại.')
+    setLastChild(null)
+    setCanRetry(false)
+    setSuggestions(DEFAULT_SUGGESTIONS)
+    setEditingTranscript(false)
+    setInput('')
+    void director.runScript(greeting(firstName))
+  }
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
     void send(input, editingTranscript ? 'correction' : 'typed')
@@ -394,7 +445,7 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
         </div>
 
         <div className="order-1 flex w-full max-w-xl flex-col gap-3 md:order-2 md:self-center md:pb-24">
-          <div className="relative rounded-[28px] bg-white px-6 py-5 shadow-card-hover">
+          <div className="relative max-h-[42dvh] overflow-y-auto rounded-[28px] bg-white px-6 py-5 shadow-card-hover md:max-h-[65dvh]">
             <span className="absolute -bottom-3 left-1/2 h-6 w-6 -translate-x-1/2 rotate-45 rounded-sm bg-white md:-left-3 md:bottom-auto md:top-10 md:translate-x-0" />
             <div className="relative min-h-[4.5rem] text-2xl font-extrabold leading-snug text-[#172B6B] md:text-[28px]">
               {caption?.visible || (busy ? '' : ' ')}
@@ -423,6 +474,10 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
 
       <footer className="relative z-10 rounded-t-[32px] bg-white px-4 pb-5 pt-4 shadow-nav-bar md:px-10">
         <div className="mx-auto max-w-3xl">
+          <div className="mb-2 flex items-center justify-between gap-3 text-xs text-duo-mute">
+            <span role="status">{historyWarning || 'Bin nhớ 32 tin nhắn gần nhất trong 30 ngày trên trình duyệt này.'}</span>
+            <button type="button" onClick={resetHistory} className="shrink-0 font-bold underline">Xóa lịch sử</button>
+          </div>
           {!editingTranscript && (suggestions.length > 0 || canRetry) && <div className="mb-3 flex flex-wrap justify-center gap-2">
             {suggestions.map((s) => (
               <button

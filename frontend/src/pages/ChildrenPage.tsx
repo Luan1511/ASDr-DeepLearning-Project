@@ -52,7 +52,7 @@ export function ChildrenPage() {
   const { user } = useAuth()
   const location = useLocation()
   // Shown once after a deletion; cleared from history so Back/refresh do not repeat it.
-  const [deletion] = useState(() => location.state as { deletedName?: string; faceCleanupFailed?: boolean } | null)
+  const [deletion] = useState(() => location.state as { deletedName?: string; faceCleanupFailed?: boolean; historyCleanupFailed?: boolean } | null)
   useEffect(() => {
     if (location.state) navigate(location.pathname, { replace: true, state: null })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,6 +114,11 @@ export function ChildrenPage() {
         {deletion?.faceCleanupFailed && (
           <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">
             Không xoá được mẫu khuôn mặt trên thiết bị này. Bạn có thể xoá dữ liệu trang web trong cài đặt trình duyệt.
+          </p>
+        )}
+        {deletion?.historyCleanupFailed && (
+          <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">
+            Chưa xóa được lịch sử trò chuyện với Bin trên thiết bị này. Bạn có thể xóa dữ liệu trang web trong cài đặt trình duyệt.
           </p>
         )}
 

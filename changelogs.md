@@ -4,6 +4,23 @@ Nhật ký thay đổi source code, logic xử lý, giao diện, database và tr
 
 Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md` và source hiện tại. Ngày cập nhật code và ngày triển khai được ghi riêng khi có thông tin. Kết quả kiểm thử thuộc lần thực hiện được nêu trong từng mục.
 
+## 2026-11-20 — Điều chỉnh tỉ lệ trung bình và nối cổ cho Bin
+
+- Theo góp ý của chủ dự án, lấy trung bình giữa tỉ lệ gốc và bản thu gọn. Thân còn 85%, tay 84%, chân 77,5%, bề rộng vai và hông 97,5%.
+- Giới hạn phóng hình ở 1,07 để chiều cao hiển thị gần trung bình của hai bản xem thử.
+- Tính vị trí chân cổ từ chiều dài thân và điểm nối trên bản vẽ thân, để cổ chồng vào thân 2 đơn vị SVG khi đứng hoặc nghiêng người.
+- Kiểm chứng bằng 10 test hình học, frontend build, lint và bản xem thử Chrome.
+- Bản sửa đã áp vào source máy dev. Website cần build và triển khai frontend.
+
+## 2026-11-20 — Thu gọn tỉ lệ Bin khi làm mẫu bài tập
+
+- Thêm `retargetBinPose` trong `frontend/src/lib/buddy/figure.ts` để chuyển khung xương bài tập sang tỉ lệ nhân vật trước khi vẽ.
+- Thân còn 70%, tay còn 68%, chân còn 55% chiều dài của khung xương hiển thị ban đầu. Bề rộng vai và hông còn 95%, giúp đầu nổi bật hơn so với thân và chân.
+- Co từng đoạn chi từ khớp cha để giữ hướng và góc gập trong động tác. Tính lại mặt sàn và khung nhìn từ tư thế đã thu gọn.
+- `GuidePuppet.tsx` áp tỉ lệ này cho làm mẫu, đứng chờ, chúc mừng và tư thế nhún vai.
+- Kiểm chứng bằng 8 test hình học, frontend build và lint. Bản xem thử trên Chrome bao gồm đối chiếu tỉ lệ và các tư thế bài tập tổng hợp.
+- Bản sửa được áp vào source máy dev. Frontend trên website cần build và triển khai.
+
 ## 2026-11-18 — Sửa lỗi tạo mẫu khuôn mặt trên website
 
 - Bản quay từ người dùng cho thấy mặt và tư thế đã được chấp nhận, nhưng bước tạo vector nhận diện liên tục báo lỗi.
