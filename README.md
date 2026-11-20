@@ -42,6 +42,12 @@ Không có máy ML? Đặt `BYPASS_EXTRACT_API=true` trong `backend/.env` để 
 
 ## Kiểm thử
 
+### Trò chuyện riêng giữa phụ huynh
+
+Trong Cộng đồng, chọn **Nhắn riêng** ở bài không ẩn danh hoặc hồ sơ thành viên để gửi lời mời. Người nhận vào **Tin nhắn → Lời mời** và chấp nhận trước khi hai bên trò chuyện. Chat dùng biệt danh, chỉ hỗ trợ chữ; có chặn và báo cáo từng tin. Admin xử lý bản sao tin bị báo cáo tại `/admin/community`, không mở được toàn bộ hội thoại.
+
+Kiểm tra tích hợp chat khi backend local và PostgreSQL cổng 5435 đang chạy: `cd backend`, rồi `node scripts/checkCommunityChat.cjs`. Script tạo tài khoản riêng và tự dọn dữ liệu thử.
+
 ```bash
 cd backend && npm run typecheck && npm test
 cd backend && npm run test:e2e          # PostgreSQL tạm + ML giả, tự dọn

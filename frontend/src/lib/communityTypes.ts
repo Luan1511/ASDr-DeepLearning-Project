@@ -29,9 +29,13 @@ export interface CommunityPost {
   commentsCount: number
   createdAt: string
   updatedAt: string
+  groupId?: string | null
+  media?: Array<{ id: string; url: string; mimeType: string; width: number; height: number }>
   author: CommunityAuthor
   isLiked: boolean
   isBookmarked: boolean
+  canEdit: boolean
+  canDelete: boolean
   canManage: boolean
   comments?: CommunityComment[]
 }

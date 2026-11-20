@@ -30,6 +30,7 @@ function serializePatient(link: LinkWithChild) {
     scopes: normalizeScopes(link.scopes),
     message: link.message,
     grantedAt: link.grantedAt,
+    expiresAt: link.expiresAt,
     lastViewedAt: link.lastViewedAt,
     child: {
       fullName: link.child.fullName,
@@ -48,7 +49,7 @@ doctorPortalRouter.get(
   '/me',
   asyncHandler(async (req, res) => {
     const doctor = req.doctor!
-    const activePatients = await prisma.doctorChildLink.count({ where: { doctorId: doctor.id, revokedAt: null } })
+    const activePatients = await prisma.doctorChildLink.count({ where: { doctorId: doctor.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } })
     return res.json({ doctor: serializeDoctor(doctor), stats: { activePatients } })
   }),
 )
@@ -58,7 +59,7 @@ doctorPortalRouter.get(
   '/patients',
   asyncHandler(async (req, res) => {
     const links = await prisma.doctorChildLink.findMany({
-      where: { doctorId: req.doctor!.id, revokedAt: null },
+      where: { doctorId: req.doctor!.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       include: activeLinkInclude,
       orderBy: { grantedAt: 'desc' },
     })
@@ -73,7 +74,7 @@ doctorPortalRouter.get(
     const linkId = z.string().uuid().safeParse(req.params.linkId)
     const link = linkId.success
       ? await prisma.doctorChildLink.findFirst({
-          where: { id: linkId.data, doctorId: req.doctor!.id, revokedAt: null },
+          where: { id: linkId.data, doctorId: req.doctor!.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
           include: activeLinkInclude,
         })
       : null
@@ -100,11 +101,12 @@ doctorPortalRouter.get(
     ])
 
     const updated = await prisma.doctorChildLink.updateMany({
-      where: { id: link.id, revokedAt: null },
+      where: { id: link.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       data: { lastViewedAt: new Date(), viewCount: { increment: 1 } },
     })
     // Revoked while the record was being read: do not hand it out.
     if (!updated.count) return res.status(404).json({ error: 'PATIENT_NOT_FOUND' })
+    await prisma.doctorAccessEvent.create({ data: { linkId: link.id, actorUserId: req.user!.id, type: 'VIEWED' } })
 
     return res.json({
       patient: serializePatient(link),

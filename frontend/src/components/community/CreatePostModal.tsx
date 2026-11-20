@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { X, Send, EyeOff, Loader2 } from 'lucide-react'
+import { X, Send, EyeOff, Loader2, ImagePlus } from 'lucide-react'
 import type { PostCategory, CommunityPost } from '../../lib/communityTypes'
 import { CATEGORY_INFO } from '../../lib/communityTypes'
-import { createCommunityPost } from '../../lib/community'
+import { createCommunityPost, uploadCommunityImage } from '../../lib/community'
 
 const CATEGORIES: PostCategory[] = ['STORY', 'PARENTING', 'LIFESTYLE', 'EDUCATION', 'QA']
 
@@ -29,6 +29,7 @@ export function CreatePostModal({
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [images, setImages] = useState<File[]>([])
 
   if (!isOpen) return null
 
@@ -47,17 +48,20 @@ export function CreatePostModal({
 
     setLoading(true)
     try {
+      const media = await Promise.all(images.map(uploadCommunityImage))
       const newPost = await createCommunityPost({
         title: title.trim(),
         content: content.trim(),
         category,
         isAnonymous,
+        mediaIds: media.map((item) => item.id),
       })
       onCreated(newPost)
       onClose()
       setTitle('')
       setContent('')
       setIsAnonymous(false)
+      setImages([])
     } catch {
       setError('Không thể đăng bài viết. Vui lòng thử lại sau.')
     } finally {
@@ -113,6 +117,21 @@ export function CreatePostModal({
                 )
               })}
             </div>
+          </div>
+
+          <div>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-duo-mist px-3 py-2 text-xs font-extrabold text-duo-ink">
+              <ImagePlus className="h-4 w-4" /> Thêm ảnh (JPG, PNG, WebP; tối đa 4 ảnh, 5 MB/ảnh)
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(e) => {
+                const chosen = Array.from(e.target.files ?? [])
+                if (chosen.some((file) => file.size > 5 * 1024 * 1024)) { setError('Mỗi ảnh cần nhỏ hơn 5 MB.'); return }
+                if (images.length + chosen.length > 4) { setError('Mỗi bài đăng tối đa 4 ảnh.'); return }
+                setImages((current) => [...current, ...chosen])
+                e.currentTarget.value = ''
+              }} />
+            </label>
+            {images.length > 0 && <p className="mt-1 text-xs font-semibold text-duo-mute">Đã chọn {images.length}/4 ảnh</p>}
+            <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs font-semibold text-amber-900">Tránh đưa thông tin nhận dạng hoặc hình ảnh nhạy cảm của trẻ vào bài đăng.</p>
           </div>
 
           {/* Title */}
