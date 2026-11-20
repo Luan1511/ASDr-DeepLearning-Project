@@ -1,0 +1,7 @@
+# Generated while building the deck (python build_deck.py)
+render/
+tpl/
+assets/crops/
+deck_text.md
+# Office lock files
+~$*

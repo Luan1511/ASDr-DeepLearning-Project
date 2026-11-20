@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, Loader2, Pencil, RotateCcw, ShieldAlert, ShieldCheck, Trash2, Video } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Footprints, Loader2, Pencil, RotateCcw, ShieldAlert, ShieldCheck, Trash2 } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { Card } from '../components/Card'
 import { InfoTooltip } from '../components/Tooltip'
@@ -176,6 +176,20 @@ function ChildDetail({ id }: { id: string }) {
   const [confirmName, setConfirmName] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  // Video screening (OpenPose) is paused for parents; until the server says otherwise
+  // the page shows the Kinect flow only, so parents never see video prompts.
+  const [videoScreening, setVideoScreening] = useState(false)
+
+  useEffect(() => {
+    let stale = false
+    api.get('/screenings/capabilities').then(
+      (res) => !stale && setVideoScreening(Boolean(res.data.videoScreening)),
+      () => {},
+    )
+    return () => {
+      stale = true
+    }
+  }, [])
 
   const applyFailure = useCallback((error: unknown) => {
     const failure = loadFailure(error)
@@ -307,6 +321,8 @@ function ChildDetail({ id }: { id: string }) {
   const child = data?.child
   const summary = child?.summary
   const screenings = data?.screenings ?? []
+  // Earlier video results stay visible even after video screening was paused.
+  const showVideo = videoScreening || screenings.length > 0
   const nameMatches = Boolean(child) && confirmName.trim().toLowerCase() === child!.fullName.trim().toLowerCase()
 
   return (
@@ -353,21 +369,23 @@ function ChildDetail({ id }: { id: string }) {
                       {child.gender !== 'UNSPECIFIED' && ` • ${GENDER_LABEL[child.gender]}`}
                     </div>
                     {child.note && <p className="mt-2 whitespace-pre-line text-sm font-semibold text-duo-ink">{child.note}</p>}
-                    <div
-                      className={[
-                        'mt-3 flex items-center gap-1.5 text-xs font-bold',
-                        data.consent ? 'text-duo-green-dark' : 'text-yellow-800',
-                      ].join(' ')}
-                    >
-                      {data.consent ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-                      {data.consent
-                        ? `Đã có đồng ý xử lý video từ ${formatDate(data.consent.grantedAt)}`
-                        : 'Chưa có đồng ý xử lý video — xác nhận ở bước sàng lọc trước khi tải video.'}
-                    </div>
+                    {videoScreening && (
+                      <div
+                        className={[
+                          'mt-3 flex items-center gap-1.5 text-xs font-bold',
+                          data.consent ? 'text-duo-green-dark' : 'text-yellow-800',
+                        ].join(' ')}
+                      >
+                        {data.consent ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                        {data.consent
+                          ? `Đã có đồng ý xử lý video từ ${formatDate(data.consent.grantedAt)}`
+                          : 'Chưa có đồng ý xử lý video — xác nhận ở bước sàng lọc trước khi tải video.'}
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link to={`/screening?childId=${child.id}`} className="btn-duo">
-                      <Video className="h-4 w-4" />
+                      <Footprints className="h-4 w-4" />
                       Sàng lọc mới
                     </Link>
                     <button type="button" className="btn-duo-secondary" onClick={() => setEditing(true)}>
@@ -379,66 +397,74 @@ function ChildDetail({ id }: { id: string }) {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <StatTile label="Lần sàng lọc" value={String(summary?.screeningCount ?? screenings.length)} />
-              <StatTile label="Có kết quả" value={String(summary?.completedCount ?? 0)} />
-              <div className="col-span-2 sm:col-span-1">
-                <StatTile
-                  label="Kết quả gần nhất"
-                  value={summary?.lastResult ? formatDate(summary.lastResult.screenedAt) : '—'}
-                  extra={summary?.lastResult ? <RiskPill risk={summary.lastResult.riskLevel} /> : undefined}
-                />
+            {showVideo && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <StatTile label="Lần sàng lọc" value={String(summary?.screeningCount ?? screenings.length)} />
+                <StatTile label="Có kết quả" value={String(summary?.completedCount ?? 0)} />
+                <div className="col-span-2 sm:col-span-1">
+                  <StatTile
+                    label="Kết quả gần nhất"
+                    value={summary?.lastResult ? formatDate(summary.lastResult.screenedAt) : '—'}
+                    extra={summary?.lastResult ? <RiskPill risk={summary.lastResult.riskLevel} /> : undefined}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Renders nothing on a backend without the personalisation feature. */}
             <ChildPersonalizationSection childId={child.id} childName={child.fullName} />
 
-            <Card title="Xu hướng chỉ số dáng đi">
-              <GaitTrendChart screenings={screenings} />
-            </Card>
+            {/* Screening now runs on the Kinect station. */}
+            <KinectHistory childId={child.id} />
 
-            <Card
-              title={
-                <div className="flex items-center gap-1.5">
-                  Các lần sàng lọc
-                  <InfoTooltip
-                    content="Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa."
-                    position="top"
-                  />
-                </div>
-              }
-            >
-              {actionError && <div className="mb-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{actionError}</div>}
-              {screenings.length === 0 ? (
-                <div className="py-6 text-center text-sm font-semibold text-duo-mute">
-                  Chưa có lần sàng lọc nào.{' '}
-                  <Link to={`/screening?childId=${child.id}`} className="link-duo">
-                    Bắt đầu sàng lọc
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {screenings.map((s, i) => (
-                    <SessionRow
-                      key={s.id}
-                      screening={s}
-                      index={screenings.length - i}
-                      open={openId === s.id}
-                      busy={busyId === s.id}
-                      onToggle={() => setOpenId((current) => (current === s.id ? null : s.id))}
-                      onDelete={() => void deleteScreening(s)}
-                      onRetry={() => void retry(s)}
-                    />
-                  ))}
-                </div>
-              )}
+            {showVideo && (
+              <>
+                <Card title={videoScreening ? 'Xu hướng chỉ số dáng đi' : 'Xu hướng chỉ số dáng đi (video trước đây)'}>
+                  <GaitTrendChart screenings={screenings} />
+                </Card>
 
-            </Card>
+                <Card
+                  title={
+                    <div className="flex items-center gap-1.5">
+                      {videoScreening ? 'Các lần sàng lọc' : 'Các lần sàng lọc qua video (trước đây)'}
+                      <InfoTooltip
+                        content="Kết quả chỉ tham khảo, không thay thế chẩn đoán y khoa."
+                        position="top"
+                      />
+                    </div>
+                  }
+                >
+                  {actionError && <div className="mb-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-duo-red">{actionError}</div>}
+                  {screenings.length === 0 ? (
+                    <div className="py-6 text-center text-sm font-semibold text-duo-mute">
+                      Chưa có lần sàng lọc nào.{' '}
+                      <Link to={`/screening?childId=${child.id}`} className="link-duo">
+                        Bắt đầu sàng lọc
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {screenings.map((s, i) => (
+                        <SessionRow
+                          key={s.id}
+                          screening={s}
+                          index={screenings.length - i}
+                          open={openId === s.id}
+                          busy={busyId === s.id}
+                          onToggle={() => setOpenId((current) => (current === s.id ? null : s.id))}
+                          onDelete={() => void deleteScreening(s)}
+                          onRetry={() => void retry(s)}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                </Card>
+              </>
+            )}
 
             {/* Each renders nothing while its feature is off for this user. */}
             <ChildQuestionnairesSection childId={child.id} childName={child.fullName} dateOfBirth={child.dateOfBirth} />
-            <KinectHistory childId={child.id} />
             <ChildExercisesSection childId={child.id} childName={child.fullName} />
             <ChildDoctorLinksSection childId={child.id} childName={child.fullName} />
 

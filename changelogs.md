@@ -80,13 +80,22 @@ Nhật ký thay đổi source code, logic xử lý, giao diện, database và tr
 
 Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md` và source hiện tại. Ngày cập nhật code và ngày triển khai được ghi riêng khi có thông tin. Kết quả kiểm thử thuộc lần thực hiện được nêu trong từng mục.
 
+## 2026-11-21 — Trang hồ sơ trẻ thôi nhắc đồng ý xử lý video khi sàng lọc video đã tạm ngưng
+
+- Đã triển khai lên `khmt01` cùng bản sửa `doctor-links` (mục bên dưới): sao lưu 7 file tại `~/Luan_workspace/asdr/diagnostics/child-page-doctor-links-20261121/`, build lại backend và frontend, không có migration mới, backend healthy. Kiểm tra bằng tài khoản phụ huynh demo: `/screenings/capabilities` trả `videoScreening:false`, `/children/:id/doctor-links` trả 200, bundle có giao diện mới, không có phản hồi 5xx.
+
+- `frontend/src/pages/ChildDetailPage.tsx`: trang đọc `GET /screenings/capabilities`. Khi sàng lọc video (OpenPose) không dành cho người dùng này, dòng "Chưa có đồng ý xử lý video — xác nhận ở bước sàng lọc trước khi tải video." bị ẩn; ô thống kê, biểu đồ xu hướng và danh sách lượt sàng lọc video chỉ hiện khi trẻ còn kết quả video cũ, với tiêu đề "(video trước đây)". Mục "Các lượt sàng lọc Kinect" chuyển lên ngay sau phần cá nhân hoá; nút "Sàng lọc mới" dùng biểu tượng bước chân. Quản trị viên (được dùng video) vẫn thấy như trước.
+- `backend/test/e2e/sandbox.ts`: sandbox chạy với `VIDEO_SCREENING=admin_only` như production.
+- Kiểm chứng: frontend `tsc -b`, ESLint, 118 test sạch. Xem trong sandbox: phụ huynh không có video cũ chỉ thấy Kinect; phụ huynh có video cũ không còn dòng nhắc đồng ý và thấy kết quả video ghi "(trước đây)".
+- Bộ slide báo cáo AI4Life nằm ở `docs/ai4life_slide/` (dựng bằng `python build_deck.py`).
+
 ## 2026-11-21 — Cập nhật e2e sau khi merge nhánh của Lâm; sửa lỗi trang bác sĩ khi database chưa migrate
 
 - `test/e2e/doctor.e2e.ts`: kịch bản 5 kiểm tra danh sách bác sĩ nay trả thêm `scopes` và `expiresAt` (mặc định khoảng 90 ngày); kịch bản 10 (`DOCTOR_MODE=on`): hồ sơ bác sĩ thật ở trạng thái `PENDING` không được liệt kê, sau khi đặt `VERIFIED` thì có.
 - `test/e2e/harness.ts`: database "cũ" (3 migration đầu) được thêm hai cột `User.communitySuspendedAt`, `communitySuspensionReason` của migration `20261120051743_community_social_doctor_pilot`, vì mọi truy vấn User hiện nay đọc hai cột này; các kịch bản database cũ kiểm tra việc thiếu bảng tính năng.
 - Sửa lỗi thật do e2e kịch bản 11 phát hiện: `GET /children/:id/doctor-links` gọi `expireDoctorLinks()` ngoài khối `try`, nên database chưa có bảng bác sĩ trả 503 thay vì `{ available: false, links: [] }`. Đã chuyển vào trong `try` (`backend/src/routes/doctors.ts`).
 - `schema.prisma`: `ChatConversation.updatedAt` khai báo `@default(now())` cho khớp migration `20261120_chat_history` (database đã có default này; không cần migration mới). Hết lệch ở e2e kịch bản 18.
-- Kiểm chứng: e2e 53/53 (exercise 26/26; doctor và hai bộ bảng hỏi đạt); backend typecheck `src` sạch. Chưa commit, chưa triển khai lên `khmt01`.
+- Kiểm chứng: e2e 53/53 (exercise 26/26; doctor và hai bộ bảng hỏi đạt); backend typecheck `src` sạch. Đã commit `96cf4ed`; đã triển khai lên `khmt01` cùng bản sửa trang hồ sơ trẻ.
 
 ## 2026-11-21 — Mở bài tập vận động cho phụ huynh
 

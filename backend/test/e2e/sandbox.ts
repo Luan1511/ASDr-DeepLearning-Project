@@ -64,7 +64,7 @@ async function main() {
   await seedMockDoctors(h.prisma, hash)
   const { admin, parentA: parent } = h.users
 
-  await h.startBackend({ env: { CORS_ORIGIN: FRONTEND_ORIGINS, EXERCISE_MODE: 'on', MCHAT_MODE: 'entry', DOCTOR_MODE: 'demo' } })
+  await h.startBackend({ env: { CORS_ORIGIN: FRONTEND_ORIGINS, EXERCISE_MODE: 'on', MCHAT_MODE: 'entry', DOCTOR_MODE: 'demo', VIDEO_SCREENING: 'admin_only' } })
 
   // ---- exercise library: every built-in, published
   await ok(api('POST', '/admin/exercises/builtins/sync', { token: admin.token }), 200, 'sync built-ins')

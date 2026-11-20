@@ -1,0 +1,15 @@
+[
+ {"name":"01_home","as":"parent","path":"/"},
+ {"name":"02_kinect_result","as":"parent","path":"/screening?sessionId=c980ba92-84df-4d61-aabb-a5b568939f62"},
+ {"name":"03_screening_setup","as":"parent","path":"/screening"},
+ {"name":"04_exercises","as":"parent","path":"/exercises"},
+ {"name":"05_exercise_result","as":"parent","path":"/exercise-sessions/9fd8df96-0cd5-4e77-9f17-a0bf5bce9b19"},
+ {"name":"06_mchat_result","as":"parent","path":"/questionnaire-responses/d776022b-5fa8-4755-9bf4-804a98cd994e"},
+ {"name":"07_buddy","as":"parent","path":"/buddy","wait":5000},
+ {"name":"08_assistant","as":"parent","path":"/assistant"},
+ {"name":"09_child","as":"parent","path":"/children/8b73bf89-720b-471d-b5ea-7f50cdcc8273"},
+ {"name":"10_doctors","as":"parent","path":"/doctors"},
+ {"name":"11_community","as":"parent","path":"/community"},
+ {"name":"12_doctor_patient","as":"doctor","path":"/doctor/patients/8a938ff5-f1e4-4795-9a01-9aa63f94e270"},
+ {"name":"13_doctor_home","as":"doctor","path":"/doctor"}
+]
