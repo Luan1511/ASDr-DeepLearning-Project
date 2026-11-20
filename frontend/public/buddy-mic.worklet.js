@@ -2,7 +2,8 @@
 const FRAME_MS = 20
 const START_FRAMES = 5
 const LEAD_FRAMES = 12
-const SILENCE_FRAMES = 55
+// 35 x 20 ms = 0.7 s of silence ends a turn (was 1.1 s; shortened 2026-11-20 to cut reply delay).
+const SILENCE_FRAMES = 35
 const TAIL_FRAMES = 9
 const MAX_FRAMES = 600
 

@@ -11,6 +11,7 @@ import { RiskPill } from '../components/RiskPill'
 import { ScreeningResultView } from '../components/ScreeningResultView'
 import { ChildQuestionnairesSection } from '../components/children/ChildQuestionnairesSection'
 import { ChildExercisesSection } from '../components/children/ChildExercisesSection'
+import { KinectHistory } from '../components/KinectHistory'
 import { ChildPersonalizationSection } from '../components/children/ChildPersonalizationSection'
 import { ChildDoctorLinksSection } from '../components/children/ChildDoctorLinksSection'
 import { api, apiErrorCode } from '../lib/api'
@@ -437,6 +438,7 @@ function ChildDetail({ id }: { id: string }) {
 
             {/* Each renders nothing while its feature is off for this user. */}
             <ChildQuestionnairesSection childId={child.id} childName={child.fullName} dateOfBirth={child.dateOfBirth} />
+            <KinectHistory childId={child.id} />
             <ChildExercisesSection childId={child.id} childName={child.fullName} />
             <ChildDoctorLinksSection childId={child.id} childName={child.fullName} />
 

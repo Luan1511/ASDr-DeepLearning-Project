@@ -1,7 +1,7 @@
 import { PoseLandmarker } from '@mediapipe/tasks-vision'
 import loader from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.js?url'
 import wasm from '../../../node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.wasm?url'
-import { LiveRules, measurePose, type CoachEvent } from './rules'
+import { LiveRules, measurePose, outOfFrame, type CoachEvent } from './rules'
 import type { MovementProfile } from '../exerciseTypes'
 
 /**
@@ -46,7 +46,9 @@ self.onmessage = async ({ data }: MessageEvent<CoachRequest>) => {
   try {
     const { landmarks } = detector.detectForVideo(frame, time)
     const pose = landmarks.length === 1 ? measurePose(landmarks[0], frame.width, frame.height) : null
-    send({ type: 'result', event: rules.update(pose, time), time })
+    // Only one person and part of the body cut off: the child may be asked to step back.
+    const cutOff = !pose && landmarks.length === 1 && outOfFrame(landmarks[0])
+    send({ type: 'result', event: rules.update(pose, time, cutOff), time })
   } catch {
     send({ type: 'error' })
   } finally {

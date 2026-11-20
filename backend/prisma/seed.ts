@@ -7,6 +7,8 @@ const prisma = new PrismaClient()
 async function main() {
   const adminEmail = 'admin@asdr.local'
   const userEmail = 'user@asdr.local'
+  // One parent account manages exactly one child: the second demo child has its own parent.
+  const user2Email = 'user2@asdr.local'
 
   const adminPasswordHash = await bcrypt.hash('admin123', 10)
   const userPasswordHash = await bcrypt.hash('user123', 10)
@@ -21,6 +23,12 @@ async function main() {
     where: { email: userEmail },
     update: { name: 'Nguyễn Văn A', passwordHash: userPasswordHash, role: UserRole.USER },
     create: { name: 'Nguyễn Văn A', email: userEmail, passwordHash: userPasswordHash, role: UserRole.USER },
+  })
+
+  const user2 = await prisma.user.upsert({
+    where: { email: user2Email },
+    update: { name: 'Trần Thị B', passwordHash: userPasswordHash, role: UserRole.USER },
+    create: { name: 'Trần Thị B', email: user2Email, passwordHash: userPasswordHash, role: UserRole.USER },
   })
 
   const child1Id = '11111111-1111-1111-1111-111111111111'
@@ -50,7 +58,7 @@ async function main() {
   const child2 = await prisma.childProfile.upsert({
     where: { id: child2Id },
     update: {
-      userId: user.id,
+      userId: user2.id,
       fullName: 'Bé Minh',
       dateOfBirth: new Date('2021-11-02'),
       gender: Gender.MALE,
@@ -58,7 +66,7 @@ async function main() {
     },
     create: {
       id: child2Id,
-      userId: user.id,
+      userId: user2.id,
       fullName: 'Bé Minh',
       dateOfBirth: new Date('2021-11-02'),
       gender: Gender.MALE,
@@ -107,7 +115,7 @@ async function main() {
   await prisma.videoUpload.upsert({
     where: { id: video2Id },
     update: {
-      userId: user.id,
+      userId: user2.id,
       childId: child2.id,
       originalFilename: 'be-minh-demo.mov',
       storedFilename: 'demo-video-2.mov',
@@ -119,7 +127,7 @@ async function main() {
     },
     create: {
       id: video2Id,
-      userId: user.id,
+      userId: user2.id,
       childId: child2.id,
       originalFilename: 'be-minh-demo.mov',
       storedFilename: 'demo-video-2.mov',
@@ -209,7 +217,7 @@ async function main() {
   // Sample doctors for DOCTOR_MODE=demo (same accounts as `npm run doctors:seed-mock -- --yes`).
   const doctors = await seedMockDoctors(prisma, await bcrypt.hash(process.env.MOCK_DOCTOR_PASSWORD || 'doctor123', 10))
 
-  console.log('Seed completed:', { adminEmail, userEmail, child1: child1.fullName, child2: child2.fullName, sampleDoctors: doctors.total })
+  console.log('Seed completed:', { adminEmail, userEmail, user2Email, child1: child1.fullName, child2: child2.fullName, sampleDoctors: doctors.total })
 }
 
 main()

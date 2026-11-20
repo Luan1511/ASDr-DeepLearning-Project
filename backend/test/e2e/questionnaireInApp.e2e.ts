@@ -302,13 +302,13 @@ function stepKey(state: any) {
  * Answers questions per `plan` until the Follow-Up is complete or `until`
  * holds; `trace` collects every question asked ("item.node[.example]").
  */
-async function walk(id: string, state: any, plan: Plan, trace: string[], until?: (s: any) => boolean): Promise<any> {
+async function walk(id: string, state: any, plan: Plan, trace: string[], until?: (s: any) => boolean, user: SeededUser = parentA): Promise<any> {
   for (let guard = 0; guard < 200; guard += 1) {
     checkView(state)
     if (state.status === 'COMPLETED' || !state.current) return state
     if (until?.(state)) return state
     trace.push(stepKey(state))
-    const res = await postAnswer(id, answerFor(state, plan))
+    const res = await postAnswer(id, answerFor(state, plan), user)
     assert.equal(res.status, 200, `${stepKey(state)}: ${JSON.stringify(res.body)}`)
     state = res.body
   }
@@ -484,8 +484,10 @@ scenario('2. content ready (picked up without restart) → content endpoint; IN_
   const missing = answers()
   delete missing['9']
   assertError(await submit(parentA, childId, { mode: 'IN_APP', answers: missing }), 400, 'INCOMPLETE_ANSWERS')
-  const young = await h.createChild(parentA, 'IA-12m', 12)
-  assertError(await submit(parentA, young.id, { mode: 'IN_APP' }), 422, 'AGE_OUT_OF_RANGE')
+  // One parent manages one child: this younger child has its own parent.
+  const youngParent = await h.newParent('IA-12m')
+  const young = await h.createChild(youngParent, 'IA-12m', 12)
+  assertError(await submit(youngParent, young.id, { mode: 'IN_APP' }), 422, 'AGE_OUT_OF_RANGE')
   assertError(await submit(parentB, childId, { mode: 'IN_APP' }), 404, 'CHILD_NOT_FOUND')
 
   // The paper-form entry stays available as the alternative.
@@ -926,10 +928,11 @@ scenario('5. assisted override replaces partial in-app answers; entry-mode MODER
   assert.equal(es.response.rescreenAfter, rescreenFor20Months)
 
   // A child of 24 months or more gets no rescreen date after a negative Follow-Up.
-  const older = await h.createChild(parentA, 'IA-26m', 26)
-  const olderRes = (await submit(parentA, older.id, { mode: 'IN_APP', answers: answers([13, 19, 4]) })).body.response
-  let os = (await getState(olderRes.id)).body
-  os = await walk(olderRes.id, os, { '4.cl': ['p1'], '13.q1': 'YES', '19.q1': 'YES' }, [])
+  const olderParent = await h.newParent('IA-26m')
+  const older = await h.createChild(olderParent, 'IA-26m', 26)
+  const olderRes = (await submit(olderParent, older.id, { mode: 'IN_APP', answers: answers([13, 19, 4]) })).body.response
+  let os = (await getState(olderRes.id, olderParent)).body
+  os = await walk(olderRes.id, os, { '4.cl': ['p1'], '13.q1': 'YES', '19.q1': 'YES' }, [], undefined, olderParent)
   assert.equal(os.response.outcome, 'SCREEN_NEGATIVE')
   assert.equal(os.response.rescreenAfter, null)
 })

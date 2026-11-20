@@ -95,10 +95,11 @@ export function ChildrenPage() {
           <div>
             <h1 className="text-2xl font-black text-duo-ink">Hồ sơ trẻ</h1>
             <p className="mt-1 text-sm font-semibold text-duo-mute">
-              Theo dõi các lần sàng lọc và chỉ số dáng đi của từng trẻ theo thời gian.
+              Theo dõi các lần sàng lọc và chỉ số dáng đi của con theo thời gian. Mỗi tài khoản quản lý một hồ sơ trẻ.
             </p>
           </div>
-          {!creating && (
+          {/* One child per parent account: the button only appears before the first profile exists. */}
+          {!creating && children !== null && children.length === 0 && !loadError && (
             <button type="button" className="btn-duo" onClick={() => setCreating(true)}>
               <UserPlus className="h-4 w-4" />
               Thêm hồ sơ

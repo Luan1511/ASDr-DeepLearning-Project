@@ -147,23 +147,69 @@ export async function adminDeleteExercise(id: string): Promise<{ deleted: boolea
 
 export type TemplateSourceDto = { sourceSubjectId: string; numFrames: number; fps: number | null; fpsSource: 'ml' | 'duration' | null }
 
-/** Uploads an ADULT demonstration video; the backend extracts it into a "tpl_<uuid>" ML subject. */
+type TemplateSourceJob =
+  | { jobId: string; status: 'running' }
+  | { jobId: string; status: 'done'; source: TemplateSourceDto }
+  | { jobId: string; status: 'failed'; httpStatus: number; error: string; message?: string }
+
+/** A failed background extraction, carrying the same error code as the old synchronous answer. */
+export class TemplateSourceJobError extends Error {
+  constructor(readonly code: string) {
+    super(code)
+  }
+}
+
+const JOB_POLL_MS = 2000
+/** Longer than the backend's EXERCISE_EXTRACT_TIMEOUT_MS (10 min) plus queueing. */
+const JOB_MAX_WAIT_MS = 20 * 60 * 1000
+
+/**
+ * Uploads an ADULT demonstration video; the backend extracts it into a
+ * "tpl_<uuid>" ML subject in the background and this polls until it is done.
+ * If an extraction is already running for the exercise, that one is awaited.
+ */
 export async function adminUploadTemplateSource(
   exerciseId: string,
   file: File,
   durationMs: number | null,
   onProgress?: (pct: number) => void,
+  signal?: AbortSignal,
 ): Promise<TemplateSourceDto> {
   const fd = new FormData()
   if (durationMs) fd.append('durationMs', String(Math.round(durationMs)))
   fd.append('attestation', 'true')
   fd.append('video', file)
-  const res = await api.post(`/admin/exercises/${exerciseId}/template-sources`, fd, {
-    onUploadProgress: (ev) => {
-      if (ev.total && onProgress) onProgress(Math.round((ev.loaded / ev.total) * 100))
-    },
-  })
-  return res.data
+  let job: TemplateSourceJob
+  try {
+    const res = await api.post(`/admin/exercises/${exerciseId}/template-sources`, fd, {
+      signal,
+      onUploadProgress: (ev) => {
+        if (ev.total && onProgress) onProgress(Math.round((ev.loaded / ev.total) * 100))
+      },
+    })
+    job = res.data.job
+  } catch (err) {
+    const running = (err as { response?: { data?: { error?: unknown; job?: TemplateSourceJob } } }).response?.data
+    if (running?.error !== 'TEMPLATE_SOURCE_BUSY' || !running.job) throw err
+    job = running.job
+  }
+  onProgress?.(100)
+
+  const deadline = Date.now() + JOB_MAX_WAIT_MS
+  while (job.status === 'running') {
+    if (Date.now() > deadline) throw new TemplateSourceJobError('TEMPLATE_SOURCE_JOB_TIMEOUT')
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, JOB_POLL_MS)
+      signal?.addEventListener('abort', () => {
+        clearTimeout(timer)
+        reject(new DOMException('Aborted', 'AbortError'))
+      }, { once: true })
+    })
+    const res = await api.get(`/admin/exercises/${exerciseId}/template-sources/jobs/${job.jobId}`, { signal })
+    job = res.data.job
+  }
+  if (job.status === 'failed') throw new TemplateSourceJobError(job.error)
+  return job.source
 }
 
 export type CompileTemplateInput = {
@@ -324,12 +370,31 @@ const API_ERROR_MESSAGE: Record<string, string> = {
   MISSING_CHILD_ID: 'Hãy chọn hồ sơ trẻ trước.',
   MISSING_EXERCISE_ID: 'Hãy chọn bài tập trước.',
   ML_SERVER_ERROR: 'Máy chủ phân tích gặp sự cố khi xử lý video. Vui lòng thử lại sau.',
+  TEMPLATE_SOURCE_JOB_NOT_FOUND:
+    'Máy chủ không còn giữ lượt trích xuất này (có thể vừa khởi động lại). Hãy tải video mẫu lên lại.',
+  TEMPLATE_SOURCE_JOB_TIMEOUT: 'Trích xuất khung xương quá lâu. Hãy thử video ngắn hơn hoặc độ phân giải thấp hơn.',
+}
+
+/**
+ * Text for an error page from a proxy in front of the API (no JSON code):
+ * Cloudflare answers 413 above 100 MB and 524 after 100 s without a response.
+ */
+function proxyErrorMessage(error: unknown): string | undefined {
+  const status = (error as { response?: { status?: unknown } } | null)?.response?.status
+  if (status === 413) {
+    return 'Video vượt giới hạn dung lượng của đường truyền (tối đa khoảng 100 MB). Hãy nén video (720p, 30 fps) hoặc cắt ngắn rồi thử lại.'
+  }
+  if (status === 502 || status === 504 || status === 522 || status === 524) {
+    return 'Máy chủ phản hồi quá lâu hoặc tạm thời không truy cập được. Vui lòng thử lại sau ít phút.'
+  }
+  return undefined
 }
 
 /** Parent/admin text for an exercise API error (falls back to `fallback`). */
 export function exerciseApiErrorMessage(error: unknown, fallback: string): string {
-  const code = apiErrorCode(error)
+  const code = error instanceof TemplateSourceJobError ? error.code : apiErrorCode(error)
   if (code && API_ERROR_MESSAGE[code]) return API_ERROR_MESSAGE[code]
   if (isNetworkError(error)) return 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.'
+  if (!code) return proxyErrorMessage(error) ?? fallback
   return fallback
 }

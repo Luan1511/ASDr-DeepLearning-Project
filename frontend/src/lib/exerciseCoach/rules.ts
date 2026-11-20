@@ -24,6 +24,9 @@ export const CUE_TEXT = {
   cross: 'Con thử đưa tay này cùng chân bên kia nhé!',
   open: 'Khi nâng tay, con thử mở hai chân nhé!',
   alternate: 'Lượt tới con thử đổi chân nhé!',
+  higher: 'Con thử đá chân cao hơn chút nữa nhé!',
+  frame: 'Con lùi ra một chút để Bin thấy cả người nhé!',
+  move: 'Con đá chân lên nào!',
 } as const
 export type Cue = keyof typeof CUE_TEXT
 
@@ -39,9 +42,20 @@ export const PROFILE_CUE: Record<MovementProfile, Cue> = {
   'high-kicks': 'alternate',
 }
 
+/** Every reminder a profile can give (each has a voice clip in public/exercise-coach/<cue>.wav). */
+export const PROFILE_CUES: Record<MovementProfile, Cue[]> = {
+  'jump-twists': ['cross', 'frame'],
+  'jumping-jacks': ['open', 'frame'],
+  'high-kicks': ['alternate', 'higher', 'move', 'frame'],
+}
+
 export const LIVE_LIMITS = {
   /** Tracking lost for this long: forget everything counted so far. */
   lostMs: 450,
+  /** One person seen but part of the body hidden or at the edge this long: ask to step back. */
+  frameMs: 2000,
+  /** At most one "step back" reminder per this period. */
+  frameRepeatMs: 10000,
   /** Correct repetitions in a row before a praise. */
   praiseAfter: 3,
   jacks: {
@@ -62,6 +76,21 @@ export const LIVE_LIMITS = {
     kick: 0.14,
     minKickMs: 180,
     readyMs: 120,
+    /**
+     * Kick height = how much shorter the lifted leg got, in torso lengths. The
+     * adult High-Kicks demo (template v2) peaks at 2.2-2.8 (foot above the hip)
+     * and shuffles its feet at 0.15-0.27 between kicks. Below `lowKick` a lift
+     * is a shuffle and is ignored; up to `highKick` (about the foot at hip
+     * height, 40% of the demo) it is a low kick. The post-session report has
+     * no height criterion; these are the live coach's own (2026-11-20).
+     */
+    lowKick: 0.35,
+    highKick: 1.0,
+    /** Low kicks in a row before "kick higher". */
+    lowRepeats: 2,
+    /** Standing in view without a lift for this long: "kick now". */
+    idleMs: 6000,
+    idleRepeatMs: 12000,
     /** A longer pause between two kicks starts a new series (kicks.js: 4 s). */
     adjacencyMs: 4000,
   },
@@ -148,6 +177,19 @@ export function measurePose(points: Landmark[], width: number, height: number): 
   }
 }
 
+/**
+ * True when a needed joint of this single person is hidden or at the picture
+ * edge, i.e. the child should step back (not when the person is only small or
+ * turned sideways).
+ */
+export function outOfFrame(points: Landmark[]): boolean {
+  return REQUIRED.some((id) => {
+    const point = points[id]
+    if (!point || (point.visibility ?? 0) < MIN_VISIBILITY) return true
+    return !(point.x > FRAME_MARGIN && point.x < 1 - FRAME_MARGIN && point.y > FRAME_MARGIN && point.y < 1 - FRAME_MARGIN)
+  })
+}
+
 type TwistSample = { arm: number; knee: number; time: number }
 type Side = 'left' | 'right'
 
@@ -191,6 +233,9 @@ export class LiveRules {
   private lastSeen = -Infinity
   private missingSince: number | null = null
   private goodStreak = 0
+  // "step back" (kept across resets)
+  private outSince: number | null = null
+  private lastFrameCue = -Infinity
 
   // jumping jacks
   private armsWereDown = false
@@ -204,8 +249,12 @@ export class LiveRules {
   private restSince: number | null = null
   private ready = false
   private departed = false
-  private active: { side: Side; start: number; samples: number } | null = null
+  private active: { side: Side; start: number; samples: number; max: number } | null = null
   private previousKick: { side: Side; end: number } | null = null
+  private lowKicks = 0
+  private lastLowKick = -Infinity
+  private lastMotion: number | null = null
+  private lastIdleCue = -Infinity
 
   // jump twists
   private twists: TwistSample[] = []
@@ -215,14 +264,23 @@ export class LiveRules {
     this.profile = profile
   }
 
-  update(pose: PoseMeasure | null, time: number): CoachEvent {
+  /** `cutOff`: no measures because the one person seen is partly hidden or at the edge (see outOfFrame). */
+  update(pose: PoseMeasure | null, time: number, cutOff = false): CoachEvent {
     if (!pose) {
       this.missingSince ??= time
       if (time - this.missingSince >= LIVE_LIMITS.lostMs) this.reset()
-      return null
+      if (!cutOff) {
+        this.outSince = null
+        return null
+      }
+      this.outSince ??= time
+      if (time - this.outSince < LIVE_LIMITS.frameMs || time - this.lastFrameCue < LIVE_LIMITS.frameRepeatMs) return null
+      this.lastFrameCue = time
+      return { kind: 'cue', cue: 'frame' }
     }
     if (time - this.lastSeen >= LIVE_LIMITS.lostMs) this.reset()
     this.missingSince = null
+    this.outSince = null
     this.lastSeen = time
 
     if (this.profile === 'jumping-jacks') return this.jacks(pose)
@@ -281,6 +339,7 @@ export class LiveRules {
     const raw = pose.legLeft - pose.legRight
     const difference = raw - this.legOffset
     const elevation = Math.abs(difference)
+    this.lastMotion ??= time
 
     if (elevation <= L.rest) {
       this.legOffset += 0.2 * (raw - this.legOffset)
@@ -288,7 +347,7 @@ export class LiveRules {
       if (this.active) {
         const kick = this.active
         this.active = null
-        if (time - kick.start >= L.minKickMs && kick.samples >= 2) event = this.kickDone(kick.side, kick.start, time)
+        if (time - kick.start >= L.minKickMs && kick.samples >= 2) event = this.kickDone(kick.side, kick.start, time, kick.max)
         else this.previousKick = null
         this.ready = false
         this.restSince = null
@@ -302,11 +361,16 @@ export class LiveRules {
       this.departed = false
       this.restSince ??= time
       if (time - this.restSince >= L.readyMs) this.ready = true
+      if (!event && time - this.lastMotion >= L.idleMs && time - this.lastIdleCue >= L.idleRepeatMs) {
+        this.lastIdleCue = time
+        return { kind: 'cue', cue: 'move' }
+      }
       return event
     }
 
     const side: Side = difference > 0 ? 'right' : 'left'
     this.departed = true
+    this.lastMotion = time
     this.restSince = null
     if (this.active && this.active.side !== side) {
       this.active = null
@@ -314,23 +378,45 @@ export class LiveRules {
       this.previousKick = null
       return null
     }
-    if (!this.active && this.ready && elevation >= L.kick) this.active = { side, start: time, samples: 0 }
-    if (this.active) this.active.samples += 1
+    if (!this.active && this.ready && elevation >= L.kick) {
+      this.active = { side, start: time, samples: 0, max: elevation }
+    }
+    if (this.active) {
+      this.active.samples += 1
+      this.active.max = Math.max(this.active.max, elevation)
+    }
     // A lasting small difference that is not a kick (one foot a little forward,
     // a tilted camera) is slowly taken as the standing stance.
     else if (elevation < L.kick) this.legOffset += 0.05 * (raw - this.legOffset)
     return null
   }
 
-  private kickDone(side: Side, start: number, end: number): CoachEvent {
+  /** One kick (or attempt) that was not high enough; two in a row: "kick higher". */
+  private lowKick(start: number, end: number): CoachEvent {
+    const L = LIVE_LIMITS.kicks
+    if (start - this.lastLowKick > L.adjacencyMs) this.lowKicks = 0
+    this.lastLowKick = end
+    this.lowKicks += 1
+    this.goodStreak = 0
+    if (this.lowKicks < L.lowRepeats) return null
+    this.lowKicks = 0
+    return { kind: 'cue', cue: 'higher' }
+  }
+
+  private kickDone(side: Side, start: number, end: number, max: number): CoachEvent {
     const previous = this.previousKick
     this.previousKick = { side, end }
-    if (!previous || start - previous.end > LIVE_LIMITS.kicks.adjacencyMs) return null
-    if (previous.side === side) {
+    const adjacent = previous !== null && start - previous.end <= LIVE_LIMITS.kicks.adjacencyMs
+    // Changing leg comes first; then the height.
+    if (adjacent && previous.side === side) {
       this.goodStreak = 0
       return { kind: 'cue', cue: 'alternate' }
     }
-    return this.good()
+    // A shuffle of the feet says nothing about the height.
+    if (max < LIVE_LIMITS.kicks.lowKick) return null
+    if (max < LIVE_LIMITS.kicks.highKick) return this.lowKick(start, end)
+    this.lowKicks = 0
+    return adjacent ? this.good() : null
   }
 
   private twist(pose: PoseMeasure, time: number): CoachEvent {
@@ -359,6 +445,9 @@ export class LiveRules {
     this.departed = false
     this.active = null
     this.previousKick = null
+    this.lowKicks = 0
+    this.lastLowKick = -Infinity
+    this.lastMotion = null
     this.twists = []
     this.lastTwistPraise = -Infinity
   }

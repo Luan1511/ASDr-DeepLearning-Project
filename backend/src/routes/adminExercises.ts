@@ -33,6 +33,7 @@ import { sanitizeFps } from '../services/gaitFeatures'
 import { getExerciseQueueStats, EXERCISE_UPLOAD_DIR } from '../services/exerciseProcessor'
 import { getMlCapabilities } from '../services/mlCapabilities'
 import { OpenPoseApiError, openposeService } from '../services/openposeService'
+import { templateSourceJobs } from '../services/templateSourceJobs'
 import {
   BUILTIN_EXERCISES,
   buildTemplate,
@@ -439,6 +440,10 @@ const templateUpload = multer({
  * Extract an ADULT demonstration into a new "tpl_<uuid>" ML subject. Only
  * such subjects can become template sources: a shared ML server may hold
  * other databases' child subjects that this database cannot recognise.
+ *
+ * Answers 202 with a job as soon as the upload is checked; the extraction
+ * runs in the background (it often outlasts the 100 s a Cloudflare tunnel
+ * waits) and the client polls GET /:id/template-sources/jobs/:jobId.
  */
 adminExercisesRouter.post(
   '/:id/template-sources',
@@ -446,28 +451,50 @@ adminExercisesRouter.post(
   templateUpload.single('video'),
   asyncHandler(async (req, res) => {
     const file = req.file
-    // The adult's upload must be gone from disk before the client hears back,
-    // so the answer is computed first and only sent after the unlink finished.
-    let reply: { status: number; body: Record<string, unknown> }
-    try {
-      reply = await extractTemplateSource(file, req.body)
-    } finally {
-      if (file?.path) await fs.promises.unlink(file.path).catch(() => {})
+    const removeUpload = () => (file?.path ? fs.promises.unlink(file.path).catch(() => {}) : Promise.resolve())
+    // A refused upload is deleted before the client hears back.
+    const refuse = async (status: number, payload: Record<string, unknown>) => {
+      await removeUpload()
+      return res.status(status).json(payload)
     }
-    return res.status(reply.status).json(reply.body)
+    const exerciseId = parseId(req.params.id) as string
+    if (!isAttested((req.body as { attestation?: unknown } | undefined)?.attestation)) {
+      return refuse(422, { error: 'ATTESTATION_REQUIRED' })
+    }
+    if (!file) return refuse(400, { error: 'MISSING_FILE' })
+    const parsed = templateSourceBodySchema.safeParse(req.body)
+    if (!parsed.success) return refuse(400, { error: 'VALIDATION_ERROR', details: parsed.error.flatten() })
+    const body = parsed.data
+    const running = templateSourceJobs.running(exerciseId)
+    if (running) return refuse(409, { error: 'TEMPLATE_SOURCE_BUSY', job: running })
+
+    // The adult's upload is deleted as soon as the extraction finished.
+    const job = templateSourceJobs.start(exerciseId, async () => {
+      try {
+        return await extractTemplateSource(file, body)
+      } finally {
+        await removeUpload()
+      }
+    })
+    return res.status(202).json({ job })
+  }),
+)
+
+adminExercisesRouter.get(
+  '/:id/template-sources/jobs/:jobId',
+  asyncHandler(async (req, res) => {
+    const exerciseId = parseId(req.params.id)
+    const jobId = parseId(req.params.jobId)
+    const job = exerciseId && jobId ? templateSourceJobs.get(exerciseId, jobId) : null
+    if (!job) return res.status(404).json({ error: 'TEMPLATE_SOURCE_JOB_NOT_FOUND' })
+    return res.json({ job })
   }),
 )
 
 async function extractTemplateSource(
-  file: Express.Multer.File | undefined,
-  rawBody: unknown,
+  file: Express.Multer.File,
+  body: { durationMs?: number },
 ): Promise<{ status: number; body: Record<string, unknown> }> {
-  if (!isAttested((rawBody as { attestation?: unknown } | undefined)?.attestation)) {
-    return { status: 422, body: { error: 'ATTESTATION_REQUIRED' } }
-  }
-  if (!file) return { status: 400, body: { error: 'MISSING_FILE' } }
-  const body = templateSourceBodySchema.parse(rawBody)
-
   const caps = await getMlCapabilities()
   const mlUpload = chooseMlUpload({
     ext: path.extname(file.filename),

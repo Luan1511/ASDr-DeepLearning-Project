@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Mic, MicOff, SendHorizontal, Sparkles } from 'lucide-react'
+import { ArrowLeft, HeartHandshake, Mic, MicOff, SendHorizontal, Sparkles } from 'lucide-react'
 import { BuddyCharacter } from '../components/buddy/BuddyCharacter'
 import { BuddyCamera, type BuddyCameraHandle } from '../components/buddy/BuddyCamera'
+import { BuddyDuck } from '../components/buddy/BuddyDuck'
+import { BuddyPropPicture } from '../components/buddy/BuddyProps'
+import type { BuddyProp } from '../lib/buddy/types'
+import { playBuddySong } from '../lib/buddy/song'
 import { api } from '../lib/api'
-import { askBuddy, recentBuddyMessages, type BuddyMessage, type BuddyVisionContext } from '../lib/buddy/api'
-import { clearBuddyHistory, loadBuddyHistory, loadLastBuddyChild, rememberBuddyChild, saveBuddyHistory } from '../lib/buddy/history'
+import { askBuddy, recentBuddyMessages, type BuddyEvent, type BuddyMessage, type BuddyVisionContext } from '../lib/buddy/api'
+import type { ArrivalRole } from '../lib/buddy/presence'
+import {
+  clearBuddyHistory, loadBuddyHistory, loadGreetedParents, loadLastBuddyChild, rememberBuddyChild, rememberGreetedParent, saveBuddyHistory,
+} from '../lib/buddy/history'
 import { BuddyDirector, useBuddyFrame } from '../lib/buddy/engine'
-import { buddyVoiceEnabled, openBuddyMic, speakBuddyLine, transcribeBuddyTurn, type BuddyMic, type BuddyVoiceTiming } from '../lib/buddy/voice'
+import {
+  buddyVoiceStatus, openBuddyMic, speakBuddyLine, transcribeBuddyTurn,
+  type BuddyMic, type BuddyVoiceTiming,
+} from '../lib/buddy/voice'
+import { BUDDY_PERSONALIZE_NOTICE, loadBuddyPersonalize, saveBuddyPersonalize } from '../lib/buddy/personalizeConsent'
 import type { BuddyScript } from '../lib/buddy/types'
 import type { ChildProfile } from '../lib/types'
 import { useAuth } from '../state/useAuth'
@@ -31,8 +42,9 @@ function ageInYears(dateOfBirth: string) {
   return age >= 1 && age <= 18 ? age : undefined
 }
 
-type TurnPhase = 'idle' | 'permission' | 'listening' | 'recording' | 'thinking' | 'speaking'
-type TurnSource = 'typed' | 'voice' | 'retry'
+type TurnPhase = 'idle' | 'permission' | 'listening' | 'recording' | 'thinking' | 'speaking' | 'music'
+/** `arrival`: Bin speaks first because a parent sat down next to the child. */
+type TurnSource = 'typed' | 'voice' | 'retry' | 'arrival'
 type VoiceSession = {
   controller: AbortController
   context: AudioContext
@@ -41,6 +53,10 @@ type VoiceSession = {
 }
 
 const SPEAKER_TAIL_MS = 240
+/** How long a picture stays next to Bin. */
+const PROP_VISIBLE_MS = 8000
+/** A greeting that could not be said within this time (Bin busy) is dropped. */
+const ARRIVAL_WAIT_MS = 30_000
 
 const TURN_STATUS: Record<TurnPhase, string> = {
   idle: '',
@@ -49,6 +65,7 @@ const TURN_STATUS: Record<TurnPhase, string> = {
   recording: 'Đang nghe lời bạn…',
   thinking: 'Bin đang nghĩ…',
   speaking: 'Bin đang nói',
+  music: 'Bin đang mở nhạc',
 }
 
 /** Kid mode: text and optional Vietnamese voice turns with Bạn Bin. */
@@ -67,7 +84,8 @@ export function BuddyPage() {
         if (request.signal.aborted) return
         const profiles: ChildProfile[] = res.data.children ?? []
         setFamily({ userId, profiles })
-        const previous = loadLastBuddyChild(userId)
+        // One child per account: the only child is chosen; older accounts fall back to the last one used.
+        const previous = profiles.length === 1 ? profiles[0].id : loadLastBuddyChild(userId)
         if (previous && profiles.some((child) => child.id === previous)) {
           setParams((current) => current.has('childId') ? current : { childId: previous }, { replace: true })
         }
@@ -130,6 +148,24 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
   })
   const [historyWarning, setHistoryWarning] = useState('')
   const [editingTranscript, setEditingTranscript] = useState(false)
+  const [songPlaying, setSongPlaying] = useState(false)
+  // The picture Bin holds up while talking about something (cat, house…); `key` replays its entrance.
+  const [shownProp, setShownProp] = useState<{ prop: BuddyProp; key: number } | null>(null)
+  useEffect(() => {
+    if (!shownProp) return
+    const timer = window.setTimeout(() => setShownProp(null), PROP_VISIBLE_MS)
+    return () => window.clearTimeout(timer)
+  }, [shownProp])
+  // The parent's choice to let Bin use the personalisation; a ref so voice turns read the latest value.
+  const [personalize, setPersonalize] = useState(() => loadBuddyPersonalize(userId, childId))
+  const personalizeRef = useRef(personalize)
+  const [personalizeWarning, setPersonalizeWarning] = useState('')
+
+  function choosePersonalize(on: boolean) {
+    personalizeRef.current = on
+    setPersonalize(on)
+    setPersonalizeWarning(saveBuddyPersonalize(userId, childId, on) ? '' : 'Trình duyệt chưa lưu được lựa chọn; lựa chọn chỉ có hiệu lực đến khi tải lại trang.')
+  }
   const inputRef = useRef<HTMLInputElement>(null)
 
   const cancelTurn = useCallback(() => {
@@ -162,7 +198,7 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
   useEffect(() => {
     const request = new AbortController()
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia && typeof AudioWorkletNode !== 'undefined' && typeof AudioContext !== 'undefined') {
-      void buddyVoiceEnabled(request.signal).then(setVoiceAvailable, () => undefined)
+      void buddyVoiceStatus(request.signal).then(({ enabled }) => setVoiceAvailable(enabled), () => undefined)
     }
     return () => request.abort()
   }, [])
@@ -236,10 +272,17 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
       : 'Trình duyệt chưa lưu được lịch sử. Bin có thể quên khi bạn rời trang.')
   }
 
-  async function respond(raw: string, turn: AbortController, voice: AudioContext | null, source: TurnSource, vision?: BuddyVisionContext) {
+  async function respond(
+    raw: string,
+    turn: AbortController,
+    voice: AudioContext | null,
+    source: TurnSource,
+    vision?: BuddyVisionContext,
+    event?: BuddyEvent,
+  ) {
     const text = raw.trim()
-    if (!text || turn.signal.aborted) return
-    if (source !== 'retry') setLastChild({ text, fromVoice: source === 'voice' })
+    if ((!text && source !== 'arrival') || turn.signal.aborted) return null
+    if (source === 'typed' || source === 'voice') setLastChild({ text, fromVoice: source === 'voice' })
     setCanRetry(false)
     setSuggestions([])
     setPhase('thinking')
@@ -253,17 +296,27 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
       : text
     const history = source === 'retry'
       ? messages.current
-      : recentBuddyMessages([...messages.current, { role: 'child', text: outbound }])
+      : source === 'arrival'
+        ? recentBuddyMessages(messages.current)
+        : recentBuddyMessages([...messages.current, { role: 'child', text: outbound }])
     rememberHistory(history)
-    const { script, fallback } = await askBuddy(
+    const { script, fallback, voice: voiceStyle } = await askBuddy(
       history,
-      { age: activeChild ? ageInYears(activeChild.dateOfBirth) : undefined },
+      {
+        age: activeChild ? ageInYears(activeChild.dateOfBirth) : undefined,
+        id: activeChild?.id,
+        personalize: personalizeRef.current,
+      },
       turn.signal,
       vision,
+      event,
     )
-    if (turn.signal.aborted) return
+    if (turn.signal.aborted) return null
     director.stop('waiting')
+    // Bin speaking first is a nice-to-have: when the chat service fails, stay quiet.
+    if (source === 'arrival' && fallback) return null
     setCanRetry(fallback)
+    setShownProp(!fallback && script.prop ? { prop: script.prop, key: Date.now() } : null)
 
     if (!voice) {
       setPhase('idle')
@@ -281,7 +334,7 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
         await speakBuddyLine(voice, line, turn.signal, (level) => {
           setPhase('speaking')
           start(level)
-        })
+        }, { calm: voiceStyle === 'calm' })
       } catch (error) {
         if (!turn.signal.aborted) {
           setVoiceError('Bin chưa phát được tiếng. Bạn có thể đọc câu trả lời trên màn hình.')
@@ -289,7 +342,73 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
         throw error
       }
     } : undefined)
+    if (!fallback && script.song && !turn.signal.aborted) {
+      // The mic stays off while the song plays (the turn is still open); Bin dances with the duck.
+      setPhase('music')
+      setShownProp(null)
+      setSongPlaying(true)
+      director.play('dance', { id: 'song', loop: true })
+      const result = await playBuddySong(script.song, turn.signal, voiceStyle === 'calm' ? 0.5 : 0.9)
+      director.stop('song')
+      setSongPlaying(false)
+      if (result === 'failed') setVoiceError('Bin chưa mở được bài hát lúc này.')
+      if (!voice && !turn.signal.aborted) setPhase('idle')
+    }
+    return fallback ? null : script
   }
+
+  /** "Dừng nhạc": ends the turn; with the mic on, Bin listens again. */
+  function stopSong() {
+    if (voiceSession.current?.mic) {
+      interruptVoice()
+      return
+    }
+    cancelTurn()
+    setSongPlaying(false)
+    setPhase('idle')
+  }
+
+  // A parent sat down next to the child (seen by the camera): Bin greets them when it is free.
+  const pendingArrival = useRef<{ role: ArrivalRole; at: number } | null>(null)
+  const tryGreetRef = useRef<() => void>(() => {})
+
+  async function greet(role: ArrivalRole) {
+    const session = voiceSession.current
+    const voice = session?.context.state === 'running' ? session.context : null
+    const turn = beginTurn()
+    try {
+      const spoken = await respond('', turn, voice, 'arrival', camera.current?.snapshot()?.context, { type: 'arrival', role })
+      // Greeted once per conversation: not again after a reload or when the camera is turned on again.
+      if (spoken) rememberGreetedParent(userId, childId, role)
+    } finally {
+      finishTurn(turn, session)
+    }
+  }
+
+  function handleArrival(role: ArrivalRole) {
+    if (loadGreetedParents(userId, childId).includes(role)) return
+    pendingArrival.current = { role, at: performance.now() }
+    tryGreetRef.current()
+  }
+
+  function tryGreet() {
+    const pending = pendingArrival.current
+    if (!pending) return
+    if (performance.now() - pending.at > ARRIVAL_WAIT_MS) {
+      pendingArrival.current = null
+      return
+    }
+    if (activeTurn.current || editingTranscript || (phase !== 'idle' && phase !== 'listening')) return
+    pendingArrival.current = null
+    void greet(pending.role)
+  }
+
+  useEffect(() => {
+    tryGreetRef.current = tryGreet
+  })
+  useEffect(() => {
+    tryGreetRef.current()
+  }, [phase, editingTranscript])
 
   async function send(raw: string, mode: 'typed' | 'retry' | 'correction' = 'typed') {
     const text = raw.trim()
@@ -415,8 +534,8 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
           <Sparkles className="h-5 w-5 text-[#FACC15]" /> Bạn Bin
         </div>
         <div className="flex items-center gap-2">
-          <BuddyCamera ref={camera} userId={userId} childId={childId} />
-          {profiles.length > 0 && (
+          <BuddyCamera ref={camera} userId={userId} childId={childId} onArrival={handleArrival} />
+          {profiles.length > 1 && (
             <select
               value={childId}
               onChange={(e) => onChildChange(e.target.value)}
@@ -440,8 +559,16 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
       </header>
 
       <main className="relative flex min-h-0 flex-1 flex-col items-center justify-end gap-3 px-4 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-6 md:px-10">
-        <div className="order-2 flex h-full min-h-0 w-full items-end justify-center md:order-1 md:justify-end">
+        <div className="relative order-2 flex h-full min-h-0 w-full items-end justify-center md:order-1 md:justify-end">
           <BuddyCharacter frame={frame} className="h-full max-h-[640px] w-auto max-w-full translate-y-8" />
+          {songPlaying && <BuddyDuck />}
+          {!songPlaying && shownProp && <BuddyPropPicture key={shownProp.key} prop={shownProp.prop} />}
+          {songPlaying && (
+            <button type="button" onClick={stopSong}
+              className="absolute right-4 top-4 z-20 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#172B6B] shadow-card">
+              Dừng nhạc
+            </button>
+          )}
         </div>
 
         <div className="order-1 flex w-full max-w-xl flex-col gap-3 md:order-2 md:self-center md:pb-24">
@@ -506,11 +633,28 @@ function BuddyConversation({ profiles, userId, childId, showStudio, onChildChang
               }}>Hủy</button>
             </div>
           )}
-          {voiceAvailable && !voiceOn && (
+          {child && !personalize && (
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#EEF3FF] px-4 py-2">
               <p className="max-w-lg text-xs font-semibold text-[#172B6B]">
-                Phụ huynh có thể bật mic để Bin tự nghe từng lượt. AIMBRACE xử lý âm thanh trên máy chủ và gửi bản chép lời đến Groq. Bạn có thể tạm dừng mic bất cứ lúc nào.
+                Phụ huynh có thể cho Bin biết những điều bố mẹ kể về con để Bin trò chuyện hợp với con hơn. {BUDDY_PERSONALIZE_NOTICE}
               </p>
+              <button type="button" className="link-duo inline-flex items-center gap-1.5 text-sm" onClick={() => choosePersonalize(true)}>
+                <HeartHandshake className="h-4 w-4" aria-hidden="true" /> Cho Bin biết về con
+              </button>
+            </div>
+          )}
+          {child && personalize && (
+            <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-[#172B6B]">
+              <span className="inline-flex items-center gap-1.5">
+                <HeartHandshake className="h-4 w-4" aria-hidden="true" /> Bin đang dùng hồ sơ cá nhân hoá của con
+              </span>
+              <Link to={`/children/${encodeURIComponent(child.id)}`} className="link-duo">Sửa hồ sơ</Link>
+              <button type="button" className="link-duo" onClick={() => choosePersonalize(false)}>Tắt</button>
+            </div>
+          )}
+          {personalizeWarning && <p role="status" className="mb-2 text-xs font-semibold text-duo-red">{personalizeWarning}</p>}
+          {voiceAvailable && !voiceOn && (
+            <div className="mb-3 flex justify-center">
               <button type="button" className="link-duo inline-flex items-center gap-1.5 text-sm disabled:opacity-50" disabled={editingTranscript} onClick={() => void enableVoice()}>
                 <Mic className="h-4 w-4" aria-hidden="true" /> Bật mic rảnh tay
               </button>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { KinectHistory } from '../components/KinectHistory'
 import { Link } from 'react-router-dom'
 import { Loader2, RotateCcw, Trash2 } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
@@ -113,6 +114,7 @@ Kết quả, dữ liệu khung xương trên máy chủ phân tích và video (n
 
   return (
     <DashboardLayout>
+      <div className="mb-6"><KinectHistory childId={childFilter || undefined} /></div>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_420px]">
         <div className="card-duo overflow-hidden">
           <div className="divider-duo flex items-center justify-between px-5 py-4">
@@ -123,7 +125,8 @@ Kết quả, dữ liệu khung xương trên máy chủ phân tích và video (n
           </div>
 
           <div className="grid grid-cols-1 gap-3 px-5 pt-4 md:grid-cols-2 2xl:grid-cols-4">
-            <select className="input-duo" value={childFilter} onChange={(e) => setChildFilter(e.target.value)} aria-label="Lọc theo trẻ">
+            {/* One child per account: the child filter only matters for older accounts with several. */}
+            <select hidden={children.length <= 1} className="input-duo" value={childFilter} onChange={(e) => setChildFilter(e.target.value)} aria-label="Lọc theo trẻ">
               <option value="">Tất cả trẻ</option>
               {children.map((c) => (
                 <option key={c.id} value={c.id}>

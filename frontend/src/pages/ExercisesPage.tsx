@@ -112,7 +112,14 @@ export function ExercisesPage() {
           <>
             <Card title="Tập cho">
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Chọn hồ sơ trẻ">
+                {/* One child per account: a picker only for older accounts that still have several. */}
+                {(children ?? []).length <= 1 && (
+                  <div className="inline-flex items-center gap-2 rounded-full bg-duo-green-soft py-1 pl-1 pr-4 text-sm font-extrabold text-duo-green-dark">
+                    <ChildAvatar name={child.fullName} />
+                    {child.fullName}
+                  </div>
+                )}
+                <div hidden={(children ?? []).length <= 1} className="flex flex-wrap gap-2" role="radiogroup" aria-label="Chọn hồ sơ trẻ">
                   {(children ?? []).map((c) => {
                     const selected = c.id === child.id
                     return (

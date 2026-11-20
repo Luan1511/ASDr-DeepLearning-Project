@@ -39,6 +39,28 @@ after(async () => {
 }, { timeout: 120_000 })
 
 /** Runs a scenario; on failure the backend log tail is attached to the error. */
+/**
+ * POST a template source, then poll its background job; answers like the old
+ * synchronous route (201 + source, or the failure's status and error code).
+ */
+async function uploadTemplateSource(exerciseId: string, form: FormData) {
+  const started = await api('POST', `/admin/exercises/${exerciseId}/template-sources`, { token: admin.token, form })
+  if (started.status !== 202) return started
+  let job = started.body.job
+  assert.equal(job.status, 'running')
+  const deadline = Date.now() + 60_000
+  while (job.status === 'running') {
+    assert.ok(Date.now() < deadline, 'template source job did not finish')
+    await sleep(50)
+    const polled = await api('GET', `/admin/exercises/${exerciseId}/template-sources/jobs/${job.jobId}`, { token: admin.token })
+    assert.equal(polled.status, 200, JSON.stringify(polled.body))
+    job = polled.body.job
+  }
+  return job.status === 'done'
+    ? { status: 201, body: job.source }
+    : { status: job.httpStatus, body: { error: job.error, message: job.message } }
+}
+
 function scenario(name: string, fn: (t: TestContext) => Promise<void>, timeout = 120_000) {
   test(name, { timeout }, async (t) => {
     try {
@@ -155,7 +177,15 @@ async function waitMlBlocked(count = 1) {
 // ---------------------------------------------------------------------------
 
 scenario('1. admin_only: parents get EXERCISES_DISABLED, capabilities works, admins use the routes', async () => {
-  await h.startBackend({ env: { EXERCISE_MODE: 'admin_only', MCHAT_MODE: 'off' } })
+  await h.startBackend({ env: { EXERCISE_MODE: 'admin_only', MCHAT_MODE: 'off', VIDEO_SCREENING: 'admin_only' } })
+
+  // Video screening (OpenPose) is paused for parents in favour of the Kinect station.
+  assert.deepEqual((await api('GET', '/screenings/capabilities', { token: parentA.token })).body, { videoScreening: false, mode: 'admin_only' })
+  assert.equal((await api('GET', '/screenings/capabilities', { token: admin.token })).body.videoScreening, true)
+  const pausedUpload = await api('POST', '/screenings/upload', { token: parentA.token, form: new FormData() })
+  assert.equal(pausedUpload.status, 503)
+  assert.equal(pausedUpload.body.error, 'VIDEO_SCREENING_DISABLED')
+  assert.equal((await api('GET', '/screenings', { token: parentA.token })).status, 200)
 
   const list = await api('GET', '/exercises', { token: parentA.token })
   assert.equal(list.status, 403)
@@ -265,7 +295,7 @@ scenario('3. template upload → tpl_ subject → dryRun (no row) → compile v1
   form.append('durationMs', '10000')
   form.append('attestation', 'true')
   form.append('video', new Blob([new Uint8Array(encodeClip({ template: 'dang-tay' }))], { type: 'video/mp4' }), 'mau-nguoi-lon.mp4')
-  const source = await api('POST', `/admin/exercises/${adminExerciseId}/template-sources`, { token: admin.token, form })
+  const source = await uploadTemplateSource(adminExerciseId, form)
   assert.equal(source.status, 201, JSON.stringify(source.body))
   assert.match(source.body.sourceSubjectId, /^tpl_[0-9a-f-]{36}$/)
   assert.equal(source.body.fps, 25)
@@ -275,6 +305,9 @@ scenario('3. template upload → tpl_ subject → dryRun (no row) → compile v1
   assert.ok(h.ml.subjects.has(adminSourceSubject))
   assert.equal(h.ml.extractCallsFor(adminSourceSubject)[0].filename, 'session.mp4')
   assert.deepEqual(filesIn(templatesDir()), [], 'temporary template upload must be deleted')
+  const unknownJob = await api('GET', `/admin/exercises/${adminExerciseId}/template-sources/jobs/${randomUUID()}`, { token: admin.token })
+  assert.equal(unknownJob.status, 404)
+  assert.equal(unknownJob.body.error, 'TEMPLATE_SOURCE_JOB_NOT_FOUND')
 
   const base = { sourceSubjectId: adminSourceSubject, mirrorPolicy: 'EITHER', attestation: true }
   const dry = await api('POST', `/admin/exercises/${adminExerciseId}/templates`, { token: admin.token, json: { ...base, dryRun: true } })
@@ -319,6 +352,8 @@ scenario('3. template upload → tpl_ subject → dryRun (no row) → compile v1
 })
 
 scenario('movement profile: compile, publish, score two concurrent movement errors, and keep child keypoints private', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('movement')
   const created = await api('POST', '/admin/exercises', {
     token: admin.token,
     json: {
@@ -329,9 +364,9 @@ scenario('movement profile: compile, publish, score two concurrent movement erro
   assert.equal(created.status, 201, JSON.stringify(created.body))
   const exerciseId = created.body.exercise.id
   const guide = syntheticJacks(false)
-  const source = await api('POST', `/admin/exercises/${exerciseId}/template-sources`, {
-    token: admin.token, form: clipForm(guide, { attestation: true, durationMs: guide.syntheticFrames.length / guide.fps * 1000 }),
-  })
+  const source = await uploadTemplateSource(
+    exerciseId, clipForm(guide, { attestation: true, durationMs: guide.syntheticFrames.length / guide.fps * 1000 }),
+  )
   assert.equal(source.status, 201, JSON.stringify(source.body))
   const payload = {
     sourceSubjectId: source.body.sourceSubjectId, mirrorPolicy: 'EITHER',
@@ -380,6 +415,8 @@ scenario('movement profile: compile, publish, score two concurrent movement erro
 })
 
 scenario('4. consent required, then identical attempt scored ≥ 90 with video and ML subject deleted, no skeleton stored', async (t) => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S4')
   // The queue SQL must not depend on the DB session time zone (initdb takes the OS zone).
   const [tz] = await h.prisma.$queryRawUnsafe<Array<{ TimeZone: string }>>('SHOW timezone')
   t.diagnostic(`temp cluster time zone: ${tz?.TimeZone}`)
@@ -431,6 +468,8 @@ scenario('4. consent required, then identical attempt scored ≥ 90 with video a
 })
 
 scenario('5. half amplitude 30–65, still ≤ 20 with LOW_MOTION, legs-hidden squat INSUFFICIENT', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S5')
   const child = await childWithConsent(parentA, 'S5')
   const half = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'half_amplitude' })
   assert.equal(half.status, 'SCORED')
@@ -449,6 +488,8 @@ scenario('5. half amplitude 30–65, still ≤ 20 with LOW_MOTION, legs-hidden s
 })
 
 scenario('6. mirrored gio-tay-chao ≥ 90 with mode mirror', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S6')
   const child = await childWithConsent(parentA, 'S6')
   const done = await uploadAndWait(parentA, child.id, published['gio-tay-chao'], { slug: 'gio-tay-chao', scenario: 'mirrored' })
   assert.equal(done.status, 'SCORED')
@@ -457,6 +498,8 @@ scenario('6. mirrored gio-tay-chao ≥ 90 with mode mirror', async () => {
 })
 
 scenario('7c. v2 ML: .webm upload is sent as session.webm and scored', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S7c')
   const child = await childWithConsent(parentA, 'S7c')
   h.ml.resetCounters()
   const done = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' }, {
@@ -471,6 +514,8 @@ scenario('7c. v2 ML: .webm upload is sent as session.webm and scored', async () 
 })
 
 scenario('8. ML ignores subject_id → mlSubjectId follows the returned id, scored and deleted', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S8')
   const child = await childWithConsent(parentA, 'S8')
   h.ml.switches.ignoreSubjectId = true
   const done = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
@@ -486,6 +531,8 @@ scenario('8. ML ignores subject_id → mlSubjectId follows the returned id, scor
 })
 
 scenario('9. 5xx twice then OK; permanent 422 → FAILED (file kept) → retry → scored; FAILED file older than 24 h purged', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S9')
   const child = await childWithConsent(parentA, 'S9')
 
   h.ml.switches.failExtractTimes = 2
@@ -542,11 +589,14 @@ scenario('9. 5xx twice then OK; permanent 422 → FAILED (file kept) → retry �
 })
 
 scenario('10. consent revoked while QUEUED → FAILED with the revoke text, file deleted, no ML call', async () => {
-  const busy = await childWithConsent(parentA, 'S10-busy')
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S10-busy')
+  const busyParent = await h.newParent('S10-busy')
+  const busy = await childWithConsent(busyParent, 'S10-busy')
   const child = await childWithConsent(parentA, 'S10')
   h.ml.resetCounters()
   h.ml.hold()
-  const first = await upload(parentA, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
+  const first = await upload(busyParent, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
   assert.equal(first.status, 201)
   await waitMlBlocked()
   const queued = await upload(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
@@ -562,7 +612,7 @@ scenario('10. consent revoked while QUEUED → FAILED with the revoke text, file
   assert.equal(revoke.body.revoked, 1)
   h.ml.release()
 
-  assert.equal((await waitSession(parentA, first.body.session.id)).status, 'SCORED')
+  assert.equal((await waitSession(busyParent, first.body.session.id)).status, 'SCORED')
   const failed = await waitSession(parentA, queued.body.session.id)
   assert.equal(failed.status, 'FAILED')
   assert.match(failed.errorMessage, /thu hồi/)
@@ -582,10 +632,14 @@ scenario('10. consent revoked while QUEUED → FAILED with the revoke text, file
 
 let pendingChildId = ''
 let pendingSessionId = ''
+let pendingParent: SeededUser | null = null
 
 scenario('11. post-score DELETE answers HTML 404 → SCORED with mlSubjectDeletedAt null → ML back → reconcile deletes', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S11')
   const child = await childWithConsent(parentA, 'S11')
   pendingChildId = child.id
+  pendingParent = parentA
   h.ml.switches.offlineDeletes = true
   const done = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
   assert.equal(done.status, 'SCORED')
@@ -621,6 +675,8 @@ scenario('11. post-score DELETE answers HTML 404 → SCORED with mlSubjectDelete
 })
 
 scenario('12. deletion: PROCESSING → 409; all scored + ML offline → 200; normal → everything removed', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S12a')
   // a) PROCESSING blocks child and session deletion.
   const busy = await childWithConsent(parentA, 'S12a')
   h.ml.hold()
@@ -641,7 +697,7 @@ scenario('12. deletion: PROCESSING → 409; all scored + ML offline → 200; nor
   // c) all sessions scored and cleaned, ML offline → 200 (no ML call needed).
   assert.ok(pendingChildId, 'scenario 11 must have run')
   h.ml.switches.offline = true
-  const offlineDel = await api('DELETE', `/children/${pendingChildId}`, { token: parentA.token })
+  const offlineDel = await api('DELETE', `/children/${pendingChildId}`, { token: pendingParent!.token })
   h.ml.switches.offline = false
   assert.equal(offlineDel.status, 200, JSON.stringify(offlineDel.body))
   assert.equal(offlineDel.body.deletedExerciseSessions, 1)
@@ -649,23 +705,24 @@ scenario('12. deletion: PROCESSING → 409; all scored + ML offline → 200; nor
   assert.equal(await dbSession(pendingSessionId), null)
 
   // d) normal deletion: scored + failed (file kept) sessions and a questionnaire.
-  const child = await childWithConsent(parentA, 'S12d', 20)
-  const scored = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
+  const parentD = await h.newParent('S12d')
+  const child = await childWithConsent(parentD, 'S12d', 20)
+  const scored = await uploadAndWait(parentD, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
   assert.equal(scored.status, 'SCORED')
   h.ml.switches.extract422 = true
-  const failed = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
+  const failed = await uploadAndWait(parentD, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
   h.ml.switches.extract422 = false
   assert.equal(failed.status, 'FAILED')
   const failedRow = (await dbSession(failed.id))!
   assert.ok(h.exerciseFileExists(failedRow.filePath))
   const answers = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), ![2, 5, 12].includes(i + 1)]))
   const q = await api('POST', `/children/${child.id}/questionnaires`, {
-    token: parentA.token,
+    token: parentD.token,
     json: { instrument: 'MCHAT_RF', respondent: 'MOTHER', answers, consentAccepted: true, consentVersion: QUESTIONNAIRE_CONSENT_VERSION },
   })
   assert.equal(q.status, 201, JSON.stringify(q.body))
 
-  const ok = await api('DELETE', `/children/${child.id}`, { token: parentA.token })
+  const ok = await api('DELETE', `/children/${child.id}`, { token: parentD.token })
   assert.equal(ok.status, 200, JSON.stringify(ok.body))
   assert.equal(ok.body.deleted, true)
   assert.equal(ok.body.deletedExerciseSessions, 2)
@@ -680,6 +737,8 @@ scenario('12. deletion: PROCESSING → 409; all scored + ML offline → 200; nor
 })
 
 scenario('13. stale lock (lockedAt 3 min ago) → re-queued → scored', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S13')
   const child = await childWithConsent(parentA, 'S13')
   const consent = await h.prisma.consentRecord.findFirstOrThrow({ where: { childId: child.id, revokedAt: null } })
   const id = randomUUID()
@@ -721,6 +780,8 @@ scenario('13. stale lock (lockedAt 3 min ago) → re-queued → scored', async (
 })
 
 scenario('14. GPU sharing: one screening + one exercise with ML_MAX_CONCURRENCY=1 → ≤ 1 concurrent heavy call', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S14')
   const child = await childWithConsent(parentA, 'S14')
   const consent = await api('POST', `/children/${child.id}/consent`, {
     token: parentA.token,
@@ -764,6 +825,8 @@ scenario('14. GPU sharing: one screening + one exercise with ML_MAX_CONCURRENCY=
 })
 
 scenario('15. auth isolation, admin 403, TOO_MANY_PENDING, TEMPLATE_OUTDATED, v2 starts a new series', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S15')
   // Another parent sees nothing of parent A.
   const child = await childWithConsent(parentA, 'S15')
   const own = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
@@ -798,23 +861,24 @@ scenario('15. auth isolation, admin 403, TOO_MANY_PENDING, TEMPLATE_OUTDATED, v2
   }
 
   // TOO_MANY_PENDING on the 4th pending upload.
-  const busy = await childWithConsent(parentA, 'S15-pending')
+  const busyParent = await h.newParent('S15-pending')
+  const busy = await childWithConsent(busyParent, 'S15-pending')
   h.ml.hold()
   const pending: string[] = []
   for (let i = 0; i < 3; i += 1) {
-    const r = await upload(parentA, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical', seed: i + 2 })
+    const r = await upload(busyParent, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical', seed: i + 2 })
     assert.equal(r.status, 201, JSON.stringify(r.body))
     pending.push(r.body.session.id)
     if (i === 0) await waitMlBlocked()
   }
   const filesBefore = h.exerciseFiles().length
-  const fourth = await upload(parentA, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
+  const fourth = await upload(busyParent, busy.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
   assert.equal(fourth.status, 429)
   assert.equal(fourth.body.error, 'TOO_MANY_PENDING')
   assert.equal(fourth.body.limit, 3)
   assert.equal(h.exerciseFiles().length, filesBefore)
   h.ml.release()
-  for (const id of pending) assert.equal((await waitSession(parentA, id)).status, 'SCORED')
+  for (const id of pending) assert.equal((await waitSession(busyParent, id)).status, 'SCORED')
 
   // Admin template v1 (scenario 3) scores a matching child; v2 → TEMPLATE_OUTDATED and a new series.
   const target = published['e2e-dang-tay-nguoi-lon']
@@ -853,6 +917,8 @@ scenario('15. auth isolation, admin 403, TOO_MANY_PENDING, TEMPLATE_OUTDATED, v2
 })
 
 scenario('16. consent isolation between screening and exercise namespaces', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S16')
   const child = await childWithConsent(parentA, 'S16')
   const screeningGrant = await api('POST', `/children/${child.id}/consent`, {
     token: parentA.token,
@@ -876,23 +942,26 @@ scenario('16. consent isolation between screening and exercise namespaces', asyn
   assert.ok(ex.body.lastRevokedAt, JSON.stringify(ex.body))
 
   // An exercise consent never counts as a screening consent.
-  const only = await childWithConsent(parentA, 'S16-only-exercise')
-  const screeningConsent = await api('GET', `/children/${only.id}/consent`, { token: parentA.token })
+  const onlyParent = await h.newParent('S16-only-exercise')
+  const only = await childWithConsent(onlyParent, 'S16-only-exercise')
+  const screeningConsent = await api('GET', `/children/${only.id}/consent`, { token: onlyParent.token })
   assert.equal(screeningConsent.body.consent, null)
-  const detail = await api('GET', `/children/${only.id}`, { token: parentA.token })
+  const detail = await api('GET', `/children/${only.id}`, { token: onlyParent.token })
   assert.equal(detail.body.child.summary.hasActiveConsent, false)
-  const list = await api('GET', '/children', { token: parentA.token })
+  const list = await api('GET', '/children', { token: onlyParent.token })
   const listed = list.body.children.find((c: { id: string }) => c.id === only.id)
   assert.equal(listed.summary.hasActiveConsent, false)
   const form = new FormData()
   form.append('childId', only.id)
   form.append('video', new Blob([new Uint8Array(encodeClip({ screening: true }))], { type: 'video/mp4' }), 'di-bo.mp4')
-  const screening = await api('POST', `/screenings/upload?childId=${only.id}`, { token: parentA.token, form })
+  const screening = await api('POST', `/screenings/upload?childId=${only.id}`, { token: onlyParent.token, form })
   assert.equal(screening.status, 403)
   assert.equal(screening.body.error, 'CONSENT_REQUIRED')
 })
 
 scenario('extra. single-session delete, admin stats/queue, skeleton guard, archive, admin delete, source-subject delete', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('SX')
   // Parent deletes one scored attempt.
   const child = await childWithConsent(parentA, 'SX')
   const done = await uploadAndWait(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
@@ -951,7 +1020,7 @@ scenario('extra. single-session delete, admin stats/queue, skeleton guard, archi
   const form = new FormData()
   form.append('attestation', 'true')
   form.append('video', new Blob([new Uint8Array(encodeClip({ template: 'nghieng-nguoi' }))], { type: 'video/mp4' }), 'mau.mp4')
-  const src = await api('POST', `/admin/exercises/${spare.body.exercise.id}/template-sources`, { token: admin.token, form })
+  const src = await uploadTemplateSource(spare.body.exercise.id, form)
   assert.equal(src.status, 201, JSON.stringify(src.body))
   const comp = await api('POST', `/admin/exercises/${spare.body.exercise.id}/templates`, {
     token: admin.token,
@@ -974,6 +1043,8 @@ scenario('extra. single-session delete, admin stats/queue, skeleton guard, archi
 })
 
 scenario('extra. upload validation: too long / too short / out-of-range fields, file always unlinked', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('SV')
   const child = await childWithConsent(parentA, 'SV')
   const target = published['dang-tay']
   const clip = { slug: 'dang-tay', scenario: 'identical' as ScenarioName }
@@ -1002,6 +1073,8 @@ scenario('extra. upload validation: too long / too short / out-of-range fields, 
 })
 
 scenario('extra. row deleted by an older backend while scoring → worker discards the video and the ML subject', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S-vanish')
   const child = await childWithConsent(parentA, 'S-vanish')
   h.ml.hold()
   const res = await upload(parentA, child.id, published['dang-tay'], { slug: 'dang-tay', scenario: 'identical' })
@@ -1021,6 +1094,8 @@ scenario('extra. row deleted by an older backend while scoring → worker discar
 // ---------------------------------------------------------------------------
 
 scenario('7a. legacy ML: .webm → 415 with no file left; .mp4 still scored (fps from duration)', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S7a')
   h.ml.reset()
   h.ml.switches.mode = 'legacy'
   await h.startBackend()
@@ -1048,6 +1123,8 @@ scenario('7a. legacy ML: .webm → 415 with no file left; .mp4 still scored (fps
 })
 
 scenario('7b. legacy ML + EXERCISE_WEBM_AS_MKV=true: .webm accepted and sent as session.mkv', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S7b')
   h.ml.switches.mode = 'legacy'
   await h.startBackend({ env: { EXERCISE_WEBM_AS_MKV: 'true', EXERCISE_DEBUG_RECORDING_DOWNLOAD: 'false' } })
   const adminCaps = await api('GET', '/exercises/capabilities', { token: admin.token })
@@ -1069,6 +1146,8 @@ scenario('7b. legacy ML + EXERCISE_WEBM_AS_MKV=true: .webm accepted and sent as 
 })
 
 scenario('extra. ML unreachable at upload, back before the retry → the retry re-probes and scores', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S-offline')
   h.ml.reset()
   h.ml.switches.offline = true
   await h.startBackend() // fresh capability cache, first probe sees the offline tunnel
@@ -1166,6 +1245,8 @@ scenario('17. unmigrated DB: exercise routes 503, worker pauses, child deletion 
 // ---------------------------------------------------------------------------
 
 scenario('18. old client (pre-change schema) on the migrated DB: no P2022/P2032, cascade removes new rows; migrate diff empty', async () => {
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('S18')
   await h.stopBackend()
   // Data an old revision must cope with: a child with an exercise session + score and a questionnaire.
   await h.startBackend()

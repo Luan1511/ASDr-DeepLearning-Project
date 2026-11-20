@@ -73,6 +73,8 @@ function assertNoAnswers(payload: unknown) {
 
 scenario('1. MCHAT_MODE=off → 503 on POST/statement/follow-up; stored responses stay readable and deletable', async () => {
   await h.startBackend({ env: { MCHAT_MODE: 'off' } })
+  // One parent manages one child: this scenario's child gets its own parent.
+  const parentA = await h.newParent('Q1')
   const child = await h.createChild(parentA, 'Q1', 20)
 
   const list = await api('GET', '/questionnaires', { token: parentA.token })
@@ -150,8 +152,9 @@ scenario('2. entry: 12-month child → 422 with eligibleFrom; 20-month child LOW
   assert.equal(statement.status, 200)
   assert.equal(statement.body.statement.version, QUESTIONNAIRE_CONSENT_VERSION)
 
-  const young = await h.createChild(parentA, 'Q2-12m', 12)
-  const tooYoung = await submit(parentA, young.id)
+  const youngParent = await h.newParent('Q2-12m')
+  const young = await h.createChild(youngParent, 'Q2-12m', 12)
+  const tooYoung = await submit(youngParent, young.id)
   assert.equal(tooYoung.status, 422, JSON.stringify(tooYoung.body))
   assert.equal(tooYoung.body.error, 'AGE_OUT_OF_RANGE')
   assert.equal(tooYoung.body.reason, 'TOO_YOUNG')
@@ -159,13 +162,14 @@ scenario('2. entry: 12-month child → 422 with eligibleFrom; 20-month child LOW
   assert.equal(tooYoung.body.min, 16)
   assert.equal(tooYoung.body.max, 30)
   assert.match(tooYoung.body.eligibleFrom, /^\d{4}-\d{2}-\d{2}$/)
-  const eligibility = await api('GET', `/children/${young.id}/questionnaires`, { token: parentA.token })
+  const eligibility = await api('GET', `/children/${young.id}/questionnaires`, { token: youngParent.token })
   assert.equal(eligibility.status, 200)
   assert.equal(eligibility.body.eligibility.MCHAT_RF.eligible, false)
   assert.equal(eligibility.body.eligibility.MCHAT_RF.eligibleFrom, tooYoung.body.eligibleFrom)
 
-  const old = await h.createChild(parentA, 'Q2-32m', 32)
-  const tooOld = await submit(parentA, old.id)
+  const oldParent = await h.newParent('Q2-32m')
+  const old = await h.createChild(oldParent, 'Q2-32m', 32)
+  const tooOld = await submit(oldParent, old.id)
   assert.equal(tooOld.status, 422)
   assert.equal(tooOld.body.reason, 'TOO_OLD')
 
@@ -203,8 +207,9 @@ scenario('2. entry: 12-month child → 422 with eligibleFrom; 20-month child LOW
   assert.deepEqual(high.body.response.failedItems, [])
   highId = high.body.response.id
 
-  const older = await h.createChild(parentA, 'Q2-26m', 26)
-  const lowOlder = await submit(parentA, older.id)
+  const olderParent = await h.newParent('Q2-26m')
+  const older = await h.createChild(olderParent, 'Q2-26m', 26)
+  const lowOlder = await submit(olderParent, older.id)
   assert.equal(lowOlder.status, 201)
   assert.equal(lowOlder.body.response.rescreenAfter, null, 'no rescreen date at ≥ 24 months')
 
@@ -280,6 +285,7 @@ scenario('3. follow-up: 2 items → REFER; on LOW/HIGH/completed → 409; invali
 })
 
 scenario('4. consent missing → 400 CONSENT_REQUIRED; outdated version → 409; answer validation', async () => {
+  const parentA = await h.newParent('Q4')
   const child = await h.createChild(parentA, 'Q4', 22)
   for (const body of [{ consentAccepted: false }, { consentAccepted: undefined }]) {
     const res = await submit(parentA, child.id, body)

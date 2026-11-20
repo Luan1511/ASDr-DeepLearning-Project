@@ -367,6 +367,18 @@ export class E2eHarness {
     }
   }
 
+  private parentCount = 0
+
+  /** A fresh parent account: one parent manages exactly one child, so scenarios that need a new child take a new parent. */
+  async newParent(label: string): Promise<SeededUser> {
+    this.parentCount += 1
+    const key = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${this.parentCount}`
+    const email = `e2e-parent-${key}@e2e.test`
+    const name = `Phụ huynh E2E ${label}`
+    const user = await this.prisma.user.create({ data: { name, email, role: 'USER', passwordHash: '!e2e-no-login' } })
+    return { id: user.id, email, name, role: 'USER', token: this.tokenFor({ id: user.id, email, name, role: 'USER' }) }
+  }
+
   tokenFor(u: { id: string; email: string; name: string; role: string }) {
     return jwt.sign({ email: u.email, name: u.name, role: u.role }, JWT_SECRET, { subject: u.id, expiresIn: '2h' })
   }
@@ -423,6 +435,7 @@ export class E2eHarness {
       EXERCISE_POLL_INTERVAL_MS: '500',
       EXERCISE_WEBM_AS_MKV: 'false',
       MCHAT_MODE: 'entry',
+      VIDEO_SCREENING: 'on',
       ...(opts.env ?? {}),
     }
     const logFile = fs.createWriteStream(path.join(this.root, `backend-${Date.now()}.log`))

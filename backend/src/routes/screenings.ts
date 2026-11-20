@@ -29,6 +29,22 @@ screeningsRouter.use((req, res, next) => {
 
 screeningsRouter.use(requireAuth)
 
+function videoScreeningAllowed(role: string | undefined) {
+  return env.VIDEO_SCREENING === 'on' || (env.VIDEO_SCREENING === 'admin_only' && role === 'ADMIN')
+}
+
+/** Lets the UI choose between the video upload and the Kinect station. */
+screeningsRouter.get('/capabilities', (req, res) => {
+  return res.json({ videoScreening: videoScreeningAllowed(req.user?.role), mode: env.VIDEO_SCREENING })
+})
+
+// Starting OpenPose work (new upload or re-run) is paused for parents; reading and
+// deleting past screenings keep working.
+function requireVideoScreening(req: Request, res: Response, next: NextFunction) {
+  if (videoScreeningAllowed(req.user?.role)) return next()
+  return res.status(503).json({ error: 'VIDEO_SCREENING_DISABLED' })
+}
+
 // Must match what the ML server accepts (API/server_openpose.py).
 const ALLOWED_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv']
 
@@ -159,6 +175,7 @@ function removeUploadedFile(file?: Express.Multer.File) {
 
 screeningsRouter.post(
   '/upload',
+  requireVideoScreening,
   precheckUpload,
   upload.single('video'),
   asyncHandler(async (req, res) => {
@@ -230,6 +247,7 @@ screeningsRouter.get(
 
 screeningsRouter.post(
   '/:id/process',
+  requireVideoScreening,
   asyncHandler(async (req, res) => {
     const userId = req.user!.id
     const id = z.string().uuid().parse(req.params.id)

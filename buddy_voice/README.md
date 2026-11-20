@@ -5,6 +5,15 @@ Turbo trên CPU. Groq tiếp tục tạo kịch bản Bạn Bin từ bản chép
 hạn mức của tài khoản hiện có. Dịch vụ âm thanh chỉ kết nối với backend
 trong mạng Compose, qua cổng 8020. Không cần GPU cho dịch vụ này.
 
+## Nhận dạng giọng nói bằng Deepgram
+
+Gipformer nghe kém trong điều kiện thật. Đặt `DEEPGRAM_API_KEY` trong file
+`.env` của Compose rồi khởi động lại backend thì backend gửi từng lượt nói
+tới Deepgram (`nova-3`, tiếng Việt, luôn kèm `mip_opt_out=true` để Deepgram
+không giữ âm thanh cho việc huấn luyện). Dịch vụ này vẫn lo phần giọng đọc
+của Bin. Để trống khoá thì quay về Gipformer. Thông báo trước khi bật mic
+trên trang Bin tự ghi rõ âm thanh được gửi tới Deepgram.
+
 ## Chạy với Docker Compose
 
 Cấu hình `GROQ_API_KEY` thuộc gói Free và thêm vào file `.env` của Compose:
@@ -21,7 +30,7 @@ docker compose logs -f buddy-voice
 Lần đầu tải các model từ Hugging Face và làm nóng bộ tổng hợp giọng. Các
 model được cache trong volume `buddy_voice_models`. Sau khi Uvicorn báo
 startup hoàn tất, mở `/buddy` qua HTTPS hoặc localhost. Phụ huynh chọn
-**Bật mic rảnh tay** và cấp quyền mic một lần. Sau khoảng một giây im lặng
+**Bật mic rảnh tay** và cấp quyền mic một lần. Sau khoảng 0,7 giây im lặng
 cuối câu, trình duyệt tự gửi lượt vừa nói. Mic tự mở lại khi Bin nói xong.
 Chọn **Ngắt lời** để dừng câu đang phát và nói tiếp. **Tạm dừng mic**, đổi
 hồ sơ hoặc rời tab sẽ đóng phiên mic.
@@ -32,7 +41,11 @@ dưới dạng WAV, tối đa 12 giây. Mic tạm ngưng trong lúc Bin xử lý
 lời đáp.
 
 Có thể đổi `BUDDY_ASR_THREADS` (mặc định `2`) và `BUDDY_TTS_VOICE`
-(mặc định `Quang Sơn`) trong file `.env` của Compose. Để tắt tính năng trên
+(mặc định `Quỳnh Anh`; nghe thử 25 giọng trong `voice_samples/`) trong file `.env` của Compose.
+Giọng được làm tươi hơn khi phát: `BUDDY_TTS_PITCH_SEMITONES` nâng cao độ
+(mặc định `1.5` bán cung) và `BUDDY_TTS_TEMPO` đổi tốc độ (mặc định `1.05`).
+Đặt `0` và `1` để giữ giọng gốc. Mẫu so sánh nằm trong `expressiveness_samples/`.
+Để tắt tính năng trên
 môi trường triển khai, để trống `BUDDY_VOICE_URL` rồi nạp lại backend.
 
 ## Chạy khi phát triển

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -490,6 +490,9 @@ export function AdminExerciseEditPage() {
   const [wizardError, setWizardError] = useState<string | null>(null)
   const [rejectedGates, setRejectedGates] = useState<TemplateGateDto[] | null>(null)
   const [savedTemplate, setSavedTemplate] = useState<AdminTemplateDto | null>(null)
+  // Stops polling the background extraction when the admin leaves the page.
+  const uploadAbort = useRef<AbortController | null>(null)
+  useEffect(() => () => uploadAbort.current?.abort(), [])
 
   useEffect(() => {
     let active = true
@@ -672,9 +675,12 @@ export function AdminExerciseEditPage() {
     if (!exercise || !attested) return
     setWizardError(null)
     setUploadPct(0)
+    uploadAbort.current?.abort()
+    const controller = new AbortController()
+    uploadAbort.current = controller
     try {
       const meta = await readVideoMetadata(file)
-      const res = await adminUploadTemplateSource(exercise.id, file, meta?.durationMs ?? null, setUploadPct)
+      const res = await adminUploadTemplateSource(exercise.id, file, meta?.durationMs ?? null, setUploadPct, controller.signal)
       const clip = meta ? meta.durationMs / 1000 : res.fps ? res.numFrames / res.fps : null
       setSource({
         sourceSubjectId: res.sourceSubjectId,
@@ -687,9 +693,13 @@ export function AdminExerciseEditPage() {
       setFpsInput(res.fps ? String(Math.round(res.fps * 100) / 100) : '')
       resetWizardResult()
     } catch (err) {
+      if (controller.signal.aborted) return
       setWizardError(exerciseApiErrorMessage(err, 'Không trích xuất được khung xương từ video mẫu.'))
     } finally {
-      setUploadPct(null)
+      if (uploadAbort.current === controller) {
+        uploadAbort.current = null
+        setUploadPct(null)
+      }
     }
   }
 

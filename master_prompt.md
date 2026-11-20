@@ -354,7 +354,7 @@ Muốn phủ cả 20 câu Follow-Up: gửi nhiều lượt mức trung bình, m�
 | GET             | `/api/children/:childId/exercise-progress`                                                        | JWT (chủ hồ sơ)                              | tiến độ theo từng bài: số lần, điểm cao nhất, lần gần nhất, chuỗi điểm cho biểu đồ                                                                                                                                                                                     |
 | POST            | `/api/exercise-sessions/upload?childId=&exerciseId=&templateId=`                                  | JWT + consent bài tập                         | multipart`video` + `durationMs`, `recordedVia`, `practiceMode`, `playbackRate`, kích thước; 403 `EXERCISE_CONSENT_REQUIRED`, 409 `TEMPLATE_OUTDATED`, 422 `RECORDING_TOO_SHORT`/`RECORDING_TOO_LONG`, 415 `RECORDING_FORMAT_UNSUPPORTED`, 429 `TOO_MANY_PENDING` |
 | GET/POST/DELETE | `/api/exercise-sessions` (`?childId=`), `/:id`, POST `/:id/retry`, DELETE `/:id`          | JWT (chủ lượt)                               | danh sách / chi tiết (điểm + phản hồi theo bộ phận) / chấm lại lượt FAILED / xoá vĩnh viễn (DB + file + subject ML); DELETE luôn mở                                                                                                                                      |
-| *               | `/api/admin/exercises/*`                                                                          | ADMIN                                           | danh sách/tạo/sửa/xoá bài,`builtins/sync` (6 bài dựng sẵn), `queue`, `:id/stats`, `:id/template-sources` (video người lớn → subject `tpl_`), `:id/templates` (biên dịch mẫu, có `dryRun`), `:id/publish`, guide, xoá subject nguồn                      |
+| *               | `/api/admin/exercises/*`                                                                          | ADMIN                                           | danh sách/tạo/sửa/xoá bài,`builtins/sync` (6 bài dựng sẵn), `queue`, `:id/stats`, `:id/template-sources` (video người lớn → subject `tpl_`; trả `202 { job }`, trích xuất chạy nền, hỏi `:id/template-sources/jobs/:jobId` — từ 20/11 vì Cloudflare cắt request sau 100 giây), `:id/templates` (biên dịch mẫu, có `dryRun`), `:id/publish`, guide, xoá subject nguồn                      |
 | GET             | `/api/questionnaires`, `/api/questionnaires/content`, `/api/questionnaires/consent-statement` | JWT                                             | bảng hỏi có bật không, chế độ, link phiếu chính thức / nội dung câu hỏi (chỉ khi`inapp` và file nội dung `ready`) / nội dung đồng ý                                                                                                                              |
 | GET/POST        | `/api/children/:childId/questionnaires`                                                           | JWT (chủ hồ sơ)                              | độ tuổi (16–30 tháng) + lịch sử / nộp 20 câu trả lời + người trả lời + consent; 400`INCOMPLETE_ANSWERS` (kèm `missing`), 422 `AGE_OUT_OF_RANGE`, 409 `CONSENT_VERSION_OUTDATED`                                                                                   |
 | GET/DELETE      | `/api/questionnaire-responses/:id`                                                                | JWT (chủ hồ sơ)                              | kết quả (đọc được cả khi tắt chế độ) / xoá vĩnh viễn                                                                                                                                                                                                                       |
@@ -1931,6 +1931,8 @@ Tạm dừng tinh chỉnh hành vi hội thoại theo quyết định của ch�
 
 **Trạng thái**. Bản prompt trên mới được duyệt qua mô phỏng bằng văn bản trong chat. Prompt backend tại `backend/src/lib/buddyScript.ts` vẫn là bản trước. Phần giọng nói trong mã nguồn đã có luồng rảnh tay, giữ tối đa 32 tin nhắn gần nhất và cho sửa bản chép lời. Luồng rảnh tay đã được thử trên trình duyệt bằng hai lượt âm thanh tổng hợp với một lần bật mic. Tiến trình demo đã được dừng sau lượt thử trước.
 
+**Cập nhật 2026-11-20 (giai đoạn 1 nâng cấp Bin, chưa triển khai):** prompt backend đã chứa phần lớn bản trên cùng chỉnh sửa về sau (xưng "mình", gọi "em"). Bin dùng hồ sơ cá nhân hoá khi phụ huynh bật "Cho Bin biết về con" (lưu trên trình duyệt, phiên bản `buddy-personalize-2026-11-20`); trẻ nhạy cảm âm thanh nghe giọng gốc (`calm`); nét mặt tổng hợp theo cả lượt (`visionCues.ts`); bỏ `mouth_open`. Giai đoạn 2 dự kiến: vân giọng (speaker embedding của sherpa-onnx, lưu trên trình duyệt) kết hợp khuôn mặt để biết ai đang nói. Giai đoạn 3: cảm xúc kết hợp nét mặt, ngữ điệu và lời nói, so với trạng thái bình thường của từng trẻ, có phụ huynh xác nhận. Cả hai cần hỏi ý kiến GVHD. Chi tiết trong `changelogs.md`.
+
 **Hướng tiếp theo đã trao đổi** là tương tác qua webcam sau giai đoạn giọng nói. Webcam chưa được tích hợp trong Bạn Bin. Khi tiếp tục, xác định tình huống tương tác bằng hình ảnh đầu tiên để giới hạn phạm vi thử.
 
 ## 25. Nhật ký phiên 2026-11-17 (rà soát phần bài tập, cập nhật master prompt)
@@ -2160,3 +2162,21 @@ Phần nhận diện người thân của Bạn Bin (có từ commit "update int
 - [ ] Deploy frontend mới lên `khmt01` (backend chỉ đổi 3 hằng số không dùng).
 - [ ] **Git** (người dùng tự chạy): commit các thay đổi của phiên này (danh sách ở §27.4).
 - [ ] Vẫn mở từ trước: các mục ở §26.6.
+
+## Cập nhật 2026-11-20 — Trợ lý AI RAG và lịch sử chat
+
+- Trợ lý AI trên trang chủ và /assistant đã kết nối RAG NVIDIA/LangGraph qua backend /api/chat. Frontend hiển thị Markdown, nguồn và đoạn tham khảo; cấu hình CHAT_API_BASE_URL/CHAT_API_KEY nằm phía backend.
+- Khung chat có Lịch sử chat và Chat mới, khôi phục cuộc chat đang mở và tiếp tục ngữ cảnh. Lịch sử lưu theo tài khoản, phân trang hội thoại/tin nhắn. Bốn tin gần nhất dùng làm ngữ cảnh được đọc từ database phía server.
+- Migration 20261120_chat_history đã áp trên khmt01: ChatConversation và các cột nullable conversationId/position/sources ở ChatMessage. Tin cũ được giữ nguyên trong Hội thoại trước đây của từng tài khoản; các nguồn cũ chưa từng lưu thì không thể khôi phục.
+- API mới: GET /api/chat/conversations, GET /api/chat/conversations/:id/messages; POST /api/chat nhận message và conversationId tùy chọn, trả conversation/messages cùng reply/sources. Mọi thao tác kiểm tra chủ sở hữu; lưu cặp tin nhắn nguyên tử và trả 409 khi có lượt song song làm ngữ cảnh cũ.
+- Đã kiểm chứng API với PostgreSQL riêng/dữ liệu giả, Chrome desktop/mobile và đọc lịch sử trên domain thật. Không đổi model/prompt trong thay đổi lịch sử. Chi tiết và vị trí sao lưu database/source: changelogs.md, mục 2026-11-20 — Lịch sử hội thoại Trợ lý AI.
+
+
+### Trích nguồn chatbot — 2026-11-20
+RAG kiểm tra mã nguồn theo tài liệu của lượt hiện tại và dùng LLM kiểm tra bản nháp thiếu nguồn. Nguồn được dẫn có usage=cited, tài liệu thực sự đã tra khi model quên đánh số có usage=retrieved; giao diện phân biệt Nguồn tham khảo/Tài liệu đã tra cứu. Backend chặn mã [n] không có metadata, tin cũ thiếu nguồn được ghi chú để hỏi lại. Không có migration; xem changelogs.md mục Khôi phục thông tin nguồn cho câu hỏi tiếp trong chatbot.
+
+
+
+### Trợ lý AI — luồng đơn giản hóa 20/11/2026
+Đã bỏ LLM review requires_sources và sửa citation. Nguồn từ kết quả search được code gộp và trả trực tiếp, không phụ thuộc [n]. Tra cứu rỗng trả lời giới hạn bình thường. Model mặc định mới NVIDIA Nemotron 3.5 Super VL, agent bật reasoning; 12/12 ca kiểm thử giả lập thực tế đạt. Không có migration; xem changelogs.md mục Đơn giản hóa RAG và tự kiểm thử nhiều lượt để đọc phạm vi kiểm thử và báo cáo.
+

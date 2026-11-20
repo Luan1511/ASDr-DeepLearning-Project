@@ -3,6 +3,7 @@ import { apiErrorCode, isNetworkError } from './api'
 /** Parent-facing text for errors of the child-profile and data-deletion endpoints. */
 export function childApiErrorMessage(error: unknown, fallback: string): string {
   const code = apiErrorCode(error)
+  if (code === 'CHILD_LIMIT_REACHED') return 'Mỗi tài khoản phụ huynh chỉ quản lý một hồ sơ trẻ. Bạn có thể sửa hồ sơ hiện có.'
   if (code === 'INVALID_DATE_OF_BIRTH') return 'Ngày sinh không hợp lệ (không được sau hôm nay hoặc trước năm 1900).'
   if (code === 'VALIDATION_ERROR') return 'Thông tin chưa hợp lệ: họ tên 1–100 ký tự, ghi chú tối đa 1000 ký tự.'
   if (code === 'CHILD_NOT_FOUND' || code === 'NOT_FOUND') return 'Không tìm thấy dữ liệu (có thể đã bị xoá).'

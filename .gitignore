@@ -50,3 +50,9 @@ backend/content/*.json
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Local Bin voice listening samples and ASR eval data (not part of the app)
+buddy_voice/voice_samples/
+buddy_voice/expressiveness_samples/
+buddy_voice/asr_eval_audio/
+buddy_voice/asr_models/

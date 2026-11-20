@@ -228,7 +228,8 @@ export function ExercisePracticePage() {
     )
   }, [])
 
-  const child = children?.find((c) => c.id === childId) ?? null
+  // One child per account: without a childId in the link, the only child is the one practising.
+  const child = children?.find((c) => c.id === childId) ?? (!childId && children?.length === 1 ? children[0] : null)
 
   useEffect(() => {
     if (!child) return

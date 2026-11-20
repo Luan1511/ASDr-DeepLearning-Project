@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { MovementProfile } from '../exerciseTypes'
 import type { CoachRequest, CoachResponse } from './pose.worker'
-import { CUE_TEXT, CoachPacer, PRAISE_TEXT, PROFILE_CUE } from './rules'
+import { CUE_TEXT, CoachPacer, PRAISE_TEXT, PROFILE_CUES, type Cue } from './rules'
 
 /** What Bin is saying right now; a praise is shown only, a reminder is also spoken. */
 export type CoachMessage = { kind: 'cue' | 'praise'; text: string }
@@ -34,7 +34,7 @@ export function useLiveCoach(profile: MovementProfile | undefined, enabled: bool
   const [failedFor, setFailedFor] = useState<MovementProfile | null>(null)
   const [message, setMessage] = useState<CoachMessage | null>(null)
   const audio = useRef<AudioContext | null>(null)
-  const clip = useRef<AudioBuffer | null>(null)
+  const clips = useRef<Map<Cue, AudioBuffer>>(new Map())
   const accept = useRef<(result: Result) => void>(() => {})
 
   const supported = typeof window !== 'undefined' && 'Worker' in window && 'OffscreenCanvas' in window
@@ -101,10 +101,11 @@ export function useLiveCoach(profile: MovementProfile | undefined, enabled: bool
       setMessage({ kind: 'cue', text: CUE_TEXT[shown.cue] })
       hideTimer = window.setTimeout(() => setMessage(null), CUE_VISIBLE_MS)
       const context = audio.current
-      if (voice && context?.state === 'running' && clip.current && !spoken) {
+      const clip = clips.current.get(shown.cue)
+      if (voice && context?.state === 'running' && clip && !spoken) {
         const source = context.createBufferSource()
         spoken = source
-        source.buffer = clip.current
+        source.buffer = clip
         source.connect(context.destination)
         source.onended = () => {
           spoken = null
@@ -160,7 +161,7 @@ export function useLiveCoach(profile: MovementProfile | undefined, enabled: bool
     () => () => {
       if (audio.current) void audio.current.close().catch(() => {})
       audio.current = null
-      clip.current = null
+      clips.current = new Map()
     },
     [profile, enabled],
   )
@@ -171,17 +172,19 @@ export function useLiveCoach(profile: MovementProfile | undefined, enabled: bool
     try {
       const context = (audio.current ??= new AudioContext())
       void context.resume().catch(() => {})
-      if (clip.current) return
-      void fetch(`${import.meta.env.BASE_URL}exercise-coach/${PROFILE_CUE[profile]}.wav`)
-        .then((response) => {
-          if (!response.ok) throw new Error('Audio unavailable')
-          return response.arrayBuffer()
-        })
-        .then((bytes) => context.decodeAudioData(bytes))
-        .then((buffer) => {
-          if (audio.current === context) clip.current = buffer
-        })
-        .catch(() => {})
+      for (const cue of PROFILE_CUES[profile]) {
+        if (clips.current.has(cue)) continue
+        void fetch(`${import.meta.env.BASE_URL}exercise-coach/${cue}.wav`)
+          .then((response) => {
+            if (!response.ok) throw new Error('Audio unavailable')
+            return response.arrayBuffer()
+          })
+          .then((bytes) => context.decodeAudioData(bytes))
+          .then((buffer) => {
+            if (audio.current === context) clips.current.set(cue, buffer)
+          })
+          .catch(() => {})
+      }
     } catch {
       // The caption still shows the reminder.
     }

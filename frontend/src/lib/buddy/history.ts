@@ -6,6 +6,35 @@ function historyKey(userId: string, childId: string) {
   return `aimbrace:buddy-history:v1:${encodeURIComponent(userId)}:${encodeURIComponent(childId)}`
 }
 
+/** Parents Bin already greeted in this conversation (see lib/buddy/presence.ts); cleared with the history. */
+function greetedKey(userId: string, childId: string) {
+  return `aimbrace:buddy-greeted:v1:${encodeURIComponent(userId)}:${encodeURIComponent(childId)}`
+}
+
+const PARENT_ROLES = ['mother', 'father'] as const
+export type GreetedParent = (typeof PARENT_ROLES)[number]
+
+export function loadGreetedParents(userId: string, childId: string): GreetedParent[] {
+  if (!userId) return []
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(greetedKey(userId, childId)) ?? '[]')
+    return Array.isArray(saved) ? PARENT_ROLES.filter((role) => saved.includes(role)) : []
+  } catch {
+    return []
+  }
+}
+
+export function rememberGreetedParent(userId: string, childId: string, role: GreetedParent): boolean {
+  if (!userId) return false
+  try {
+    const roles = new Set(loadGreetedParents(userId, childId)).add(role)
+    localStorage.setItem(greetedKey(userId, childId), JSON.stringify([...roles]))
+    return true
+  } catch {
+    return false
+  }
+}
+
 function profileKey(userId: string) {
   return `aimbrace:buddy-last-child:v1:${encodeURIComponent(userId)}`
 }
@@ -51,6 +80,7 @@ export function clearBuddyHistory(userId: string, childId: string): boolean {
   if (!userId) return false
   try {
     localStorage.removeItem(historyKey(userId, childId))
+    localStorage.removeItem(greetedKey(userId, childId))
     return true
   } catch {
     return false

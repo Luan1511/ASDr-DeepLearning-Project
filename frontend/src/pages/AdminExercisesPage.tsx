@@ -20,8 +20,8 @@ import { formatDateTime, formatPercent } from '../lib/format'
 
 const MODE_TEXT: Record<ExerciseMode, string> = {
   off: 'Tắt — không ai dùng được bài tập và hàng đợi chấm điểm dừng.',
-  admin_only: 'Chỉ admin — phụ huynh chưa thấy bài tập (mặc định cho tới khi hiệu chỉnh C1 đạt).',
-  on: 'Mở cho phụ huynh — chỉ các bài đã xuất bản hiển thị.',
+  admin_only: 'Chỉ admin — phụ huynh chưa thấy bài tập.',
+  on: 'Mở cho phụ huynh (mặc định) — chỉ các bài đã xuất bản hiển thị.',
 }
 
 function QueueStat({ label, value }: { label: string; value: number }) {

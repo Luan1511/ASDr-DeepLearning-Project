@@ -1,4 +1,5 @@
 import express from 'express'
+import { internalKinectRouter } from './routes/kinect'
 import cors from 'cors'
 import { env } from './lib/env'
 import { errorHandler } from './middleware/errorHandler'
@@ -18,6 +19,7 @@ export function createApp() {
     }),
   )
 
+  app.use('/api/internal/kinect', internalKinectRouter)
   app.use(express.json({ limit: '2mb' }))
 
   // Children's raw videos are never served statically (the former public

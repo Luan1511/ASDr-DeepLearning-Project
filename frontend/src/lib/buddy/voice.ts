@@ -3,9 +3,12 @@ import { api } from '../api'
 const PCM_SAMPLE_RATE = 48_000
 const FIRST_BUFFER_BYTES = 9_600 // 100 ms of mono PCM16, enough to smooth small network stalls.
 
-export async function buddyVoiceEnabled(signal: AbortSignal) {
-  const { data } = await api.get<{ enabled: boolean }>('/buddy/voice', { signal })
-  return data.enabled
+/** Who turns the child's speech into text: Deepgram, or the model on AIMBRACE's own server. */
+export type BuddySpeechToText = 'deepgram' | 'local'
+
+export async function buddyVoiceStatus(signal: AbortSignal): Promise<{ enabled: boolean; stt: BuddySpeechToText }> {
+  const { data } = await api.get<{ enabled: boolean; stt?: unknown }>('/buddy/voice', { signal })
+  return { enabled: data.enabled, stt: data.stt === 'deepgram' ? 'deepgram' : 'local' }
 }
 
 export async function transcribeBuddyTurn(audio: Blob, signal: AbortSignal) {
@@ -144,8 +147,14 @@ function rms(samples: Float32Array) {
 export type VoiceStart = (readLevel: () => number) => void
 
 /** Schedules PCM on Web Audio's clock and stops both playback and fetch on interruption. */
-export async function speakBuddyLine(context: AudioContext, text: string, signal: AbortSignal, onStart: VoiceStart) {
-  const { data } = await api.post<ReadableStream<Uint8Array>>('/buddy/voice/speak', { text }, {
+export async function speakBuddyLine(
+  context: AudioContext,
+  text: string,
+  signal: AbortSignal,
+  onStart: VoiceStart,
+  options: { calm?: boolean } = {},
+) {
+  const { data } = await api.post<ReadableStream<Uint8Array>>('/buddy/voice/speak', { text, ...(options.calm ? { calm: true } : {}) }, {
     adapter: 'fetch',
     responseType: 'stream',
     signal,

@@ -9,12 +9,16 @@ import { useEffect, useRef, useState } from 'react'
 import clipsJson from './clips.json'
 import expressionsJson from './expressions.json'
 import {
+  BUDDY_PROPS,
+  BUDDY_SONGS,
   DISCRETE_CHANNELS,
   EAR_MOTIONS,
   EXPRESSIONS,
   LOOKS,
   NUMERIC_CHANNELS,
+  type BuddyProp,
   type BuddyScript,
+  type BuddySong,
   type BuddyStep,
   type Channel,
   type Clip,
@@ -153,6 +157,8 @@ export function normalizeScript(raw: unknown): BuddyScript | null {
     steps,
     idle: EXPRESSIONS.includes(s.idle as ExpressionName) ? (s.idle as ExpressionName) : undefined,
     suggestions: Array.isArray(s.suggestions) ? s.suggestions.filter((x): x is string => typeof x === 'string').slice(0, 4) : [],
+    ...(BUDDY_SONGS.includes(s.song as BuddySong) ? { song: s.song as BuddySong } : {}),
+    ...(BUDDY_PROPS.includes(s.prop as BuddyProp) ? { prop: s.prop as BuddyProp } : {}),
   }
 }
 

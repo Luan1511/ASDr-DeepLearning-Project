@@ -250,7 +250,8 @@ export function ScreeningUploadPanel({
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between">
           <label className="text-xs font-extrabold uppercase tracking-wide text-duo-mute">Hồ sơ trẻ</label>
-          <button type="button" disabled={creatingChild} onClick={() => {
+          {/* One child per account: creating is offered only before the first profile exists. */}
+          {children !== null && children.length === 0 && <button type="button" disabled={creatingChild} onClick={() => {
             if (showCreateForm) {
               setFaceUpdates({})
               setFaceCameraActive(false)
@@ -258,9 +259,12 @@ export function ScreeningUploadPanel({
             setShowCreateForm((v) => !v)
           }} className="link-duo text-xs">
             {showCreateForm ? 'Ẩn' : '+ Tạo mới'}
-          </button>
+          </button>}
         </div>
-        <select className="input-duo" value={childId} onChange={(e) => setChildId(e.target.value)}>
+        {children?.length === 1 && selectedChild && (
+          <div className="text-base font-black text-duo-ink">{selectedChild.fullName}</div>
+        )}
+        <select hidden={children?.length === 1} className="input-duo" value={childId} onChange={(e) => setChildId(e.target.value)}>
           <option value="" disabled>
             {children === null ? 'Đang tải...' : 'Chọn hồ sơ'}
           </option>

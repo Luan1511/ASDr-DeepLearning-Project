@@ -32,15 +32,21 @@ const envSchema = z.object({
   // Keep raw uploads after a successful analysis (default: delete them).
   RETAIN_UPLOADED_VIDEOS: booleanFlag.default(false),
   CHAT_API_BASE_URL: z.string().url().optional(),
+  CHAT_API_KEY: z.string().min(1).optional(),
   // "Bạn Bin" companion (text chat through Groq's OpenAI-compatible API).
   BUDDY_VOICE_URL: z.string().url().optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   GROQ_MODEL: z.string().min(1).default('openai/gpt-oss-120b'),
   GROQ_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
   GROQ_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
-  // Giai đoạn 4. off = hidden + worker stopped; admin_only = admins only
-  // (default until the scoring is calibrated on adult recordings); on = parents too.
-  EXERCISE_MODE: z.enum(['off', 'admin_only', 'on']).default('admin_only'),
+  // Bin's speech recognition through Deepgram (Vietnamese). Unset: the local
+  // Gipformer model of the buddy-voice service is used, as before.
+  DEEPGRAM_API_KEY: z.string().min(1).optional(),
+  DEEPGRAM_MODEL: z.string().min(1).default('nova-3'),
+  DEEPGRAM_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  // Giai đoạn 4. off = hidden + worker stopped; admin_only = admins only;
+  // on = parents too (default since 2026-11-21, opened to parents by the project owner).
+  EXERCISE_MODE: z.enum(['off', 'admin_only', 'on']).default('on'),
   EXERCISE_DEBUG_RECORDING_DOWNLOAD: z
     .preprocess((val) => val === undefined || val === '' || val === 'true' || val === '1' || val === true, z.boolean()),
   EXERCISE_WORKER_ENABLED: z
@@ -65,6 +71,10 @@ const envSchema = z.object({
   // sample doctors of `npm run doctors:seed-mock` are listed and labelled as sample
   // data; on = real doctors only (the sample accounts stop working).
   DOCTOR_MODE: z.enum(['off', 'demo', 'on']).default('demo'),
+  // Video screening (OpenPose skeleton + gait model). Paused for parents on 2026-11-21:
+  // screening runs on the Kinect station instead. admin_only keeps it for admins/devs;
+  // the code and past results stay untouched.
+  VIDEO_SCREENING: z.enum(['off', 'admin_only', 'on']).default('admin_only'),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -91,11 +101,15 @@ export const env: Env = envSchema.parse({
   SCREENING_HIGH_RISK_THRESHOLD: process.env.SCREENING_HIGH_RISK_THRESHOLD,
   RETAIN_UPLOADED_VIDEOS: process.env.RETAIN_UPLOADED_VIDEOS,
   CHAT_API_BASE_URL: process.env.CHAT_API_BASE_URL,
+  CHAT_API_KEY: process.env.CHAT_API_KEY,
   BUDDY_VOICE_URL: process.env.BUDDY_VOICE_URL || undefined,
   GROQ_API_KEY: process.env.GROQ_API_KEY || undefined,
   GROQ_MODEL: process.env.GROQ_MODEL || undefined,
   GROQ_BASE_URL: process.env.GROQ_BASE_URL || undefined,
   GROQ_TIMEOUT_MS: process.env.GROQ_TIMEOUT_MS || undefined,
+  DEEPGRAM_API_KEY: process.env.DEEPGRAM_API_KEY || undefined,
+  DEEPGRAM_MODEL: process.env.DEEPGRAM_MODEL || undefined,
+  DEEPGRAM_TIMEOUT_MS: process.env.DEEPGRAM_TIMEOUT_MS || undefined,
   EXERCISE_MODE: process.env.EXERCISE_MODE || undefined,
   EXERCISE_DEBUG_RECORDING_DOWNLOAD: process.env.EXERCISE_DEBUG_RECORDING_DOWNLOAD,
   EXERCISE_WORKER_ENABLED: process.env.EXERCISE_WORKER_ENABLED,
@@ -109,4 +123,5 @@ export const env: Env = envSchema.parse({
   MCHAT_MODE: process.env.MCHAT_MODE || undefined,
   MCHAT_CONTENT_PATH: process.env.MCHAT_CONTENT_PATH || undefined,
   DOCTOR_MODE: process.env.DOCTOR_MODE || undefined,
+  VIDEO_SCREENING: process.env.VIDEO_SCREENING || undefined,
 })

@@ -5,6 +5,7 @@ import threading
 from contextlib import asynccontextmanager
 
 import av
+import av.filter
 import numpy as np
 import sherpa_onnx
 from fastapi import FastAPI, HTTPException, Request
@@ -19,7 +20,10 @@ MAX_BYTES = 1024 * 1024
 ASR_RATE = 16000
 ASR_MODEL = "g-group-ai-lab/gipformer1.5-68M-rnnt"
 MAX_SECONDS = 15
-VOICE = os.environ.get("BUDDY_TTS_VOICE", "Quang Sơn")
+VOICE = os.environ.get("BUDDY_TTS_VOICE", "Quỳnh Anh")
+# Brighter delivery: raise the pitch and speed up a little (sample "D" chosen on 2026-11-20).
+PITCH_SEMITONES = float(os.environ.get("BUDDY_TTS_PITCH_SEMITONES", "1.5"))
+TEMPO = float(os.environ.get("BUDDY_TTS_TEMPO", "1.05"))
 ASR_SLOT = threading.BoundedSemaphore(1)
 TTS_SLOT = threading.BoundedSemaphore(1)
 
@@ -111,13 +115,70 @@ async def transcribe(request: Request):
 
 class SpeechInput(BaseModel):
     text: str = Field(min_length=1)
+    # Plain voice (no pitch/tempo change) for a child sensitive to loud sounds.
+    calm: bool = False
 
 
-def pcm_stream(tts, text):
+class Brighten:
+    """Streaming pitch shift + tempo change with FFmpeg filters, at the same sample rate."""
+
+    FRAME = 960  # 20 ms at 48 kHz: small frames keep the filter's start-up delay short.
+
+    def __init__(self, rate, semitones, tempo):
+        factor = 2 ** (semitones / 12)
+        graph = av.filter.Graph()
+        graph.link_nodes(
+            graph.add_abuffer(format="flt", sample_rate=rate, layout="mono"),
+            graph.add("asetrate", f"{rate * factor:.3f}"),
+            graph.add("aresample", str(rate)),
+            graph.add("atempo", f"{tempo / factor:.6f}"),
+            graph.add("abuffersink"),
+        ).configure()
+        self.graph, self.rate, self.pts = graph, rate, 0
+
+    def _drain(self):
+        out = []
+        while True:
+            try:
+                out.append(self.graph.pull().to_ndarray().reshape(-1))
+            except (BlockingIOError, EOFError, av.error.BlockingIOError, av.error.EOFError):
+                break
+        return np.concatenate(out) if out else np.empty(0, dtype=np.float32)
+
+    def push(self, samples):
+        samples = np.asarray(samples, dtype=np.float32).reshape(-1)
+        out = []
+        for start in range(0, samples.size, self.FRAME):
+            part = samples[start:start + self.FRAME]
+            frame = av.AudioFrame.from_ndarray(part.reshape(1, -1), format="flt", layout="mono")
+            frame.sample_rate = self.rate
+            frame.pts = self.pts
+            self.pts += part.size
+            self.graph.push(frame)
+            out.append(self._drain())
+        return np.concatenate(out) if out else np.empty(0, dtype=np.float32)
+
+    def flush(self):
+        self.graph.push(None)
+        return self._drain()
+
+
+def to_pcm16(samples):
+    return (np.clip(samples, -1, 1) * 32767).astype("<i2").tobytes()
+
+
+def pcm_stream(tts, text, calm=False):
     # The engine is shared by one worker. Release the slot if playback is cancelled.
     try:
+        plain = calm or (PITCH_SEMITONES == 0 and TEMPO == 1)
+        bright = None if plain else Brighten(tts.sample_rate, PITCH_SEMITONES, TEMPO)
         for chunk in tts.infer_stream(text, voice=VOICE):
-            yield (np.clip(chunk, -1, 1) * 32767).astype("<i2").tobytes()
+            samples = bright.push(chunk) if bright else chunk
+            if len(samples):
+                yield to_pcm16(samples)
+        tail = bright.flush() if bright else ()
+        if len(tail):
+            yield to_pcm16(tail)
     finally:
         TTS_SLOT.release()
 
@@ -126,7 +187,7 @@ def pcm_stream(tts, text):
 def speak(payload: SpeechInput, request: Request):
     if not TTS_SLOT.acquire(blocking=False):
         raise HTTPException(429, "Speech synthesis is busy")
-    audio = pcm_stream(request.app.state.tts, payload.text)
+    audio = pcm_stream(request.app.state.tts, payload.text, payload.calm)
     try:
         first = next(audio)
     except Exception:

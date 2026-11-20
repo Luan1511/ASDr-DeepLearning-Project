@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import type { BuddyVisionContext } from '../../lib/buddy/api'
 import { FAMILY_ROLE_LABELS, loadFamilyFaceSamples, type FamilyRole } from '../../lib/buddy/visionProfiles'
 import type { BuddyFace, BuddyVision } from '../../lib/buddy/vision'
+import { TYPED_TURN_MS, turnCues } from '../../lib/buddy/visionCues'
+import { ArrivalWatcher, type ArrivalRole } from '../../lib/buddy/presence'
 import type { BuddyVoiceTiming } from '../../lib/buddy/voice'
 
 const SAMPLE_INTERVAL = 125
@@ -13,6 +15,8 @@ const CUE_LABELS = { smile: 'Cười', brow_lowered: 'Nhíu mày' }
 
 type VisionFrame = { time: number; faces: BuddyFace[] }
 type CameraSession = {
+  /** A new watcher per camera session: each parent is greeted once while the camera stays on. */
+  arrivals: ArrivalWatcher
   stream?: MediaStream
   vision?: BuddyVision
   timer?: number
@@ -73,8 +77,10 @@ function likelySpeaker(frames: VisionFrame[], timing: BuddyVoiceTiming): FamilyR
   return best.role
 }
 
-export const BuddyCamera = forwardRef<BuddyCameraHandle, { userId: string; childId: string }>(
-  function BuddyCamera({ userId, childId }, ref) {
+export const BuddyCamera = forwardRef<BuddyCameraHandle, { userId: string; childId: string; onArrival?: (role: ArrivalRole) => void }>(
+  function BuddyCamera({ userId, childId, onArrival }, ref) {
+    const arrivalHandler = useRef(onArrival)
+    useEffect(() => { arrivalHandler.current = onArrival }, [onArrival])
     const video = useRef<HTMLVideoElement>(null)
     const current = useRef<CameraSession | null>(null)
     const [state, setState] = useState<'off' | 'opening' | 'on'>('off')
@@ -115,11 +121,15 @@ export const BuddyCamera = forwardRef<BuddyCameraHandle, { userId: string; child
         const { frames } = session
         const last = frames.at(-1)
         if (!last || performance.now() - last.time > MAX_FRAME_AGE || !last.faces.length) return undefined
+        // Cues over the whole turn: while the child spoke, or the last seconds before a typed message.
+        const cues = timing
+          ? turnCues(frames, timing.endedAt - timing.frameMs * timing.energy.length, timing.endedAt)
+          : turnCues(frames, last.time - TYPED_TURN_MS, last.time)
         return {
           context: {
-            people: last.faces.map(({ role, cue }) => ({
+            people: last.faces.map(({ id, role }) => ({
               role: role ?? 'unknown',
-              ...(cue ? { cues: [cue] } : {}),
+              ...(cues.has(id) ? { cues: cues.get(id) } : {}),
             })),
             speaker: timing ? likelySpeaker(frames, timing) : 'unknown',
           },
@@ -130,7 +140,7 @@ export const BuddyCamera = forwardRef<BuddyCameraHandle, { userId: string; child
 
     async function start() {
       if (current.current || document.hidden) return
-      const session: CameraSession = { frames: [] }
+      const session: CameraSession = { frames: [], arrivals: new ArrivalWatcher() }
       current.current = session
       setError('')
       setState('opening')
@@ -173,6 +183,7 @@ export const BuddyCamera = forwardRef<BuddyCameraHandle, { userId: string; child
             const next = await vision.analyze(preview!, now, samples)
             if (current.current !== session) return
             session.frames.push({ time: now, faces: next })
+            for (const role of session.arrivals.update(next.map((face) => face.role), now)) arrivalHandler.current?.(role)
             while (session.frames[0].time < now - WINDOW_MS) session.frames.shift()
             setFaces(next)
             session.timer = window.setTimeout(() => void sample(), Math.max(0, SAMPLE_INTERVAL - (performance.now() - now)))

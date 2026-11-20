@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { clearBuddyHistory, loadBuddyHistory, loadLastBuddyChild, rememberBuddyChild, saveBuddyHistory } from './history'
+import { clearBuddyHistory, loadBuddyHistory, loadGreetedParents, loadLastBuddyChild, rememberBuddyChild, rememberGreetedParent, saveBuddyHistory } from './history'
 import { recentBuddyMessages, type BuddyMessage } from './api'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -87,4 +87,16 @@ it('keeps chat usable when browser storage is blocked', () => {
   expect(clearBuddyHistory('parent', 'child')).toBe(false)
   expect(loadLastBuddyChild('parent')).toBe('')
   expect(() => rememberBuddyChild('parent', 'child')).not.toThrow()
+})
+
+it('remembers which parents Bin greeted, per child, until the history is cleared', () => {
+  expect(loadGreetedParents('parent', 'child')).toEqual([])
+  expect(rememberGreetedParent('parent', 'child', 'father')).toBe(true)
+  rememberGreetedParent('parent', 'child', 'father')
+  expect(loadGreetedParents('parent', 'child')).toEqual(['father'])
+  expect(loadGreetedParents('parent', 'other-child')).toEqual([])
+  rememberGreetedParent('parent', 'child', 'mother')
+  expect(loadGreetedParents('parent', 'child')).toEqual(['mother', 'father'])
+  clearBuddyHistory('parent', 'child')
+  expect(loadGreetedParents('parent', 'child')).toEqual([])
 })

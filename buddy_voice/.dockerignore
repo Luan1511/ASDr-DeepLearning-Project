@@ -2,3 +2,9 @@
 __pycache__
 *.wav
 *.pcm
+# Listening samples and speech-recognition eval data are not needed in the image.
+voice_samples/
+expressiveness_samples/
+asr_eval_audio/
+asr_models/
+*.mp3

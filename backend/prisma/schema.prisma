@@ -8,6 +8,7 @@ datasource db {
 }
 
 model User {
+  kinectSessions KinectSession[]
   id                     String                  @id @default(uuid())
   name                   String
   email                  String                  @unique
@@ -16,7 +17,9 @@ model User {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   chatMessages           ChatMessage[]
-  children               ChildProfile[]
+  chatConversations      ChatConversation[]
+  /// One parent account manages exactly one child (2026-11-21).
+  child                  ChildProfile?
   communityBookmarks     CommunityBookmark[]
   communityComments      CommunityComment[]
   communityLikes         CommunityLike[]
@@ -30,8 +33,10 @@ model User {
 }
 
 model ChildProfile {
+  kinectSessions KinectSession[]
   id                     String                  @id @default(uuid())
-  userId                 String
+  /// Unique: one child per parent account.
+  userId                 String                  @unique
   fullName               String
   dateOfBirth            DateTime
   gender                 Gender                  @default(UNSPECIFIED)
@@ -45,8 +50,6 @@ model ChildProfile {
   uploads                VideoUpload[]
   personalization        ChildPersonalization?
   doctorLinks            DoctorChildLink[]
-
-  @@index([userId])
 }
 
 /// What the parent told the app about the child so the experience can adapt
@@ -170,6 +173,7 @@ model ScreeningResult {
 }
 
 model ConsentRecord {
+  kinectSessions KinectSession[]
   id               String            @id @default(uuid())
   userId           String
   childId          String
@@ -360,16 +364,34 @@ model QuestionnaireResponse {
   @@index([userId])
 }
 
-model ChatMessage {
+model ChatConversation {
   id        String   @id @default(uuid())
   userId    String
-  role      ChatRole
-  content   String
+  title     String
+  revision  Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@index([userId, updatedAt, id])
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid())
+  userId         String
+  role           ChatRole
+  content        String
+  createdAt      DateTime @default(now())
+  conversationId String?
+  position       Int?
+  sources        Json?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([createdAt])
+  @@unique([conversationId, position])
 }
 
 model Article {
@@ -508,4 +530,49 @@ enum PostCategory {
   LIFESTYLE
   EDUCATION
   QA
+}
+
+model KinectSession {
+ id String @id @default(uuid())
+ userId String
+ childId String
+ consentId String
+ deviceId String
+ status String @default("READY")
+ captureId String?
+ captureSha256 String?
+ rawCapture String?
+ frameCount Int?
+ trimStart Int?
+ trimEnd Int?
+ result Json?
+ modelBundleVersion String?
+ modelBundleSha256 String?
+ startCommandId String?
+ stopCommandId String?
+ errorMessage String?
+ sourceSessionId String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ child ChildProfile @relation(fields:[childId],references:[id],onDelete:Cascade)
+ consent ConsentRecord @relation(fields:[consentId],references:[id])
+ job KinectJob?
+ @@index([userId,createdAt])
+ @@index([childId])
+}
+model KinectJob {
+ id String @id @default(uuid())
+ sessionId String @unique
+ status String @default("QUEUED")
+ attempts Int @default(0)
+ maxAttempts Int @default(5)
+ runAfter DateTime @default(now())
+ lockedBy String?
+ lockedAt DateTime?
+ lastError String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ session KinectSession @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+ @@index([status,runAfter])
 }

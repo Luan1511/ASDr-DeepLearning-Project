@@ -175,7 +175,7 @@ export function QuestionnairesPage() {
           </div>
         </Card>
 
-        <Card title="Chọn hồ sơ trẻ">
+        <Card title={rows && rows.length > 1 ? 'Chọn hồ sơ trẻ' : 'Hồ sơ trẻ'}>
           {rows === null && !error && <div className="py-4 text-sm font-semibold text-duo-mute">Đang tải...</div>}
           {rows && rows.length === 0 && (
             <div className="py-4 text-sm font-semibold text-duo-mute">

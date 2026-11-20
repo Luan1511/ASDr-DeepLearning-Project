@@ -7,7 +7,7 @@ import type { OpenPoseKeypointFrame } from '../openposeService'
 import { sanitizeFps } from '../gaitFeatures'
 import { compileMovementReference } from '../exerciseMovement'
 import { JOINT_COUNT, cleanAndResample, selectExerciseTrack, type Joints } from './cleaning'
-import { IMITATION_V1 as C } from './constants'
+import { IMITATION_V1 as C, TEMPLATE_AUTHORING_GATES } from './constants'
 import {
   FEATURE_IDS,
   FEATURE_KIND,
@@ -268,7 +268,7 @@ export function buildTemplate(input: BuildTemplateInput): BuildTemplateResult {
   const n = poses.length
   if (n < 2 || ext.torsoMedian === null || !ext.rootRef) {
     // Neck and mid-hip never seen together: nothing can be measured.
-    gate('TEMPLATE_PART_NOT_VISIBLE', false, null, `≥ ${C.templateGates.visibility}`)
+    gate('TEMPLATE_PART_NOT_VISIBLE', false, null, `≥ ${TEMPLATE_AUTHORING_GATES.partVisibility}`)
     return fail()
   }
   const set = ext.set
@@ -361,7 +361,8 @@ export function buildTemplate(input: BuildTemplateInput): BuildTemplateResult {
     const share = visible / segLen
     minVisible = minVisible === null ? share : Math.min(minVisible, share)
   }
-  gate('TEMPLATE_PART_NOT_VISIBLE', minVisible === null || minVisible >= g.visibility, minVisible, `≥ ${g.visibility}`)
+  const minPartVisibility = TEMPLATE_AUTHORING_GATES.partVisibility
+  gate('TEMPLATE_PART_NOT_VISIBLE', minVisible === null || minVisible >= minPartVisibility, minVisible, `≥ ${minPartVisibility}`)
   let facing = 0
   for (let i = segStart; i <= segEnd; i += 1) {
     const r = ext.shoulderRatio[i]

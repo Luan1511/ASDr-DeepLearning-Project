@@ -120,10 +120,22 @@ export type BuddyStep = {
   hold?: number
 }
 
+/** Songs Bin can play; the audio is public/buddy-music/<id>.mp3. */
+export const BUDDY_SONGS = ['mot-con-vit'] as const
+export type BuddySong = (typeof BUDDY_SONGS)[number]
+
+/** Pictures Bin can show while talking (components/buddy/BuddyProps.tsx). Keep in sync with the backend. */
+export const BUDDY_PROPS = ['house', 'cat', 'dog', 'duck', 'flower', 'sun', 'rain', 'star', 'heart', 'ball', 'car', 'train'] as const
+export type BuddyProp = (typeof BUDDY_PROPS)[number]
+
 export type BuddyScript = {
   version?: 1
   steps: BuddyStep[]
   /** Expression after the last step. */
   idle?: ExpressionName
   suggestions?: string[]
+  /** Played after the spoken steps (Bin dances, the duck joins in). */
+  song?: BuddySong
+  /** A picture shown next to Bin while it talks about that thing. */
+  prop?: BuddyProp
 }

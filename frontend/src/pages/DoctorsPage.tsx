@@ -91,8 +91,15 @@ function ShareDialog({
         <p className="mt-4 text-sm font-semibold leading-relaxed text-duo-ink">{statement.intro}</p>
 
         <div className="mt-4">
-          <div className="mb-1 text-xs font-extrabold uppercase tracking-wide text-duo-mute">Hồ sơ của con nào?</div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Chọn hồ sơ trẻ">
+          <div className="mb-1 text-xs font-extrabold uppercase tracking-wide text-duo-mute">{kids.length > 1 ? 'Hồ sơ của con nào?' : 'Hồ sơ được chia sẻ'}</div>
+          {/* One child per account: the picker only appears for older accounts that still have several. */}
+          {kids.length === 1 && (
+            <div className="flex items-center gap-3 rounded-2xl bg-duo-mist px-3 py-2.5">
+              <ChildAvatar name={kids[0].fullName} />
+              <span className="min-w-0 truncate text-sm font-black text-duo-ink">{kids[0].fullName}</span>
+            </div>
+          )}
+          <div hidden={kids.length <= 1} className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Chọn hồ sơ trẻ">
             {kids.map((c) => (
               <button
                 key={c.id}

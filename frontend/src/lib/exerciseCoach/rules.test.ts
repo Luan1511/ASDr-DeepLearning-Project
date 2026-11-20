@@ -7,7 +7,10 @@ import {
   LIVE_LIMITS,
   LiveRules,
   PRAISE_GAP_MS,
+  CUE_TEXT,
   PROFILE_CUE,
+  PROFILE_CUES,
+  outOfFrame,
   measurePose,
   twistRelation,
   type CoachEvent,
@@ -191,7 +194,7 @@ describe('LiveRules: jumping jacks', () => {
 // ---------------------------------------------------------------------------
 
 /** One kick: the given leg gets shorter by `rise` for `frames` frames, then stands again. */
-function kick(side: 'left' | 'right', rise = 0.5, frames = 4, restFrames = 4): PoseMeasure[] {
+function kick(side: 'left' | 'right', rise = 1.2, frames = 4, restFrames = 4): PoseMeasure[] {
   const lifted: PoseMeasure =
     side === 'left' ? { ...standing, legLeft: standing.legLeft - rise } : { ...standing, legRight: standing.legRight - rise }
   return [...Array.from({ length: frames }, () => lifted), ...still(restFrames)]
@@ -226,6 +229,60 @@ describe('LiveRules: high kicks', () => {
     // The right foot leaves the floor a little (below the kick threshold): maybe a low kick.
     const events = run(rules, [...still(4), ...kick('left'), ...kick('right', 0.1), ...kick('left')])
     expect(kinds(events)).toEqual([])
+  })
+
+  it('asks to kick higher after two low kicks in a row, whatever the legs', () => {
+    const low = LIVE_LIMITS.kicks.lowKick + 0.02
+    const rules = new LiveRules('high-kicks')
+    const events = run(rules, [...still(4), ...kick('left', low), ...kick('right', low)])
+    expect(kinds(events)).toEqual(['higher'])
+    expect(events[0].at).toBe(4 + 8 + 4)
+  })
+
+  it('asks to kick higher when real kicks, even changing leg, stay under the height', () => {
+    const half = (LIVE_LIMITS.kicks.kick + LIVE_LIMITS.kicks.highKick) / 2
+    const rules = new LiveRules('high-kicks')
+    expect(kinds(run(rules, [...still(4), ...kick('left', half), ...kick('right', half)]))).toEqual(['higher'])
+    // High enough kicks changing leg: praise, never "higher".
+    const high = new LiveRules('high-kicks')
+    const highRise = LIVE_LIMITS.kicks.highKick + 0.05
+    expect(kinds(run(high, [...still(4), ...kick('left', highRise), ...kick('right', highRise), ...kick('left', highRise), ...kick('right', highRise)]))).toEqual(['praise'])
+  })
+
+  it('reminds to start kicking after standing still, then not again for a while', () => {
+    const rules = new LiveRules('high-kicks')
+    const events = run(rules, still(190))
+    expect(kinds(events)).toEqual(['move', 'move'])
+    expect(events.map(({ at }) => at)).toEqual([LIVE_LIMITS.kicks.idleMs / STEP_MS, (LIVE_LIMITS.kicks.idleMs + LIVE_LIMITS.kicks.idleRepeatMs) / STEP_MS])
+    // Kicking now and then keeps it quiet.
+    const busy = new LiveRules('high-kicks')
+    const highRise = LIVE_LIMITS.kicks.highKick + 0.05
+    expect(kinds(run(busy, [...still(40), ...kick('left', highRise), ...still(40), ...kick('right', highRise), ...still(40)]))).not.toContain('move')
+  })
+
+  it('forgets a low kick after a real kick or a long pause', () => {
+    const low = LIVE_LIMITS.kicks.lowKick + 0.02
+    const afterKick = new LiveRules('high-kicks')
+    expect(kinds(run(afterKick, [...still(4), ...kick('left', low), ...kick('right'), ...kick('left', low)]))).toEqual([])
+    const afterPause = new LiveRules('high-kicks')
+    expect(kinds(run(afterPause, [...still(4), ...kick('left', low), ...still(45), ...kick('right', low)]))).toEqual([])
+  })
+
+  it('takes the demo video as high and its foot shuffles as nothing', () => {
+    // Measured on the adult High-Kicks template v2: kicks peak at 2.2-2.8, shuffles at 0.15-0.27.
+    expect(LIVE_LIMITS.kicks.highKick).toBeLessThan(2.2)
+    expect(LIVE_LIMITS.kicks.lowKick).toBeGreaterThan(0.27)
+    const rules = new LiveRules('high-kicks')
+    expect(kinds(run(rules, [...still(4), ...kick('left', 2.2), ...kick('right', 0.27), ...kick('right', 2.2), ...kick('left', 0.2)]))).not.toContain('higher')
+  })
+
+  it('ignores small shifts below the low-kick height and one-frame lifts', () => {
+    const tiny = new LiveRules('high-kicks')
+    const shift = LIVE_LIMITS.kicks.lowKick - 0.01
+    expect(kinds(run(tiny, [...still(4), ...kick('left', shift), ...kick('right', shift), ...kick('left', shift)]))).toEqual([])
+    const blip = new LiveRules('high-kicks')
+    const low = LIVE_LIMITS.kicks.lowKick + 0.02
+    expect(kinds(run(blip, [...still(4), ...kick('left', low, 1), ...kick('right', low, 1)]))).toEqual([])
   })
 
   it('does not count a one-frame blip as a kick', () => {
@@ -340,6 +397,48 @@ describe('CoachPacer', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Step back into the picture
+// ---------------------------------------------------------------------------
+
+describe('step-back reminder', () => {
+  it('detects a hidden or cut-off joint but not a turned person', () => {
+    expect(outOfFrame(person())).toBe(false)
+    expect(outOfFrame(person({ 27: { y: 0.995 } }))).toBe(true)
+    expect(outOfFrame(person({ 15: { visibility: 0.3 } }))).toBe(true)
+    // Shoulders close together (turned sideways): measurePose rejects it, but it is in the picture.
+    expect(outOfFrame(person({ 11: { x: 0.51 }, 12: { x: 0.49 } }))).toBe(false)
+  })
+
+  /** Feeds `count` frames at 10 Hz; `cutOff` frames have no measures. */
+  function feed(rules: LiveRules, count: number, cutOff: boolean, start: number) {
+    const cues: Array<{ at: number; cue: string }> = []
+    for (let i = 0; i < count; i++) {
+      const time = start + i * STEP_MS
+      const event = cutOff ? rules.update(null, time, true) : rules.update(standing, time)
+      if (event?.kind === 'cue') cues.push({ at: time, cue: event.cue })
+    }
+    return cues
+  }
+
+  it('asks once after two seconds cut off, and not again for ten seconds', () => {
+    const rules = new LiveRules('high-kicks')
+    const first = feed(rules, 50, true, 0)
+    expect(first).toEqual([{ at: LIVE_LIMITS.frameMs, cue: 'frame' }])
+    const later = feed(rules, 100, true, 5000)
+    expect(later).toEqual([{ at: LIVE_LIMITS.frameMs + LIVE_LIMITS.frameRepeatMs, cue: 'frame' }])
+  })
+
+  it('says nothing when no single person is seen, or when the child comes back in time', () => {
+    const rules = new LiveRules('high-kicks')
+    const silent: Array<CoachEvent> = []
+    for (let i = 0; i < 40; i++) silent.push(rules.update(null, i * STEP_MS, false))
+    expect(silent.filter(Boolean)).toEqual([])
+    const back = new LiveRules('high-kicks')
+    expect([...feed(back, 15, true, 0), ...feed(back, 2, false, 1500), ...feed(back, 15, true, 1700)]).toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Agreement with the post-session detectors
 // ---------------------------------------------------------------------------
 
@@ -354,6 +453,17 @@ describe('live rules follow the backend detectors', () => {
 
   it('gives each movement profile its one reminder', () => {
     expect(PROFILE_CUE).toEqual({ 'jump-twists': 'cross', 'jumping-jacks': 'open', 'high-kicks': 'alternate' })
+  })
+
+  it('has a voice clip for every reminder a profile can give', () => {
+    const clips = resolve(process.cwd(), 'public', 'exercise-coach')
+    for (const [profile, cues] of Object.entries(PROFILE_CUES)) {
+      expect(cues[0]).toBe(PROFILE_CUE[profile as keyof typeof PROFILE_CUE])
+      for (const cue of cues) {
+        expect(CUE_TEXT[cue]).toBeTruthy()
+        expect(existsSync(resolve(clips, `${cue}.wav`)), `${cue}.wav`).toBe(true)
+      }
+    }
   })
 
   // If one of these fails, a backend threshold moved: revisit LIVE_LIMITS so the

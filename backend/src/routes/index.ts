@@ -21,7 +21,10 @@ import { childPersonalizationRouter } from './childPersonalization'
 import { childDoctorLinksRouter, doctorsRouter } from './doctors'
 import { doctorPortalRouter } from './doctorPortal'
 
+import { kinectRouter } from './kinect'
+
 export const apiRouter = Router()
+apiRouter.use('/kinect', kinectRouter)
 
 apiRouter.use('/auth', authRouter)
 apiRouter.use('/children', childrenRouter)

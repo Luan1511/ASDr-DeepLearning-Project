@@ -6,8 +6,8 @@
  *   npm run sandbox
  *   (other terminal)  cd frontend && npm run dev:sandbox      → http://localhost:5175
  *
- * It fills the temp database with demo data: an admin, a parent with two
- * children (personalisation, practice attempts, a questionnaire, screening
+ * It fills the temp database with demo data: an admin, a parent with one
+ * child (a second parent has another; personalisation, practice attempts, a questionnaire, screening
  * results), the sample doctors, and one record already shared with a doctor.
  * Stop it with Ctrl+C, or by creating the file named in SANDBOX_STOP_FILE;
  * everything it created is then deleted.
@@ -81,9 +81,9 @@ async function main() {
     return { id: e.id, templateId: e.templates[0].id }
   }
 
-  // ---- two children of the parent
+  // ---- one child per parent account
   const na = await h.createChild(parent, 'Na', 24)
-  const bo = await h.createChild(parent, 'Bo', 50)
+  const bo = await h.createChild(h.users.parentB, 'Bo', 50)
   await h.prisma.childProfile.update({ where: { id: na.id }, data: { fullName: 'Nguyễn Hà Na', note: 'Dữ liệu thử trong sandbox.' } })
   await h.prisma.childProfile.update({ where: { id: bo.id }, data: { fullName: 'Nguyễn Gia Bo' } })
 
@@ -214,7 +214,7 @@ async function main() {
   console.log('\nSANDBOX READY')
   console.log(`  backend   http://127.0.0.1:${BACKEND_PORT}/api   (temporary database, fake ML)`)
   console.log('  frontend  cd frontend && npm run dev:sandbox   → http://localhost:5175')
-  console.log(`  accounts  ${admin.email} (admin), ${parent.email} (parent), ${MOCK_DOCTORS[0].email} (sample doctor with a shared record)`)
+  console.log(`  accounts  ${admin.email} (admin), ${parent.email} (parent), ${h.users.parentB.email} (second parent), ${MOCK_DOCTORS[0].email} (sample doctor with a shared record)`)
   console.log(`  password  ${process.env.SANDBOX_PASSWORD ? 'the value of SANDBOX_PASSWORD' : 'the default in test/e2e/sandbox.ts'}`)
   console.log(STOP_FILE ? `  stop      create ${STOP_FILE}` : '  stop      Ctrl+C')
   /* eslint-enable no-console */

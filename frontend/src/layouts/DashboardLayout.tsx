@@ -39,20 +39,20 @@ const doctorMobileItems: MobileItem[] = [
   { to: '/settings', label: 'Cài đặt', icon: Settings },
 ]
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({ children, fullHeight = false }: { children: React.ReactNode; fullHeight?: boolean }) {
   const caps = useExerciseCapabilities()
   const { user } = useAuth()
   const navItems = user?.doctor ? doctorMobileItems : caps?.available ? exerciseMobileItems : mobileItems
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto flex">
+    <div className={fullHeight ? "h-dvh overflow-hidden bg-white" : "min-h-screen bg-white"}>
+      <div className={`mx-auto flex ${fullHeight ? 'h-full' : ''}`}>
         <div className="sticky top-0 z-10 hidden h-screen w-[280px] flex-shrink-0 bg-white shadow-rail md:block">
           <Sidebar />
         </div>
 
-        <main className="min-w-0 flex-1 px-6 pb-24 pt-4 md:px-12 md:pb-12 md:pt-8">
+        <main className={fullHeight ? "flex min-h-0 min-w-0 flex-1 flex-col px-3 pb-20 pt-3 md:px-8 md:pb-5 md:pt-5" : "min-w-0 flex-1 px-6 pb-24 pt-4 md:px-12 md:pb-12 md:pt-8"}>
           <HeaderBar />
-          <div className="mt-5">{children}</div>
+          <div className={fullHeight ? "mt-3 min-h-0 flex-1 md:mt-0" : "mt-5"}>{children}</div>
         </main>
       </div>
 

@@ -47,6 +47,7 @@ export const IMITATION_V1 = deepFreeze({
   quietWindowSec: 1,
   torsoMedianWindowSec: 2,
   trim: { neutralSec: 0.5, threshold: 0.15, padSec: 0.3, neutralMaxSpeed: 0.5 },
+  // `visibility` is no longer read: see TEMPLATE_AUTHORING_GATES. Kept so the hash stays the same.
   templateGates: { coverage: 0.9, visibility: 0.95, minActiveSec: 2, maxActiveSec: 30, facingShare: 0.8 },
   caps: { maxTemplateSamples: 459, maxChildSamples: 900 },
   bands: [80, 60, 40],
@@ -55,3 +56,12 @@ export const IMITATION_V1 = deepFreeze({
 })
 
 export type ImitationConstants = typeof IMITATION_V1
+
+/**
+ * Admin-side acceptance thresholds for a new template. They only decide
+ * whether an adult demonstration may be saved; the template content and the
+ * scoring do not depend on them. Kept outside IMITATION_V1 (and its hash) so
+ * they can be tuned without a new algorithm version.
+ * 2026-11-20: part visibility lowered from 0.95 to 0.7 at the owner's request.
+ */
+export const TEMPLATE_AUTHORING_GATES = Object.freeze({ partVisibility: 0.7 })

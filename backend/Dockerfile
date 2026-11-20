@@ -3,6 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Prisma's config requires a URL while generating the client. Generation only
+# reads the schema, so the builder uses a placeholder at an unused local port.
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:1/build_only
+
 # openssl for Prisma engines; python3/make/g++ only if bcrypt has to compile.
 RUN apk add --no-cache openssl python3 make g++
 

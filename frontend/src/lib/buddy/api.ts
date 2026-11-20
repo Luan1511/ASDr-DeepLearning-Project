@@ -4,7 +4,7 @@ import type { BuddyScript } from './types'
 
 export type BuddyMessage = { role: 'child' | 'buddy'; text: string }
 type BuddyVisionRole = 'child' | 'mother' | 'father' | 'unknown'
-type BuddyVisionCue = 'smile' | 'brow_lowered' | 'mouth_open'
+export type BuddyVisionCue = 'smile' | 'brow_lowered'
 export type BuddyVisionContext = {
   people: Array<{ role: BuddyVisionRole; cues?: BuddyVisionCue[] }>
   /** Leave unset when the voice turn cannot be attributed independently. */
@@ -29,13 +29,23 @@ export function recentBuddyMessages(messages: BuddyMessage[]) {
   return recent[0]?.role === 'buddy' ? recent.slice(1) : recent
 }
 
-/** One chat turn; never throws (falls back to a canned script). */
+/** Bin speaks first: a registered parent sat down next to the child (see lib/buddy/presence.ts). */
+export type BuddyEvent = { type: 'arrival'; role: 'mother' | 'father' }
+
+/** `calm`: the child is sensitive to loud sounds, so Bin speaks in its plain voice. */
+export type BuddyVoiceStyle = 'calm'
+
+/**
+ * One chat turn; never throws (falls back to a canned script). With
+ * `personalize`, the backend adds the child's personalisation to the prompt.
+ */
 export async function askBuddy(
   messages: BuddyMessage[],
-  child?: { age?: number },
+  child?: { age?: number; id?: string; personalize?: boolean },
   signal?: AbortSignal,
   vision?: BuddyVisionContext,
-): Promise<{ script: BuddyScript; fallback: boolean }> {
+  event?: BuddyEvent,
+): Promise<{ script: BuddyScript; fallback: boolean; voice?: BuddyVoiceStyle }> {
   try {
     const res = await api.post('/buddy/chat', {
       messages: recentBuddyMessages(messages).map((m) => ({
@@ -43,13 +53,17 @@ export async function askBuddy(
         text: m.role === 'child' ? m.text.slice(0, 500) : m.text,
       })),
       childAge: child?.age || undefined,
+      ...(child?.personalize && child.id ? { childId: child.id, personalize: true } : {}),
+      ...(event ? { event } : {}),
       vision: vision && {
         people: vision.people.slice(0, 4).map(({ role, cues }) => ({ role, cues })),
         speaker: vision.speaker,
       },
     }, { signal })
     const script = normalizeScript(res.data?.script)
-    if (script) return { script, fallback: Boolean(res.data?.fallback) }
+    if (script) {
+      return { script, fallback: Boolean(res.data?.fallback), ...(res.data?.voice === 'calm' ? { voice: 'calm' as const } : {}) }
+    }
   } catch {
     // fall through
   }

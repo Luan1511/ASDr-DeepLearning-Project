@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { HomePage } from './pages/HomePage'
 import { ScreeningPage } from './pages/ScreeningPage'
+import { KinectPage } from './pages/KinectPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { KnowledgePage } from './pages/KnowledgePage'
@@ -69,6 +70,8 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/screening/kinect" element={<ProtectedRoute><KinectPage /></ProtectedRoute>} />
 
       <Route
         path="/history"

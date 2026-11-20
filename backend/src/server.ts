@@ -1,3 +1,5 @@
+import { attachKinectSocket } from './services/kinectSocket'
+import { startKinectWorker, stopKinectWorker } from './services/kinectProcessor'
 import 'dotenv/config'
 import { createApp } from './app'
 import { env } from './lib/env'
@@ -10,9 +12,12 @@ const app = createApp()
 const server = app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`AIMBRACE (ASDr) backend listening on http://localhost:${env.PORT}`)
+  startKinectWorker()
   startScreeningWorker()
   startExerciseWorker()
 })
+
+attachKinectSocket(server)
 
 let shuttingDown = false
 function shutdown(signal: string) {
@@ -22,6 +27,7 @@ function shutdown(signal: string) {
   console.log(`${signal} received, shutting down`)
   // Running jobs keep their lock; another worker re-queues them once the
   // heartbeat goes stale, so nothing is lost by exiting here.
+  stopKinectWorker()
   stopScreeningWorker()
   stopExerciseWorker()
   server.close(() => {

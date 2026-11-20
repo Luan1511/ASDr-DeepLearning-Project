@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
@@ -52,6 +53,7 @@ childrenRouter.get(
   }),
 )
 
+/** One parent account manages exactly one child (unique ChildProfile.userId). */
 childrenRouter.post(
   '/',
   asyncHandler(async (req, res) => {
@@ -61,17 +63,27 @@ childrenRouter.post(
     const dateOfBirth = parseBirthDate(input.dateOfBirth ?? input.date_of_birth!)
     if (!dateOfBirth) return res.status(400).json({ error: 'INVALID_DATE_OF_BIRTH' })
 
-    const child = await prisma.childProfile.create({
-      data: {
-        userId,
-        fullName: input.fullName ?? input.full_name!,
-        dateOfBirth,
-        gender: parseGender(input.gender),
-        note: normalizeNote(input.note),
-      },
-    })
-
-    return res.status(201).json({ child: serializeChild(child) })
+    if (await prisma.childProfile.count({ where: { userId } })) {
+      return res.status(409).json({ error: 'CHILD_LIMIT_REACHED' })
+    }
+    try {
+      const child = await prisma.childProfile.create({
+        data: {
+          userId,
+          fullName: input.fullName ?? input.full_name!,
+          dateOfBirth,
+          gender: parseGender(input.gender),
+          note: normalizeNote(input.note),
+        },
+      })
+      return res.status(201).json({ child: serializeChild(child) })
+    } catch (error) {
+      // Two requests at once: the unique index refuses the second one.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return res.status(409).json({ error: 'CHILD_LIMIT_REACHED' })
+      }
+      throw error
+    }
   }),
 )
 
@@ -185,7 +197,7 @@ childrenRouter.get(
 
 // Screening grant/revoke leaves the exercise consent namespace alone (it has
 // its own endpoints in childExercises.ts).
-const NOT_EXERCISE_CONSENT = { NOT: { version: { startsWith: EXERCISE_CONSENT_PREFIX } } }
+const NOT_EXERCISE_CONSENT = { AND: [{ NOT: { version: { startsWith: EXERCISE_CONSENT_PREFIX } } }, { NOT: { version: { startsWith: 'kinect-' } } }] }
 
 const grantConsentSchema = z.object({
   accepted: z.literal(true),
