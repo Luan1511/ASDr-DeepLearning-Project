@@ -123,8 +123,9 @@ childDoctorLinksRouter.get(
   asyncHandler(async (req, res) => {
     const child = await findOwnedChild(req.params.childId, req.user!.id)
     if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
-    await expireDoctorLinks()
     try {
+      // Inside the try: on a database without the doctor tables this throws P2021 too.
+      await expireDoctorLinks()
       const links = await prisma.doctorChildLink.findMany({
         where: { childId: child.id },
         include: { doctor: true },

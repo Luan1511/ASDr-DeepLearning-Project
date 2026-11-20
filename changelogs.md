@@ -80,6 +80,14 @@ Nhật ký thay đổi source code, logic xử lý, giao diện, database và tr
 
 Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md` và source hiện tại. Ngày cập nhật code và ngày triển khai được ghi riêng khi có thông tin. Kết quả kiểm thử thuộc lần thực hiện được nêu trong từng mục.
 
+## 2026-11-21 — Cập nhật e2e sau khi merge nhánh của Lâm; sửa lỗi trang bác sĩ khi database chưa migrate
+
+- `test/e2e/doctor.e2e.ts`: kịch bản 5 kiểm tra danh sách bác sĩ nay trả thêm `scopes` và `expiresAt` (mặc định khoảng 90 ngày); kịch bản 10 (`DOCTOR_MODE=on`): hồ sơ bác sĩ thật ở trạng thái `PENDING` không được liệt kê, sau khi đặt `VERIFIED` thì có.
+- `test/e2e/harness.ts`: database "cũ" (3 migration đầu) được thêm hai cột `User.communitySuspendedAt`, `communitySuspensionReason` của migration `20261120051743_community_social_doctor_pilot`, vì mọi truy vấn User hiện nay đọc hai cột này; các kịch bản database cũ kiểm tra việc thiếu bảng tính năng.
+- Sửa lỗi thật do e2e kịch bản 11 phát hiện: `GET /children/:id/doctor-links` gọi `expireDoctorLinks()` ngoài khối `try`, nên database chưa có bảng bác sĩ trả 503 thay vì `{ available: false, links: [] }`. Đã chuyển vào trong `try` (`backend/src/routes/doctors.ts`).
+- `schema.prisma`: `ChatConversation.updatedAt` khai báo `@default(now())` cho khớp migration `20261120_chat_history` (database đã có default này; không cần migration mới). Hết lệch ở e2e kịch bản 18.
+- Kiểm chứng: e2e 53/53 (exercise 26/26; doctor và hai bộ bảng hỏi đạt); backend typecheck `src` sạch. Chưa commit, chưa triển khai lên `khmt01`.
+
 ## 2026-11-21 — Mở bài tập vận động cho phụ huynh
 
 - Git: commit `9c58b3e` (toàn bộ thay đổi đang có ở máy dev, bỏ qua mẫu giọng và dữ liệu ASR qua `.gitignore`), merge `origin/master` (đã chứa PR #1 `Vanlam/develop` của Lâm: cộng đồng, nhắn riêng giữa phụ huynh, quản lý bác sĩ) thành `68a47be`; xung đột duy nhất ở cuối `schema.prisma` (giữ cả model Kinect và enum của Lâm). Thêm `ee260b7`: `frontend/nginx.conf` có header nâng cấp WebSocket như bản trên `khmt01`. Đã push lên `origin/master` bằng tài khoản Luan1511. Sau merge: backend 450/453 test (3 lỗi gait cũ), frontend 118 test và build sạch; e2e 48/53 — ngoài lỗi lệch `ChatConversation.updatedAt` đã biết, 4 kịch bản lỗi do thay đổi của Lâm chưa cập nhật test (doctor e2e 5 và 10: API chia sẻ nay trả thêm `expiresAt`/`scopes`, danh sách bác sĩ đổi; e2e 11 và exercise 17: DB "cũ" thiếu cột `User.communitySuspendedAt`).

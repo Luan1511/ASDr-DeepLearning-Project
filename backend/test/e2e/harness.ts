@@ -277,6 +277,15 @@ export class E2eHarness {
     if (options.premigrationDb) {
       await this.createDatabase(this.oldDb)
       await this.migrate(this.oldUrl, path.join(this.root, 'prisma-premigration'), PRE_CHANGE_MIGRATIONS)
+      // Columns on User that every current query reads (added in
+      // 20261120051743_community_social_doctor_pilot). The "old database" scenarios test
+      // missing feature tables; a User row without these columns cannot be read by any
+      // current client, and the backend always migrates at startup in production.
+      const old = this.client(this.oldUrl)
+      await old.$executeRawUnsafe(
+        'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "communitySuspendedAt" TIMESTAMP(3), ADD COLUMN IF NOT EXISTS "communitySuspensionReason" TEXT',
+      )
+      await old.$disconnect()
     }
     this.prisma = this.client(this.mainUrl)
     await this.seed()

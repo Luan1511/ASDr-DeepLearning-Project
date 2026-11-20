@@ -308,7 +308,12 @@ scenario('5. a parent shares a record: validation, ownership, and what the docto
 
   const directory = await api('GET', '/doctors', { token: parentA.token })
   const listed = directory.body.doctors.find((d: { id: string }) => d.id === doctor1.id)
-  assert.deepEqual(listed.links, [{ id: linkId, childId: childA.id }])
+  // Grants expire after 90 days unless the parent picks another duration.
+  assert.equal(listed.links.length, 1)
+  const { expiresAt, ...listedLink } = listed.links[0]
+  assert.deepEqual(listedLink, { id: linkId, childId: childA.id, scopes: ['PROFILE', 'SCREENING'] })
+  const days = (new Date(expiresAt).getTime() - Date.now()) / 86_400_000
+  assert.ok(days > 89 && days <= 90, `default share duration ~90 days, got ${days}`)
   // Another parent does not see that grant.
   const otherView = await api('GET', '/doctors', { token: parentB.token })
   assert.deepEqual(otherView.body.doctors.find((d: { id: string }) => d.id === doctor1.id).links, [])
@@ -475,12 +480,14 @@ scenario('10. DOCTOR_MODE=on: sample doctors are neither listed nor able to read
   assert.equal(blocked.body.error, 'DOCTORS_DISABLED')
   assert.equal((await api('GET', '/auth/me', { token: doctor1.token })).body.user.doctor, null)
 
-  // A real (non-sample) doctor works in this mode.
+  // A real (non-sample) doctor works in this mode once an admin has verified the profile.
   const real = await h.prisma.user.create({ data: { name: 'BS. Thật (E2E)', email: 'real-doctor@e2e.test', passwordHash: '!e2e-no-login' } })
   const profile = await h.prisma.doctorProfile.create({
     data: { userId: real.id, displayName: 'Thật (E2E)', title: 'BS.', specialty: 'Nhi khoa', workplace: 'E2E', city: 'Đà Nẵng', bio: 'E2E', languages: [] },
   })
   const realToken = h.tokenFor({ id: real.id, email: real.email, name: real.name, role: 'USER' })
+  assert.deepEqual((await api('GET', '/doctors', { token: parentA.token })).body.doctors, [], 'a PENDING profile is not listed')
+  await h.prisma.doctorProfile.update({ where: { id: profile.id }, data: { verificationStatus: 'VERIFIED' } })
   assert.deepEqual((await api('GET', '/doctors', { token: parentA.token })).body.doctors.map((d: { id: string }) => d.id), [profile.id])
   const shared = await grant(parentA, childA.id, { doctorId: profile.id, scopes: ['PROFILE'] })
   assert.equal(shared.status, 201, JSON.stringify(shared.body))
