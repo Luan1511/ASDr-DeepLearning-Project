@@ -86,6 +86,10 @@ describe('classifyFaceView', () => {
   it('accepts a camera that sits a little above or below the face as frontal', () => {
     expect(classifyFaceView(poseOf({ pitch: 10 }), null)).toBe('front')
     expect(classifyFaceView(poseOf({ pitch: -10 }), null)).toBe('front')
+    expect(classifyFaceView(poseOf({ pitch: 15 }), null)).toBe('front')
+    expect(classifyFaceView(poseOf({ pitch: -15 }), null)).toBe('front')
+    expect(classifyFaceView(poseOf({ yaw: 10 }), null)).toBe('front')
+    expect(classifyFaceView(poseOf({ yaw: -10 }), null)).toBe('front')
   })
 
   it('names slight turns by the side of the image the nose points to', () => {

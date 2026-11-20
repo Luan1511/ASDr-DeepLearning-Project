@@ -80,9 +80,40 @@ Nhật ký thay đổi source code, logic xử lý, giao diện, database và tr
 
 Các mục lịch sử khởi tạo được tổng hợp từ `master_prompt.md` và source hiện tại. Ngày cập nhật code và ngày triển khai được ghi riêng khi có thông tin. Kết quả kiểm thử thuộc lần thực hiện được nêu trong từng mục.
 
-## Chưa phát hành
+## 2026-11-20 — Điều chỉnh tỉ lệ trung bình và nối cổ cho Bin
 
-Ghi các thay đổi đang làm tại đây, sau đó chuyển sang mục có ngày khi hoàn tất. Ghi rõ môi trường đã áp dụng để theo dõi phần còn chờ triển khai.
+- Theo góp ý của chủ dự án, lấy trung bình giữa tỉ lệ gốc và bản thu gọn. Thân còn 85%, tay 84%, chân 77,5%, bề rộng vai và hông 97,5%.
+- Giới hạn phóng hình ở 1,07 để chiều cao hiển thị gần trung bình của hai bản xem thử.
+- Tính vị trí chân cổ từ chiều dài thân và điểm nối trên bản vẽ thân, để cổ chồng vào thân 2 đơn vị SVG khi đứng hoặc nghiêng người.
+- Kiểm chứng bằng 10 test hình học, frontend build, lint và bản xem thử Chrome.
+- Bản sửa đã áp vào source máy dev. Website cần build và triển khai frontend.
+
+## 2026-11-20 — Thu gọn tỉ lệ Bin khi làm mẫu bài tập
+
+- Thêm `retargetBinPose` trong `frontend/src/lib/buddy/figure.ts` để chuyển khung xương bài tập sang tỉ lệ nhân vật trước khi vẽ.
+- Thân còn 70%, tay còn 68%, chân còn 55% chiều dài của khung xương hiển thị ban đầu. Bề rộng vai và hông còn 95%, giúp đầu nổi bật hơn so với thân và chân.
+- Co từng đoạn chi từ khớp cha để giữ hướng và góc gập trong động tác. Tính lại mặt sàn và khung nhìn từ tư thế đã thu gọn.
+- `GuidePuppet.tsx` áp tỉ lệ này cho làm mẫu, đứng chờ, chúc mừng và tư thế nhún vai.
+- Kiểm chứng bằng 8 test hình học, frontend build và lint. Bản xem thử trên Chrome bao gồm đối chiếu tỉ lệ và các tư thế bài tập tổng hợp.
+- Bản sửa được áp vào source máy dev. Frontend trên website cần build và triển khai.
+
+## 2026-11-18 — Sửa lỗi tạo mẫu khuôn mặt trên website
+
+- Bản quay từ người dùng cho thấy mặt và tư thế đã được chấp nhận, nhưng bước tạo vector nhận diện liên tục báo lỗi.
+- Xác định nginx trên website trả module ONNX Runtime `.mjs` với `Content-Type: application/octet-stream`, khiến trình duyệt chặn import module.
+- Bổ sung location dành cho `.mjs` trong `frontend/nginx.conf`, trả `text/javascript` và trả 404 nếu tệp module thiếu.
+- Đã áp cấu hình vào source triển khai và nginx đang chạy trên `khmt01`. Lưu bản sao cấu hình tại `/home/khmt01/Luan_workspace/diagnostics/nginx-mjs-20261118-f87b11ee`, chạy `nginx -t` thành công rồi reload.
+- Kiểm chứng qua `aimbrace.agriwatch.io.vn`: trước sửa Chrome import thất bại, sau sửa import thành công và worker SFace trả vector hữu hạn 128 chiều với tensor tổng hợp. HTTP của module trả `text/javascript`, API health trả 200.
+- Lần kiểm thử giao diện trước đó dùng máy chủ thử có MIME đúng nên chưa phát hiện sai cấu hình nginx. Sau triển khai cần tải lại trang để worker khởi động lại rồi thử lấy mẫu bằng camera thật.
+
+## 2026-11-18 — Cải thiện lấy mẫu khuôn mặt cho Bạn Bin
+
+- Camera lấy mẫu dùng khung 4:3 dành cho khuôn mặt, thay cấu hình toàn thân của bài tập. Mở rộng phần xem trước và thêm khung hướng dẫn cho góc chính diện.
+- Phân biệt các trường hợp mặt quá nhỏ, sát mép, sai góc và lỗi tạo vector nhận diện. Giao diện chỉ rõ cần tiến gần, dịch vào giữa hay điều chỉnh hướng mặt.
+- Nới nhẹ khoảng chấp nhận góc chính diện, từ khoảng 8° lên khoảng 10° và tăng dung sai góc nhìn dọc của camera. Các ngưỡng so khớp danh tính giữ theo cấu hình nhận diện hiện tại.
+- Làm rõ cách hoàn tất sau góc đầu tiên bằng nút “Dùng mẫu chính diện”. Người dùng có thể tiếp tục lấy thêm bốn góc.
+- Kiểm chứng trên bản sao source gồm 37 test liên quan, lint và build frontend đạt. Chrome với camera giả lập và ảnh người lớn công khai đã chạy mô hình thật, tự lấy mẫu cho hai người, lưu vector tại trình duyệt và mở giao diện ở chiều rộng 375 px.
+- Giao diện cập nhật đã xuất hiện trong bản quay website người dùng gửi sau đó. Cần thử thêm với người thật để đánh giá dung sai góc mới sau khi khắc phục lỗi module ONNX.
 
 ## 2026-11-20 — Sửa liên kết phiếu M-CHAT-R/F tiếng Việt
 

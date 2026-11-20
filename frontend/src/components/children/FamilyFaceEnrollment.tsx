@@ -21,7 +21,7 @@ import {
   type FamilyFaceUpdates,
   type FamilyRole,
 } from '../../lib/buddy/visionProfiles'
-import { CAMERA_CONSTRAINTS, cameraUnavailableReason } from '../../lib/recording'
+import { cameraUnavailableReason } from '../../lib/recording'
 
 /** One camera session. The views collected so far live here so the probe loop always sees the latest. */
 type CameraSession = {
@@ -36,6 +36,17 @@ type CameraSession = {
 }
 
 const PROBE_INTERVAL_MS = 250
+// A face-sized preview uses a taller frame than the full-body exercise camera.
+const FACE_CAMERA_CONSTRAINTS: MediaStreamConstraints = {
+  audio: false,
+  video: {
+    facingMode: 'user',
+    width: { ideal: 960 },
+    height: { ideal: 720 },
+    aspectRatio: { ideal: 4 / 3 },
+    frameRate: { ideal: 15, max: 20 },
+  },
+}
 
 const CAMERA_ERRORS: Record<string, string> = {
   NotAllowedError: 'Cho phép truy cập camera trong trình duyệt rồi thử lại.',
@@ -68,6 +79,7 @@ export function FamilyFaceEnrollment({
   const [status, setStatus] = useState<'idle' | 'opening' | 'collecting'>('idle')
   const [collected, setCollected] = useState<CollectedViews>({})
   const [notice, setNotice] = useState<Exclude<EnrollProbe['status'], 'ok'> | null>(null)
+  const [poseNotice, setPoseNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const video = useRef<HTMLVideoElement>(null)
   const camera = useRef<CameraSession | null>(null)
@@ -91,6 +103,7 @@ export function FamilyFaceEnrollment({
     setStatus('idle')
     setCollected({})
     setNotice(null)
+    setPoseNotice(null)
     onCameraActiveChange(false)
   }, [closeCamera, onCameraActiveChange])
 
@@ -130,9 +143,11 @@ export function FamilyFaceEnrollment({
       if (result.status !== 'ok') {
         session.previousView = null
         setNotice(result.status)
+        setPoseNotice(null)
       } else {
         session.previousView = result.view
         setNotice(null)
+        setPoseNotice(result.hint ?? null)
         if (result.view && result.sample) {
           session.collected = { ...session.collected, [result.view]: result.sample }
           if (result.view === 'front') session.neutralPitch = result.pitch
@@ -168,9 +183,10 @@ export function FamilyFaceEnrollment({
     setError(null)
     setCollected({})
     setNotice(null)
+    setPoseNotice(null)
     setStatus('opening')
     try {
-      const stream = await navigator.mediaDevices.getUserMedia(CAMERA_CONSTRAINTS)
+      const stream = await navigator.mediaDevices.getUserMedia(FACE_CAMERA_CONSTRAINTS)
       if (camera.current !== session) {
         stream.getTracks().forEach((track) => track.stop())
         return
@@ -275,14 +291,20 @@ export function FamilyFaceEnrollment({
           {status === 'opening' && (
             <p className="text-xs font-semibold text-duo-mute" role="status">Đang mở camera và tải bộ nhận diện…</p>
           )}
-          <video
-            ref={video}
-            playsInline
-            muted
-            aria-label="Xem trước camera lấy mẫu khuôn mặt"
-            hidden={status === 'idle'}
-            className="max-h-48 w-full max-w-xs rounded-2xl bg-black object-contain"
-          />
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-black" hidden={status === 'idle'}>
+            <video
+              ref={video}
+              playsInline
+              muted
+              aria-label="Xem trước camera lấy mẫu khuôn mặt"
+              className="block h-auto w-full"
+            />
+            {!collected.front && (
+              <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-3/4 w-[45%] rounded-[50%] border-2 border-dashed border-white/80" />
+              </div>
+            )}
+          </div>
           {status === 'collecting' && (
             <div className="space-y-2">
               <ul className="flex flex-wrap gap-1.5" aria-label="Các góc mặt đã lấy mẫu">
@@ -300,7 +322,12 @@ export function FamilyFaceEnrollment({
                 ))}
               </ul>
               <p className="text-sm font-bold text-duo-ink" role="status">
-                {notice ? PROBE_NOTICES[notice] : enrollmentHint(collected)}
+                {notice ? PROBE_NOTICES[notice] : poseNotice ?? enrollmentHint(collected)}
+              </p>
+              <p className="text-xs font-semibold text-duo-mute">
+                {collected.front
+                  ? 'Đã có góc thẳng. Bạn có thể dùng mẫu ngay hoặc lấy thêm các góc để Bin nhận diện khi xoay đầu.'
+                  : 'Đặt camera ngang tầm mắt, hướng mặt về phía ánh sáng và đưa mặt vào giữa khung hướng dẫn.'}
               </p>
               <p className="text-xs font-semibold text-duo-mute">
                 Chỉ để {FAMILY_ROLE_LABELS[role]} trong khung hình. Bin tự lấy mẫu khi mặt giữ yên ở từng góc.
@@ -321,7 +348,7 @@ export function FamilyFaceEnrollment({
                   disabled={disabled || !collected.front}
                   onClick={() => camera.current && finish(camera.current)}
                 >
-                  Dùng {collectedCount}/{FACE_VIEWS.length} góc đã lấy
+                  {collectedCount === 1 ? 'Dùng mẫu chính diện' : `Dùng ${collectedCount}/${FACE_VIEWS.length} góc đã lấy`}
                 </button>
                 <button type="button" className="link-duo inline-flex items-center gap-1 text-sm" onClick={stopCamera}>
                   <CameraOff className="h-4 w-4" aria-hidden />

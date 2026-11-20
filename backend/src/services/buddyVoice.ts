@@ -12,6 +12,8 @@ export async function proxyBuddyVoice(
   if (!env.BUDDY_VOICE_URL) return res.status(503).json({ error: 'BUDDY_VOICE_DISABLED' })
 
   const disconnect = new AbortController()
+  const timeout = new AbortController()
+  const deadline = setTimeout(() => timeout.abort(), 25_000)
   const close = () => disconnect.abort()
   res.once('close', close)
   try {
@@ -19,8 +21,10 @@ export async function proxyBuddyVoice(
       method: 'POST',
       headers: { 'Content-Type': contentType },
       body,
-      signal: AbortSignal.any([disconnect.signal, AbortSignal.timeout(25_000)]),
+      signal: AbortSignal.any([disconnect.signal, timeout.signal]),
     })
+    // Once speech starts, let it stream for as long as the listener stays connected.
+    if (path === '/speak') clearTimeout(deadline)
     if (!upstream.ok || !upstream.body) {
       await upstream.body?.cancel()
       if (upstream.status === 429) return res.status(429).json({ error: 'BUDDY_VOICE_BUSY' })
@@ -46,6 +50,7 @@ export async function proxyBuddyVoice(
     }
     if (!res.destroyed) res.destroy()
   } finally {
+    clearTimeout(deadline)
     res.off('close', close)
   }
 }

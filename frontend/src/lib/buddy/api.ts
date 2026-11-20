@@ -38,7 +38,10 @@ export async function askBuddy(
 ): Promise<{ script: BuddyScript; fallback: boolean }> {
   try {
     const res = await api.post('/buddy/chat', {
-      messages: recentBuddyMessages(messages).map((m) => ({ role: m.role, text: m.text.slice(0, 500) })),
+      messages: recentBuddyMessages(messages).map((m) => ({
+        role: m.role,
+        text: m.role === 'child' ? m.text.slice(0, 500) : m.text,
+      })),
       childAge: child?.age || undefined,
       vision: vision && {
         people: vision.people.slice(0, 4).map(({ role, cues }) => ({ role, cues })),

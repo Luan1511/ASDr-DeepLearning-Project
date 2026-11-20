@@ -10,7 +10,7 @@
  */
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, type CSSProperties } from 'react'
 import expressions from '../../lib/buddy/expressions.json'
-import { FIGURE_ANKLE_LINE, FIGURE_UNIT, FIGURE_VIEW, HEAD_ART, HEAD_LIFT, HEAD_SCALE } from '../../lib/buddy/figure'
+import { FIGURE_ANKLE_LINE, FIGURE_UNIT, FIGURE_VIEW, HEAD_ART, HEAD_SCALE, TORSO_ART, neckLift } from '../../lib/buddy/figure'
 import { BUDDY_COLORS } from '../../lib/buddy/geometry'
 import type { BrowShape, ExpressionName, EyeShape, HandShape, MouthShape } from '../../lib/buddy/types'
 import { J, type PuppetPose, type Vec } from '../../lib/puppet'
@@ -42,8 +42,6 @@ const OUTLINE = 2.6
 const ELBOW_R = ARM_T / 2 + 1
 const KNEE_R = LEG_T / 2 + 1
 
-// Where the torso drawing (BuddyTorso, character units) meets the skeleton.
-const TORSO_ART = { centreX: 200, shoulderY: 290, hipY: 430, halfShoulder: 58 }
 /** The body is drawn a little narrower than the shoulder joints; the shoulder caps cover the seam. */
 const TORSO_SLIM = 0.94
 /** Narrowest half shoulder width drawn (a turned body is not squeezed to a line). */
@@ -302,7 +300,8 @@ function placeFigure(parts: Parts, pose: PuppetPose, groundY: number, legFront: 
 
   // ---- head: rigid, along the spine
   const up = direction(H, S)
-  const neck = { x: S.x + up.x * HEAD_LIFT, y: S.y + up.y * HEAD_LIFT }
+  const lift = neckLift(Math.hypot(spine.x, spine.y))
+  const neck = { x: S.x + up.x * lift, y: S.y + up.y * lift }
   parts.head?.setAttribute(
     'transform',
     `translate(${fixed(neck.x)} ${fixed(neck.y)}) rotate(${fixed(degrees(Math.atan2(up.x, -up.y)))}) scale(${HEAD_SCALE}) translate(${-HEAD_ART.centreX} ${-HEAD_ART.neckBaseY})`,

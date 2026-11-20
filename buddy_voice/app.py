@@ -110,7 +110,7 @@ async def transcribe(request: Request):
 
 
 class SpeechInput(BaseModel):
-    text: str = Field(min_length=1, max_length=160)
+    text: str = Field(min_length=1)
 
 
 def pcm_stream(tts, text):

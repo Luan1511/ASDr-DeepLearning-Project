@@ -133,7 +133,7 @@ export function normalizeScript(raw: unknown): BuddyScript | null {
     .slice(0, 12)
     .map((x) => {
       const step: BuddyStep = {}
-      if (typeof x.say === 'string' && x.say.trim()) step.say = x.say.trim().slice(0, 300)
+      if (typeof x.say === 'string' && x.say.trim()) step.say = x.say.trim()
       if (EXPRESSIONS.includes(x.expression as ExpressionName)) step.expression = x.expression as ExpressionName
       if (typeof x.gesture === 'string' && (x.gesture === 'none' || CLIP_LIBRARY[x.gesture])) step.gesture = x.gesture
       else if (x.gesture && typeof x.gesture === 'object') step.gesture = normalizeClip(x.gesture) ?? undefined
