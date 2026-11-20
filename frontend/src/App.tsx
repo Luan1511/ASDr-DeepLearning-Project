@@ -41,6 +41,11 @@ const CommunityPage = lazy(() => import('./pages/CommunityPage').then((m) => ({ 
 const CommunityPostDetailPage = lazy(() =>
   import('./pages/CommunityPostDetailPage').then((m) => ({ default: m.CommunityPostDetailPage })),
 )
+const CommunityMemberPage = lazy(() => import('./pages/CommunityMemberPage').then((m) => ({ default: m.CommunityMemberPage })))
+const CommunityMessagesPage = lazy(() => import('./pages/CommunityMessagesPage').then((m) => ({ default: m.CommunityMessagesPage })))
+const AdminCommunityPage = lazy(() => import('./pages/AdminCommunityPage').then((m) => ({ default: m.AdminCommunityPage })))
+const AdminDoctorsPage = lazy(() => import('./pages/AdminDoctorsPage').then((m) => ({ default: m.AdminDoctorsPage })))
+const DoctorInvitationPage = lazy(() => import('./pages/DoctorInvitationPage').then((m) => ({ default: m.DoctorInvitationPage })))
 
 function PageFallback() {
   return <div className="p-8 text-sm font-semibold text-duo-mute">Đang tải...</div>
@@ -52,6 +57,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/doctor-invitation/:token" element={<DoctorInvitationPage />} />
 
       <Route
         path="/"
@@ -172,6 +178,9 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/community/member/:id" element={<ProtectedRoute><CommunityMemberPage /></ProtectedRoute>} />
+      <Route path="/community/messages" element={<ProtectedRoute><CommunityMessagesPage /></ProtectedRoute>} />
+      <Route path="/community/messages/:id" element={<ProtectedRoute><CommunityMessagesPage /></ProtectedRoute>} />
 
       <Route
         path="/assistant"
@@ -244,6 +253,8 @@ export default function App() {
           </AdminRoute>
         }
       />
+      <Route path="/admin/community" element={<AdminRoute><AdminCommunityPage /></AdminRoute>} />
+      <Route path="/admin/doctors" element={<AdminRoute><AdminDoctorsPage /></AdminRoute>} />
 
       <Route
         path="/admin/skeleton"

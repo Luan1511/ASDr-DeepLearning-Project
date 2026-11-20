@@ -19,6 +19,7 @@ import { requireAuth } from '../middleware/auth'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { requireDoctorsEnabled } from '../middleware/requireDoctor'
 import { findOwnedChild } from './exercises'
+import { expireDoctorLinks } from '../services/doctorSharing'
 
 /** Parent side: the doctor directory and the text of the sharing agreement. */
 export const doctorsRouter = Router()
@@ -52,8 +53,8 @@ doctorsRouter.get(
         orderBy: [{ acceptingNew: 'desc' }, { displayName: 'asc' }],
       }),
       prisma.doctorChildLink.findMany({
-        where: { grantedById: req.user!.id, revokedAt: null },
-        select: { id: true, doctorId: true, childId: true },
+        where: { grantedById: req.user!.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+        select: { id: true, doctorId: true, childId: true, expiresAt: true, scopes: true },
       }),
     ])
     // The directory is small, and searching here (not in SQL) ignores Vietnamese
@@ -70,7 +71,7 @@ doctorsRouter.get(
       demo: env.DOCTOR_MODE === 'demo',
       doctors: doctors.map((doctor) => ({
         ...serializeDoctor(doctor),
-        links: links.filter((l) => l.doctorId === doctor.id).map((l) => ({ id: l.id, childId: l.childId })),
+        links: links.filter((l) => l.doctorId === doctor.id).map((l) => ({ id: l.id, childId: l.childId, expiresAt: l.expiresAt, scopes: l.scopes })),
       })),
       cities: sorted(all.map((d) => d.city)),
       specialties: sorted(all.map((d) => d.specialty)),
@@ -99,6 +100,19 @@ export const childDoctorLinksRouter = Router({ mergeParams: true })
 
 childDoctorLinksRouter.use(requireAuth)
 
+childDoctorLinksRouter.get('/doctor-access-events', asyncHandler(async (req, res) => {
+  const child = await findOwnedChild(req.params.childId, req.user!.id)
+  if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
+  await expireDoctorLinks()
+  const page = z.coerce.number().int().min(1).max(10000).default(1).parse(req.query.page)
+  const where = { link: { childId: child.id } }
+  const [total, events] = await Promise.all([
+    prisma.doctorAccessEvent.count({ where }),
+    prisma.doctorAccessEvent.findMany({ where, orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * 20, take: 20, include: { link: { select: { scopes: true, expiresAt: true, doctor: { select: { displayName: true, title: true } } } } } }),
+  ])
+  return res.json({ events: events.map((event) => ({ id: event.id, type: event.type, occurredAt: event.occurredAt, doctorName: `${event.link.doctor.title} ${event.link.doctor.displayName}`, scopes: normalizeScopes(event.link.scopes), expiresAt: event.link.expiresAt })), page, totalPages: Math.ceil(total / 20) })
+}))
+
 /**
  * Every grant of the child, newest first. Always available (also when the
  * feature is off) so a parent can see and end what was shared; a database
@@ -109,6 +123,7 @@ childDoctorLinksRouter.get(
   asyncHandler(async (req, res) => {
     const child = await findOwnedChild(req.params.childId, req.user!.id)
     if (!child) return res.status(404).json({ error: 'CHILD_NOT_FOUND' })
+    await expireDoctorLinks()
     try {
       const links = await prisma.doctorChildLink.findMany({
         where: { childId: child.id },
@@ -154,12 +169,11 @@ childDoctorLinksRouter.post(
     // Snapshot exactly what the parent agreed to. A new grant to the same
     // doctor replaces the previous one (so the scopes can be changed).
     const statement = buildDoctorShareStatement(env.DOCTOR_MODE)
+    const expiresAt = input.durationDays === 0 ? null : new Date(Date.now() + input.durationDays * 24 * 60 * 60 * 1000)
     const link = await prisma.$transaction(async (tx) => {
-      await tx.doctorChildLink.updateMany({
-        where: { doctorId: doctor.id, childId: child.id, revokedAt: null },
-        data: { revokedAt: new Date() },
-      })
-      return tx.doctorChildLink.create({
+      const previous = await tx.doctorChildLink.findMany({ where: { doctorId: doctor.id, childId: child.id, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, select: { id: true } })
+      await tx.doctorChildLink.updateMany({ where: { id: { in: previous.map((x) => x.id) } }, data: { revokedAt: new Date() } })
+      const created = await tx.doctorChildLink.create({
         data: {
           doctorId: doctor.id,
           childId: child.id,
@@ -168,9 +182,13 @@ childDoctorLinksRouter.post(
           version: DOCTOR_SHARE_VERSION,
           statement: statement as unknown as Prisma.InputJsonValue,
           message: input.message,
+          expiresAt,
         },
         include: { doctor: true },
       })
+      for (const old of previous) await tx.doctorAccessEvent.create({ data: { linkId: old.id, actorUserId: userId, type: 'REVOKED' } })
+      await tx.doctorAccessEvent.create({ data: { linkId: created.id, actorUserId: userId, type: 'GRANTED', metadata: { expiresAt: expiresAt?.toISOString() ?? null, scopes } } })
+      return created
     })
     return res.status(201).json({ link: serializeDoctorLink(link) })
   }),
@@ -185,9 +203,10 @@ childDoctorLinksRouter.delete(
     const linkId = z.string().uuid().safeParse(req.params.linkId)
     if (!linkId.success) return res.status(404).json({ error: 'LINK_NOT_FOUND' })
 
-    const result = await prisma.doctorChildLink.updateMany({
-      where: { id: linkId.data, childId: child.id, revokedAt: null },
-      data: { revokedAt: new Date() },
+    const result = await prisma.$transaction(async (tx) => {
+      const changed = await tx.doctorChildLink.updateMany({ where: { id: linkId.data, childId: child.id, revokedAt: null }, data: { revokedAt: new Date() } })
+      if (changed.count) await tx.doctorAccessEvent.create({ data: { linkId: linkId.data, actorUserId: req.user!.id, type: 'REVOKED' } })
+      return changed
     })
     if (!result.count) {
       const exists = await prisma.doctorChildLink.count({ where: { id: linkId.data, childId: child.id } })

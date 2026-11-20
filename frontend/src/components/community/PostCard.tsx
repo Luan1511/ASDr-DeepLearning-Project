@@ -8,17 +8,19 @@ import {
   Trash2,
   Shield,
   MoreVertical,
+  Flag,
 } from 'lucide-react'
 import type { CommunityPost } from '../../lib/communityTypes'
 import { CATEGORY_INFO } from '../../lib/communityTypes'
 import { AuthorAvatar } from './AuthorAvatar'
+import { CommunityGallery } from './CommunityGallery'
+import { StartConversationButton } from './StartConversationButton'
 import { formatDateTime } from '../../lib/format'
-import { toggleLikePost, toggleBookmarkPost, deleteCommunityPost, togglePinPost } from '../../lib/community'
+import { toggleLikePost, toggleBookmarkPost, deleteCommunityPost, reportCommunityPost, updateCommunityPost } from '../../lib/community'
 
 export function PostCard({
   post: initialPost,
   onDeleted,
-  isAdmin,
 }: {
   post: CommunityPost
   onDeleted?: (id: string) => void
@@ -68,17 +70,6 @@ export function PostCard({
     }
   }
 
-  async function handlePin(e: React.MouseEvent) {
-    e.stopPropagation()
-    setMenuOpen(false)
-    try {
-      const pinned = await togglePinPost(post.id)
-      setPost((p) => ({ ...p, isPinned: pinned }))
-    } catch {
-      // ignore
-    }
-  }
-
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
     setMenuOpen(false)
@@ -89,6 +80,24 @@ export function PostCard({
     } catch {
       alert('Không thể xoá bài viết. Vui lòng thử lại.')
     }
+  }
+
+  async function handleReport(e: React.MouseEvent) {
+    e.stopPropagation()
+    setMenuOpen(false)
+    if (!window.confirm('Báo cáo bài viết này để quản trị viên xem xét?')) return
+    try { await reportCommunityPost(post.id); window.alert('Đã gửi báo cáo để quản trị viên xem xét.') }
+    catch { window.alert('Chưa gửi được báo cáo. Có thể bài này đã được báo cáo trước đó.') }
+  }
+
+  async function handleEdit(e: React.MouseEvent) {
+    e.stopPropagation(); setMenuOpen(false)
+    const title = window.prompt('Sửa tiêu đề bài viết', post.title)
+    if (title === null) return
+    const content = window.prompt('Sửa nội dung bài viết', post.content)
+    if (content === null) return
+    try { const updated = await updateCommunityPost(post.id, { title, content }); setPost((old) => ({ ...old, ...updated })) }
+    catch { window.alert('Không lưu được thay đổi bài viết.') }
   }
 
   const isLong = post.content.length > 300
@@ -116,7 +125,7 @@ export function PostCard({
           )}
         </div>
 
-        {post.canManage && (
+        {(
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
@@ -128,24 +137,16 @@ export function PostCard({
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-full z-20 mt-1 min-w-[160px] rounded-2xl bg-white p-1.5 shadow-lg border border-duo-line">
-                {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={handlePin}
-                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-extrabold text-duo-ink hover:bg-duo-mist"
-                  >
-                    <Pin className="h-3.5 w-3.5" />
-                    <span>{post.isPinned ? 'Bỏ ghim bài' : 'Ghim bài viết'}</span>
-                  </button>
-                )}
-                <button
+                {!post.author.isSelf && <button type="button" onClick={handleReport} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-extrabold text-amber-700 hover:bg-amber-50"><Flag className="h-3.5 w-3.5" />Báo cáo bài viết</button>}
+                {post.canEdit && <button type="button" onClick={handleEdit} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-extrabold text-duo-ink hover:bg-duo-mist">Sửa bài viết</button>}
+                {post.canDelete && <button
                   type="button"
                   onClick={handleDelete}
                   className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-extrabold text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Xoá bài viết</span>
-                </button>
+                </button>}
               </div>
             )}
           </div>
@@ -154,7 +155,7 @@ export function PostCard({
 
       {/* Author Header */}
       <div className="mt-3 flex items-center gap-3">
-        <AuthorAvatar author={post.author} size="md" />
+        <AuthorAvatar author={post.author} size="md" postId={post.id} postTitle={post.title} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-black text-duo-ink">
@@ -170,10 +171,12 @@ export function PostCard({
           <div className="text-xs font-semibold text-duo-mute">
             {formatDateTime(post.createdAt)}
           </div>
+          {!post.author.isSelf && post.author.id !== 'anonymous' && <button type="button" className="mt-1 text-xs font-bold text-duo-green-dark hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/community/member/${post.author.id}`) }}>Hồ sơ thành viên</button>}
         </div>
       </div>
 
       {/* Post Title & Content */}
+      {!post.author.isAnonymous && post.author.role === 'USER' && <StartConversationButton recipientId={post.author.id} displayName={post.author.name} postId={post.id} postTitle={post.title} />}
       <div className="mt-3">
         <h2 className="text-base font-black leading-snug text-duo-ink hover:text-duo-green transition-colors">
           {post.title}
@@ -181,6 +184,7 @@ export function PostCard({
         <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-relaxed text-duo-ink/80">
           {displayContent}
         </p>
+        {!!post.media?.length && <CommunityGallery media={post.media} />}
         {isLong && !expanded && (
           <button
             type="button"

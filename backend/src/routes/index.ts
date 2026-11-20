@@ -16,6 +16,11 @@ import { childExercisesRouter } from './childExercises'
 import { adminExercisesRouter } from './adminExercises'
 import { childQuestionnairesRouter, questionnaireResponsesRouter, questionnairesRouter } from './questionnaires'
 import { communityRouter } from './community'
+import { communitySocialRouter } from './communitySocial'
+import { adminCommunityRouter } from './adminCommunity'
+import { adminDoctorsRouter } from './adminDoctors'
+import { communityMediaRouter } from './communityMedia'
+import { communityConversationsRouter } from './communityConversations'
 import { buddyRouter } from './buddy'
 import { childPersonalizationRouter } from './childPersonalization'
 import { childDoctorLinksRouter, doctorsRouter } from './doctors'
@@ -34,8 +39,13 @@ apiRouter.use('/results', resultsRouter)
 apiRouter.use('/chat', chatRouter)
 apiRouter.use('/articles', articlesRouter)
 apiRouter.use('/community', communityRouter)
+apiRouter.use('/community/conversations', communityConversationsRouter)
+apiRouter.use('/community/media', communityMediaRouter)
+apiRouter.use('/community', communitySocialRouter)
 apiRouter.use('/buddy', buddyRouter)
 apiRouter.use('/admin', adminRouter)
+apiRouter.use('/admin/community', adminCommunityRouter)
+apiRouter.use('/admin/doctors', adminDoctorsRouter)
 apiRouter.use('/admin/skeleton', skeletonRouter)
 // Giai đoạn 4 + questionnaires. The /children/:childId mounts come after
 // childrenRouter, which passes on paths it does not handle.

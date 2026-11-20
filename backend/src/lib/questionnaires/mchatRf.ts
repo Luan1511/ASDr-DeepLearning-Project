@@ -26,7 +26,7 @@ export const MCHAT_RF = Object.freeze({
   /** A LOW (or Follow-Up negative) result before this age is repeated after the second birthday. */
   rescreenBeforeMonths: 24,
   copyright: 'M-CHAT-R/F™ © 2009 Diana Robins, Deborah Fein, & Marianne Barton',
-  officialFormUrl: 'https://www.mchatscreen.com/mchat-rf/translations/',
+  officialFormUrl: 'https://www.mchatscreen.com/wp-content/uploads/2015/09/M-CHAT-R_F_VietnameseCCIHP2015.pdf',
   a365Url: 'https://a365.vn',
   cdcMilestonesUrl: 'https://www.cdc.gov/act-early/resources/milestone-checklists.html',
 })

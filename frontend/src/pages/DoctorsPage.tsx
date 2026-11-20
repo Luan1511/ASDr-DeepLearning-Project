@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Check, Info, Languages, Loader2, MapPin, Search, Stethoscope, UserPlus, X } from 'lucide-react'
+import { Check, Languages, Loader2, MapPin, Search, Stethoscope, UserPlus, X } from 'lucide-react'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ChildAvatar } from '../components/ChildAvatar'
 import { api } from '../lib/api'
 import { childApiErrorMessage } from '../lib/children'
 import {
   DOCTOR_MESSAGE_MAX,
-  MOCK_DOCTOR_NOTICE,
+  SHARE_SCOPE_LABEL,
   createDoctorLink,
   doctorApiErrorMessage,
   doctorName,
@@ -39,6 +39,7 @@ function ShareDialog({
   const [childId, setChildId] = useState(() => (kids.some((c) => c.id === initialChildId) ? initialChildId! : (kids[0]?.id ?? '')))
   const [scopes, setScopes] = useState<DoctorShareScope[]>(() => statement.scopes.map((s) => s.scope))
   const [message, setMessage] = useState('')
+  const [durationDays, setDurationDays] = useState<30 | 90 | 180 | 0>(90)
   const [agreed, setAgreed] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +59,7 @@ function ShareDialog({
     setSaving(true)
     setError(null)
     try {
-      await createDoctorLink(child.id, { doctorId: doctor.id, scopes, version: statement.version, message: message.trim() || undefined })
+      await createDoctorLink(child.id, { doctorId: doctor.id, scopes, version: statement.version, durationDays, message: message.trim() || undefined })
       onShared(child.id)
     } catch (err) {
       setError(doctorApiErrorMessage(err, 'Chưa chia sẻ được hồ sơ. Vui lòng thử lại.'))
@@ -80,13 +81,6 @@ function ShareDialog({
             <X className="h-5 w-5" />
           </button>
         </div>
-
-        {doctor.isMock && (
-          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-yellow-50 px-4 py-3 text-sm font-bold leading-relaxed text-yellow-900">
-            <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
-            {MOCK_DOCTOR_NOTICE}
-          </div>
-        )}
 
         <p className="mt-4 text-sm font-semibold leading-relaxed text-duo-ink">{statement.intro}</p>
 
@@ -166,6 +160,10 @@ function ShareDialog({
             placeholder="Ví dụ: Nhờ bác sĩ xem giúp kết quả sàng lọc tháng này của bé."
             onChange={(e) => setMessage(e.target.value)}
           />
+          <label className="mt-4 block text-sm font-bold text-duo-ink" htmlFor="share-duration">Thời hạn chia sẻ</label>
+          <select id="share-duration" value={durationDays} onChange={(e) => setDurationDays(Number(e.target.value) as 30 | 90 | 180 | 0)} className="input-duo mt-1">
+            <option value={30}>30 ngày</option><option value={90}>90 ngày (mặc định)</option><option value={180}>180 ngày</option><option value={0}>Không thời hạn</option>
+          </select>
         </div>
 
         <label className="mt-4 flex cursor-pointer items-start gap-2 text-sm font-bold text-duo-ink">
@@ -210,6 +208,7 @@ function DoctorCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-black text-duo-ink">{doctorName(doctor)}</h3>
+            {!doctor.isMock && doctor.verified && <span className="rounded-full bg-duo-green-soft px-2 py-1 text-xs font-bold text-duo-green-dark">Đã xác minh</span>}
             {doctor.isMock && (
               <span className="rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] font-extrabold text-yellow-900">Bác sĩ mẫu</span>
             )}
@@ -238,6 +237,10 @@ function DoctorCard({
           Đang xem hồ sơ của: {sharedWith.map((c) => c.fullName).join(', ')}
         </div>
       )}
+      {doctor.links.map((link) => {
+        const child = kids.find((kid) => kid.id === link.childId)
+        return child ? <Link key={link.id} to={`/children/${child.id}`} className="rounded-xl border border-duo-line p-3 text-xs font-semibold text-duo-ink"><strong>{child.fullName}</strong> · {link.expiresAt ? `Hết hạn ${new Date(link.expiresAt).toLocaleDateString('vi-VN')}` : 'Không thời hạn'}<span className="mt-1 block text-duo-mute">{link.scopes?.map((scope) => SHARE_SCOPE_LABEL[scope]).join(' · ')} · Quản lý chia sẻ →</span></Link> : null
+      })}
 
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
         <span className={['text-xs font-extrabold', doctor.acceptingNew ? 'text-duo-green-dark' : 'text-duo-mute'].join(' ')}>
@@ -324,13 +327,6 @@ export function DoctorsPage() {
             chia sẻ những phần nào và có thể ngừng bất cứ lúc nào.
           </p>
         </div>
-
-        {directory?.demo && (
-          <div className="flex items-start gap-2 rounded-2xl bg-yellow-50 px-4 py-3 text-sm font-bold leading-relaxed text-yellow-900">
-            <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
-            {MOCK_DOCTOR_NOTICE}
-          </div>
-        )}
 
         {sharedNotice && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-duo-green-soft px-4 py-3 text-sm font-bold text-duo-green-dark" role="status">

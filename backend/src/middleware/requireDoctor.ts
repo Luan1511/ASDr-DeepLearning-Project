@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { env } from '../lib/env'
 import { prisma } from '../lib/prisma'
 import { asyncHandler } from './asyncHandler'
+import { expireDoctorLinks } from '../services/doctorSharing'
 
 /** DOCTOR_MODE gate: off → the doctor feature does not exist for anyone. */
 export function requireDoctorsEnabled(_req: Request, res: Response, next: NextFunction) {
@@ -15,9 +16,11 @@ export function requireDoctorsEnabled(_req: Request, res: Response, next: NextFu
  * (DOCTOR_MODE=on) the sample accounts can no longer read anything.
  */
 export const requireDoctor = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  await expireDoctorLinks()
   const doctor = await prisma.doctorProfile.findUnique({ where: { userId: req.user!.id } })
   if (!doctor) return res.status(403).json({ error: 'DOCTOR_ONLY' })
   if (doctor.isMock && env.DOCTOR_MODE !== 'demo') return res.status(403).json({ error: 'DOCTORS_DISABLED' })
+  if (!doctor.isActive || (!doctor.isMock && doctor.verificationStatus !== 'VERIFIED')) return res.status(403).json({ error: 'DOCTOR_NOT_VERIFIED' })
   req.doctor = doctor
   return next()
 })

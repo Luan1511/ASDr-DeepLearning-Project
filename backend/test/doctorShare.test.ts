@@ -29,6 +29,10 @@ const doctorRow = {
   languages: ['Tiếng Việt'],
   isMock: true,
   acceptingNew: true,
+  isActive: true,
+  verificationStatus: 'VERIFIED' as const,
+  verifiedAt: at,
+  verifiedById: 'admin-1',
   createdAt: at,
   updatedAt: at,
 }
@@ -43,6 +47,7 @@ const linkRow = {
   statement: { secret: 'the full agreed text' },
   message: 'Nhờ bác sĩ xem giúp',
   grantedAt: at,
+  expiresAt: new Date('2027-02-15T03:00:00.000Z'),
   revokedAt: null,
   lastViewedAt: null,
   viewCount: 0,
@@ -92,6 +97,9 @@ describe('doctor link input and serializers', () => {
     assert.equal(createDoctorLinkSchema.safeParse({ ...base, scopes: ['VIDEO'] }).success, false)
     assert.equal(createDoctorLinkSchema.safeParse({ ...base, doctorId: 'x' }).success, false)
     assert.equal(createDoctorLinkSchema.safeParse({ ...base, message: 'x'.repeat(301) }).success, false)
+    assert.equal(createDoctorLinkSchema.parse(base).durationDays, 90)
+    for (const durationDays of [30, 90, 180, 0] as const) assert.equal(createDoctorLinkSchema.parse({ ...base, durationDays }).durationDays, durationDays)
+    assert.equal(createDoctorLinkSchema.safeParse({ ...base, durationDays: 60 }).success, false)
   })
 
   it('keeps known scopes in the canonical order', () => {
@@ -99,8 +107,8 @@ describe('doctor link input and serializers', () => {
   })
 
   it('lists sample doctors in demo mode only', () => {
-    assert.deepEqual(listedDoctorFilter('demo'), {})
-    assert.deepEqual(listedDoctorFilter('on'), { isMock: false })
+    assert.deepEqual(listedDoctorFilter('demo'), { isActive: true, OR: [{ isMock: true }, { isMock: false, verificationStatus: 'VERIFIED' }] })
+    assert.deepEqual(listedDoctorFilter('on'), { isMock: false, isActive: true, verificationStatus: 'VERIFIED' })
   })
 
   it('searches the directory without caring about Vietnamese marks or letter case', () => {
@@ -133,6 +141,7 @@ describe('doctor link input and serializers', () => {
     assert.equal('statement' in dto, false)
     assert.equal('grantedById' in dto, false)
     assert.equal(serializeDoctorLink({ ...linkRow, revokedAt: at }).active, false)
+    assert.equal(serializeDoctorLink({ ...linkRow, expiresAt: new Date('2026-11-16T00:00:00.000Z') }).active, false)
   })
 })
 

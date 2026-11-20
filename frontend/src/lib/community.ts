@@ -12,6 +12,7 @@ export async function fetchCommunityPosts(params?: {
   search?: string
   page?: number
   limit?: number
+  groupId?: string
 }): Promise<CommunityPostsResponse> {
   const res = await api.get<CommunityPostsResponse>('/community/posts', { params })
   return res.data
@@ -27,6 +28,8 @@ export async function createCommunityPost(data: {
   content: string
   category: PostCategory
   isAnonymous: boolean
+  groupId?: string
+  mediaIds?: string[]
 }): Promise<CommunityPost> {
   const res = await api.post<{ post: CommunityPost }>('/community/posts', data)
   return res.data.post
@@ -34,10 +37,24 @@ export async function createCommunityPost(data: {
 
 export async function updateCommunityPost(
   id: string,
-  data: Partial<{ title: string; content: string; category: PostCategory }>,
+  data: Partial<{ title: string; content: string; category: PostCategory; mediaIds: string[] }>,
 ): Promise<CommunityPost> {
   const res = await api.patch<{ post: CommunityPost }>(`/community/posts/${id}`, data)
   return res.data.post
+}
+
+export async function uploadCommunityImage(file: File): Promise<{ id: string; url: string }> {
+  const body = new FormData()
+  body.append('image', file)
+  return (await api.post('/community/media', body)).data.media
+}
+
+export async function reportCommunityPost(id: string, reason = 'OTHER') {
+  return (await api.post(`/community/posts/${id}/report`, { reason, details: '' })).data
+}
+
+export async function reportCommunityComment(id: string) {
+  return (await api.post(`/community/comments/${id}/report`, { reason: 'OTHER', details: '' })).data
 }
 
 export async function deleteCommunityPost(id: string): Promise<void> {

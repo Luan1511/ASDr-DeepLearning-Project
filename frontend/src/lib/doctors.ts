@@ -23,10 +23,11 @@ export type DoctorDto = {
   /** Sample doctor for trying the feature (not a real person). */
   isMock: boolean
   acceptingNew: boolean
+  verified: boolean
 }
 
 /** A directory entry: the doctor plus which of MY children they currently see. */
-export type DoctorListItem = DoctorDto & { links: Array<{ id: string; childId: string }> }
+export type DoctorListItem = DoctorDto & { links: Array<{ id: string; childId: string; expiresAt: string | null; scopes: DoctorShareScope[] }> }
 
 export type DoctorDirectory = { demo: boolean; doctors: DoctorListItem[]; cities: string[]; specialties: string[] }
 
@@ -51,10 +52,12 @@ export type DoctorLinkDto = {
   /** When the doctor last opened the record (null = not yet). */
   lastViewedAt: string | null
   viewCount: number
+  expiresAt: string | null
 }
 
 /** Doctor side: one shared record in the list. */
 export type PatientSummaryDto = {
+  expiresAt: string | null
   linkId: string
   scopes: DoctorShareScope[]
   message: string | null
@@ -127,7 +130,7 @@ export async function fetchDoctorLinks(childId: string): Promise<{ available: bo
 
 export async function createDoctorLink(
   childId: string,
-  input: { doctorId: string; scopes: DoctorShareScope[]; version: string; message?: string },
+  input: { doctorId: string; scopes: DoctorShareScope[]; version: string; durationDays?: 30 | 90 | 180 | 0; message?: string },
 ): Promise<DoctorLinkDto> {
   return (await api.post(`/children/${childId}/doctor-links`, { ...input, accepted: true })).data.link
 }

@@ -9,7 +9,7 @@
 import type { DoctorChildLink, DoctorProfile } from '@prisma/client'
 import { z } from 'zod'
 
-export const DOCTOR_SHARE_VERSION = 'doctor-share-2026-11-17'
+export const DOCTOR_SHARE_VERSION = 'doctor-share-2026-11-20'
 
 export const DOCTOR_SHARE_SCOPES = ['PROFILE', 'PERSONALIZATION', 'SCREENING', 'QUESTIONNAIRE', 'EXERCISE'] as const
 export type DoctorShareScope = (typeof DOCTOR_SHARE_SCOPES)[number]
@@ -57,6 +57,7 @@ export function buildDoctorShareStatement(mode: DoctorMode): DoctorShareStatemen
     'Bác sĩ được chọn chỉ xem được những phần tôi đánh dấu, không sửa hay xoá được dữ liệu.',
     'Video của trẻ không bao giờ được chia sẻ; bác sĩ chỉ thấy kết quả đã phân tích.',
     'Tôi xem được lần gần nhất bác sĩ mở hồ sơ, và có thể ngừng chia sẻ bất cứ lúc nào; việc ngừng có hiệu lực ngay.',
+    'Quyền chia sẻ mặc định hết hạn sau 90 ngày; phụ huynh có thể chọn 30, 90, 180 ngày hoặc không thời hạn.',
     'Kết quả trong ứng dụng là sàng lọc tham khảo, không phải chẩn đoán y khoa.',
   ]
   if (mode === 'demo') {
@@ -83,6 +84,7 @@ export const createDoctorLinkSchema = z.object({
   scopes: z.array(z.enum(DOCTOR_SHARE_SCOPES)).min(1),
   accepted: z.literal(true),
   version: z.string().min(1),
+  durationDays: z.union([z.literal(30), z.literal(90), z.literal(180), z.literal(0)]).default(90),
   message: z
     .string()
     .trim()
@@ -122,7 +124,9 @@ export function doctorMatchesQuery(
 
 /** Which doctors a parent may see: the sample ones only in demo mode. */
 export function listedDoctorFilter(mode: DoctorMode) {
-  return mode === 'on' ? { isMock: false } : {}
+  return mode === 'on'
+    ? { isMock: false, isActive: true, verificationStatus: 'VERIFIED' as const }
+    : { isActive: true, OR: [{ isMock: true }, { isMock: false, verificationStatus: 'VERIFIED' as const }] }
 }
 
 export function serializeDoctor(doctor: DoctorProfile) {
@@ -137,6 +141,7 @@ export function serializeDoctor(doctor: DoctorProfile) {
     languages: doctor.languages,
     isMock: doctor.isMock,
     acceptingNew: doctor.acceptingNew,
+    verified: doctor.verificationStatus === 'VERIFIED' && doctor.isActive,
   }
 }
 
@@ -150,8 +155,9 @@ export function serializeDoctorLink(link: DoctorChildLink & { doctor: DoctorProf
     version: link.version,
     message: link.message,
     grantedAt: link.grantedAt,
+    expiresAt: link.expiresAt,
     revokedAt: link.revokedAt,
-    active: link.revokedAt === null,
+    active: link.revokedAt === null && (link.expiresAt === null || link.expiresAt > new Date()),
     lastViewedAt: link.lastViewedAt,
     viewCount: link.viewCount,
   }

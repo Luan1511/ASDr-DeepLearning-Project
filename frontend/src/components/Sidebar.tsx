@@ -22,6 +22,7 @@ import {
 import { useDoctorCapabilities } from '../lib/doctors'
 import { useExerciseCapabilities } from '../lib/useExerciseCapabilities'
 import { useQuestionnairesEnabled } from '../lib/useQuestionnairesEnabled'
+import { CommunityInboxLink } from './community/CommunityInboxLink'
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/)
@@ -185,6 +186,7 @@ export function Sidebar() {
           ))}
         </div>
 
+        <CommunityInboxLink />
         <Divider />
 
         <div className="flex flex-col gap-0.5">
