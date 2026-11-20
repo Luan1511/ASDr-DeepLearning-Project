@@ -13,11 +13,29 @@ model User {
   email                  String                  @unique
   passwordHash           String
   role                   UserRole                @default(USER)
+  communitySuspendedAt   DateTime?
+  communitySuspensionReason String?
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   chatMessages           ChatMessage[]
   children               ChildProfile[]
   communityBookmarks     CommunityBookmark[]
+  conversationsA CommunityConversation[] @relation("ConversationA")
+  conversationsB CommunityConversation[] @relation("ConversationB")
+  directMessages CommunityDirectMessage[]
+  communityProfile       CommunityProfile?
+  communityFollowsSent   CommunityMemberFollow[] @relation("CommunityFollowFrom")
+  communityFollowsReceived CommunityMemberFollow[] @relation("CommunityFollowTo")
+  communityTopicFollows CommunityTopicFollow[]
+  communityBlocksSent    CommunityBlock[] @relation("CommunityBlockFrom")
+  communityBlocksReceived CommunityBlock[] @relation("CommunityBlockTo")
+  communityReports      CommunityReport[] @relation("CommunityReportReporter")
+  communityReportsReviewed CommunityReport[] @relation("CommunityReportReviewer")
+  communityModerationActions CommunityModerationAction[]
+  communityNotifications CommunityNotification[]
+  communityGroupsCreated CommunityGroup[]
+  communityGroupMemberships CommunityGroupMember[]
+  communityMedia         CommunityMedia[]
   communityComments      CommunityComment[]
   communityLikes         CommunityLike[]
   communityPosts         CommunityPost[]
@@ -27,6 +45,9 @@ model User {
   uploads                VideoUpload[]
   doctorProfile          DoctorProfile?
   doctorLinksGranted     DoctorChildLink[]
+  doctorInvitationsCreated DoctorInvitation[] @relation("DoctorInvitationCreator")
+  doctorProfilesVerified DoctorProfile[] @relation("DoctorProfileVerifier")
+  doctorAccessEvents     DoctorAccessEvent[]
 }
 
 model ChildProfile {
@@ -83,9 +104,14 @@ model DoctorProfile {
   languages    String[]
   isMock       Boolean           @default(false)
   acceptingNew Boolean           @default(true)
+  verificationStatus DoctorVerificationStatus @default(PENDING)
+  verifiedAt   DateTime?
+  verifiedById String?
+  isActive     Boolean           @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verifiedBy   User?             @relation("DoctorProfileVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
   links        DoctorChildLink[]
 
   @@index([city])
@@ -103,16 +129,67 @@ model DoctorChildLink {
   statement    Json
   message      String?
   grantedAt    DateTime      @default(now())
+  expiresAt    DateTime?
   revokedAt    DateTime?
   lastViewedAt DateTime?
   viewCount    Int           @default(0)
   child        ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
   doctor       DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   grantedBy    User          @relation(fields: [grantedById], references: [id], onDelete: Cascade)
+  accessEvents DoctorAccessEvent[]
 
   @@index([doctorId, revokedAt])
   @@index([childId])
   @@index([grantedById])
+  @@index([expiresAt])
+}
+
+model DoctorManagementEvent {
+  id         String   @id @default(uuid())
+  doctorId   String
+  adminId    String
+  adminName  String
+  action     String
+  previous   String
+  next       String
+  occurredAt DateTime @default(now())
+
+  @@index([doctorId, occurredAt])
+}
+
+model DoctorInvitation {
+  id           String   @id @default(uuid())
+  email        String
+  tokenHash    String   @unique
+  displayName  String
+  title        String
+  specialty    String
+  workplace    String
+  city         String
+  bio          String
+  languages    String[]
+  createdById  String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  createdBy    User     @relation("DoctorInvitationCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([email, expiresAt])
+}
+
+model DoctorAccessEvent {
+  id          String   @id @default(uuid())
+  linkId      String
+  actorUserId String?
+  type        DoctorAccessEventType
+  occurredAt  DateTime @default(now())
+  metadata    Json?
+  link        DoctorChildLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([linkId, occurredAt])
+  @@index([type, occurredAt])
 }
 
 model VideoUpload {
@@ -392,14 +469,20 @@ model CommunityPost {
   content       String
   isAnonymous   Boolean             @default(false)
   isPinned      Boolean             @default(false)
+  hiddenAt      DateTime?
   likesCount    Int                 @default(0)
   commentsCount Int                 @default(0)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  groupId       String?
   bookmarks     CommunityBookmark[]
   comments      CommunityComment[]
   likes         CommunityLike[]
   user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group         CommunityGroup?     @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  media         CommunityMedia[]
+  reports       CommunityReport[]
+  notifications CommunityNotification[]
 
   @@index([userId])
   @@index([category])
@@ -413,11 +496,14 @@ model CommunityComment {
   parentId    String?
   content     String
   isAnonymous Boolean            @default(false)
+  hiddenAt    DateTime?
   createdAt   DateTime           @default(now())
   parent      CommunityComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies     CommunityComment[] @relation("CommentReplies")
   post        CommunityPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports     CommunityReport[]
+  notifications CommunityNotification[]
 
   @@index([postId])
   @@index([userId])
@@ -443,6 +529,187 @@ model CommunityBookmark {
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+}
+
+model CommunityProfile {
+  userId      String   @id
+  displayName String   @unique
+  bio         String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CommunityMemberFollow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User @relation("CommunityFollowFrom", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("CommunityFollowTo", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+model CommunityTopicFollow {
+  userId    String
+  category  PostCategory
+  createdAt DateTime @default(now())
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, category])
+}
+
+model CommunityBlock {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User @relation("CommunityBlockFrom", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User @relation("CommunityBlockTo", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model CommunityGroup {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String
+  category    PostCategory
+  createdById String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  members     CommunityGroupMember[]
+  posts       CommunityPost[]
+
+  @@index([category, isActive])
+}
+
+model CommunityGroupMember {
+  groupId  String
+  userId   String
+  joinedAt DateTime @default(now())
+  group    CommunityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId, joinedAt])
+}
+
+model CommunityMedia {
+  id          String   @id @default(uuid())
+  uploaderId  String
+  postId      String?
+  storageName String   @unique
+  mimeType    String
+  byteSize    Int
+  width       Int
+  height      Int
+  createdAt   DateTime @default(now())
+  uploader    User @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  post        CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([uploaderId, createdAt])
+}
+
+model CommunityReport {
+  id           String   @id @default(uuid())
+  reporterId   String
+  postId       String?
+  commentId    String?
+  directMessageId String?
+  directMessage CommunityDirectMessage? @relation(fields: [directMessageId], references: [id], onDelete: SetNull)
+  reason       String
+  details      String   @default("")
+  status       CommunityReportStatus @default(OPEN)
+  reviewedById String?
+  reviewedAt   DateTime?
+  resolution   String?
+  contentSnapshot String   @default("")
+  authorSnapshot  String   @default("")
+  createdAt    DateTime @default(now())
+  reporter     User @relation("CommunityReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User? @relation("CommunityReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  post         CommunityPost? @relation(fields: [postId], references: [id], onDelete: SetNull)
+  comment      CommunityComment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+  actions      CommunityModerationAction[]
+
+  @@index([status, createdAt])
+  @@index([reporterId, createdAt])
+}
+
+model CommunityNotification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  actorId   String?
+  postId    String?
+  commentId String?
+  groupId   String?
+  conversationId String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   CommunityComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+model CommunityConversation {
+  id String @id @default(uuid())
+  memberAId String
+  memberBId String
+  inviterId String
+  status String @default("PENDING")
+  sourcePostId String?
+  readSeqA Int @default(0)
+  readSeqB Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  memberA User @relation("ConversationA", fields: [memberAId], references: [id], onDelete: Cascade)
+  memberB User @relation("ConversationB", fields: [memberBId], references: [id], onDelete: Cascade)
+  messages CommunityDirectMessage[]
+  @@unique([memberAId, memberBId])
+  @@index([memberAId, updatedAt])
+  @@index([memberBId, updatedAt])
+}
+
+model CommunityDirectMessage {
+  id String @id @default(uuid())
+  seq Int @unique @default(autoincrement())
+  conversationId String
+  senderId String
+  clientRequestId String
+  content String
+  hiddenAt DateTime?
+  createdAt DateTime @default(now())
+  conversation CommunityConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reports CommunityReport[]
+  @@unique([senderId, clientRequestId])
+  @@index([conversationId, seq])
+  @@index([senderId, createdAt])
+}
+
+model CommunityModerationAction {
+  id         String   @id @default(uuid())
+  reportId   String?
+  adminId    String
+  action     String
+  targetType String
+  targetId   String
+  reason     String
+  createdAt  DateTime @default(now())
+  report     CommunityReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  admin      User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId, createdAt])
+  @@index([adminId, createdAt])
 }
 
 enum UserRole {
@@ -508,4 +775,24 @@ enum PostCategory {
   LIFESTYLE
   EDUCATION
   QA
+}
+
+enum DoctorVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum DoctorAccessEventType {
+  GRANTED
+  REVOKED
+  EXPIRED
+  VIEWED
+}
+
+enum CommunityReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
 }

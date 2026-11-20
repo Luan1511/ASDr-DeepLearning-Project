@@ -123,6 +123,7 @@ export function DoctorPatientPage() {
               </div>
               <div className="text-xs font-bold text-duo-mute">
                 Phụ huynh: {patient.parent.name} • chia sẻ từ {formatDate(patient.grantedAt)}
+                <span className="mt-1 block">{patient.expiresAt ? `Quyền xem hết hạn: ${formatDateTime(patient.expiresAt)}` : 'Quyền xem không thời hạn'} · Chỉ đọc</span>
               </div>
             </div>
             <span className="rounded-full bg-duo-mist px-3 py-1 text-xs font-extrabold text-duo-mute">Chỉ xem</span>

@@ -21,6 +21,14 @@ export function DoctorHomePage() {
   const [patients, setPatients] = useState<PatientSummaryDto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [search, setSearch] = useState('')
+  const [expiry, setExpiry] = useState('all')
+  const visiblePatients = patients?.filter((patient) => {
+    const query = search.trim().toLocaleLowerCase('vi')
+    const matches = `${patient.child.fullName} ${patient.parent.name}`.toLocaleLowerCase('vi').includes(query)
+    const soon = patient.expiresAt && new Date(patient.expiresAt).getTime() <= Date.now() + 7 * 86400000
+    return matches && (expiry === 'all' || (expiry === 'soon' && soon) || (expiry === 'unlimited' && !patient.expiresAt))
+  }) ?? []
 
   useEffect(() => {
     let stale = false
@@ -95,9 +103,11 @@ export function DoctorHomePage() {
           </div>
         )}
 
-        {patients && patients.length > 0 && (
+        {patients && patients.length > 0 && <div className="card-duo flex flex-wrap gap-3 p-4"><input className="input-duo flex-1" aria-label="Tìm hồ sơ theo tên trẻ hoặc phụ huynh" placeholder="Tìm tên trẻ hoặc phụ huynh…" value={search} onChange={(event) => setSearch(event.target.value)} /><select aria-label="Lọc hạn quyền chia sẻ" className="input-duo !w-auto" value={expiry} onChange={(event) => setExpiry(event.target.value)}><option value="all">Tất cả thời hạn</option><option value="soon">Hết hạn trong 7 ngày</option><option value="unlimited">Không thời hạn</option></select><button className="btn-duo-secondary" onClick={() => setReloadKey((key) => key + 1)}>Tải lại</button><p role="status" className="w-full text-xs text-duo-mute">Hiển thị {visiblePatients.length}/{patients.length} hồ sơ</p></div>}
+        {patients && patients.length > 0 && visiblePatients.length === 0 && <p className="card-duo p-5 text-sm">Không có hồ sơ phù hợp bộ lọc.</p>}
+        {visiblePatients.length > 0 && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {patients.map((p) => (
+            {visiblePatients.map((p) => (
               <Link key={p.linkId} to={`/doctor/patients/${p.linkId}`} className="card-duo-interactive flex flex-col gap-3 p-5">
                 <div className="flex items-center gap-3">
                   <ChildAvatar name={p.child.fullName} size="lg" />
@@ -119,6 +129,7 @@ export function DoctorHomePage() {
                 </div>
                 {p.message && <div className="rounded-2xl bg-duo-mist px-3 py-2 text-sm font-semibold text-duo-ink">“{p.message}”</div>}
                 <div className="text-xs font-bold text-duo-mute">
+                  <div className="mb-1 text-duo-green-dark">{p.expiresAt ? `Quyền xem đến ${formatDate(p.expiresAt)}` : 'Quyền xem không thời hạn'}</div>
                   Chia sẻ từ {formatDate(p.grantedAt)}
                   {p.lastViewedAt ? ` • bạn xem gần nhất lúc ${formatDateTime(p.lastViewedAt)}` : ' • chưa xem'}
                 </div>

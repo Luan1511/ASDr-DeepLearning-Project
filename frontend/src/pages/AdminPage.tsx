@@ -7,6 +7,7 @@ import { RiskPill } from '../components/RiskPill'
 import { AdminQuestionnaireStatusCard } from '../components/questionnaire/AdminQuestionnaireStatusCard'
 import type { RiskLevel, ScreeningStatus } from '../lib/types'
 import { JOB_STATUS_LABEL, SCREENING_STATUS_LABEL } from '../lib/format'
+import { Link } from 'react-router-dom'
 
 type AdminStats = {
   totals: { users: number; uploads: number }
@@ -83,6 +84,7 @@ export function AdminPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        <nav aria-label="Công cụ quản trị" className="card-duo flex flex-wrap gap-3 p-4"><Link className="btn-duo-secondary" to="/admin/community">Kiểm duyệt Cộng đồng</Link><Link className="btn-duo-secondary" to="/admin/doctors">Quản lý bác sĩ</Link></nav>
         <Card title="Admin – Thống kê hệ thống">
           {error && <div className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-bold text-duo-red">{error}</div>}
           {!error && !stats && <div className="text-sm font-semibold text-duo-mute">Đang tải...</div>}

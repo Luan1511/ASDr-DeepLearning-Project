@@ -34,7 +34,7 @@ export const MCHAT_ITEM_NUMBERS: number[] = Array.from({ length: MCHAT_ITEM_COUN
 
 /** Used until GET /questionnaires answers (and if it omits a link). */
 export const MCHAT_LINKS = {
-  officialFormUrl: 'https://www.mchatscreen.com/mchat-rf/translations/',
+  officialFormUrl: 'https://www.mchatscreen.com/wp-content/uploads/2015/09/M-CHAT-R_F_VietnameseCCIHP2015.pdf',
   a365Url: 'https://a365.vn',
   cdcMilestonesUrl: 'https://www.cdc.gov/act-early/resources/milestone-checklists.html',
 } as const

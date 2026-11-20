@@ -7,8 +7,34 @@ import { env } from '../lib/env'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { requireAuth } from '../middleware/auth'
 import { isSchemaOutdatedError } from '../lib/prismaErrors'
+import { createHash } from 'node:crypto'
 
 export const authRouter = Router()
+
+const doctorInvitationSchema = z.object({ token: z.string().min(20).max(200), password: z.string().min(10).max(200) })
+
+authRouter.post('/doctor-invitations/accept', asyncHandler(async (req, res) => {
+  if (env.DOCTOR_MODE === 'off') return res.status(404).json({ error: 'DOCTORS_DISABLED' })
+  const input = doctorInvitationSchema.parse(req.body)
+  const tokenHash = createHash('sha256').update(input.token).digest('hex')
+  const invitation = await prisma.doctorInvitation.findUnique({ where: { tokenHash } })
+  if (!invitation || invitation.usedAt || invitation.revokedAt || invitation.expiresAt <= new Date()) return res.status(400).json({ error: 'INVITATION_INVALID' })
+  if (await prisma.user.findFirst({ where: { email: { equals: invitation.email, mode: 'insensitive' } }, select: { id: true } })) return res.status(409).json({ error: 'EMAIL_EXISTS' })
+  const passwordHash = await bcrypt.hash(input.password, 10)
+  try {
+    const user = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.doctorInvitation.updateMany({ where: { id: invitation.id, usedAt: null, revokedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } })
+      if (!claimed.count) throw new Error('INVITATION_INVALID')
+      const created = await tx.user.create({ data: { email: invitation.email, name: invitation.displayName, passwordHash } })
+      await tx.doctorProfile.create({ data: { userId: created.id, displayName: invitation.displayName, title: invitation.title, specialty: invitation.specialty, workplace: invitation.workplace, city: invitation.city, bio: invitation.bio, languages: invitation.languages, verificationStatus: 'PENDING', isActive: false } })
+      return created
+    })
+    return res.status(201).json({ created: true, email: user.email, verificationStatus: 'PENDING' })
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INVITATION_INVALID') return res.status(400).json({ error: 'INVITATION_INVALID' })
+    throw error
+  }
+}))
 
 /**
  * The doctor profile of an account, for the UI to open the doctor side.
@@ -20,9 +46,9 @@ async function doctorOf(userId: string) {
   try {
     const doctor = await prisma.doctorProfile.findUnique({
       where: { userId },
-      select: { id: true, displayName: true, title: true, specialty: true, isMock: true },
+      select: { id: true, displayName: true, title: true, specialty: true, isMock: true, isActive: true, verificationStatus: true },
     })
-    if (!doctor || (doctor.isMock && env.DOCTOR_MODE !== 'demo')) return null
+    if (!doctor || !doctor.isActive || (doctor.isMock && env.DOCTOR_MODE !== 'demo') || (!doctor.isMock && doctor.verificationStatus !== 'VERIFIED')) return null
     return doctor
   } catch (error) {
     if (isSchemaOutdatedError(error)) return null

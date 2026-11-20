@@ -18,8 +18,12 @@ import { PostCard } from '../components/community/PostCard'
 import { CreatePostModal } from '../components/community/CreatePostModal'
 import { CommunityGuidelinesCard } from '../components/community/CommunityGuidelinesCard'
 import { useAuth } from '../state/useAuth'
+import { api } from '../lib/api'
+import { Link } from 'react-router-dom'
+import { CommunityInboxLink } from '../components/community/CommunityInboxLink'
 
 const CATEGORIES: PostCategory[] = ['STORY', 'PARENTING', 'LIFESTYLE', 'EDUCATION', 'QA']
+const NOTIFICATION_LABEL: Record<string, string> = { CHAT_INVITATION: 'Bạn nhận được lời mời trò chuyện', CHAT_ACCEPTED: 'Lời mời trò chuyện đã được chấp nhận', MEMBER_FOLLOW: 'Có thành viên mới theo dõi bạn', FOLLOWED_POST: 'Có bài mới từ người bạn theo dõi hoặc chủ đề đã chọn', GROUP_POST: 'Có bài mới trong nhóm bạn tham gia', POST_LIKE: 'Có người bày tỏ đồng cảm với bài viết của bạn', POST_COMMENT: 'Có bình luận mới trong bài viết của bạn', COMMENT_REPLY: 'Có người phản hồi cuộc trò chuyện', }
 
 export function CommunityPage() {
   const { user } = useAuth()
@@ -32,6 +36,19 @@ export function CommunityPage() {
   const [searchInput, setSearchInput] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [alias, setAlias] = useState('')
+  const [communityBio, setCommunityBio] = useState('')
+  const [unread, setUnread] = useState(0)
+  const [communityError, setCommunityError] = useState('')
+  const [followedTopics, setFollowedTopics] = useState<string[]>([])
+  const [notifications, setNotifications] = useState<Array<{ id: string; type: string; createdAt: string; readAt: string | null; conversationId?: string | null; post?: { id: string; title: string } | null }>>([])
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+  useEffect(() => {
+    Promise.all([api.get('/community/profile'), api.get('/community/notifications'), api.get('/community/topics/following')]).then(([p, n, t]) => {
+      setAlias(p.data.profile.displayName); setCommunityBio(p.data.profile.bio); setUnread(n.data.unread); setNotifications(n.data.notifications); setFollowedTopics(t.data.categories)
+    }).catch(() => setCommunityError('Chưa tải được nhóm hoặc hồ sơ cộng đồng. Vui lòng thử tải lại.'))
+  }, [])
 
   // The list is "loading" until a response for the current filters has
   // arrived, so the flag is derived instead of being set inside the effect,
@@ -81,9 +98,32 @@ export function CommunityPage() {
     setPosts((prev) => prev.filter((p) => p.id !== id))
   }
 
+  async function toggleTopicFollow(category: PostCategory) {
+    try {
+      const { data } = await api.post(`/community/topics/${category}/follow`)
+      setFollowedTopics((current) => data.following ? [...new Set([...current, category])] : current.filter((item) => item !== category))
+    } catch {
+      setCommunityError('Không cập nhật được chủ đề theo dõi. Vui lòng thử lại.')
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        <section className="card-duo space-y-3 p-4" aria-label="Công cụ cộng đồng">
+          <CommunityInboxLink />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <label htmlFor="community-alias" className="text-sm font-black text-duo-ink">Biệt danh cộng đồng</label>
+            <div className="flex flex-wrap gap-2">
+              <input id="community-alias" aria-label="Biệt danh cộng đồng" className="input-duo !w-48 !py-2" maxLength={32} value={alias} onChange={(e) => setAlias(e.target.value)} />
+              <input aria-label="Giới thiệu ngắn trong cộng đồng" className="input-duo !w-56 !py-2" maxLength={280} placeholder="Giới thiệu ngắn (tuỳ chọn)" value={communityBio} onChange={(e) => setCommunityBio(e.target.value)} />
+              <button type="button" className="btn-duo-secondary !px-3 !py-2 text-xs" onClick={() => api.patch('/community/profile', { displayName: alias, bio: communityBio }).then(() => setCommunityError('')).catch(() => setCommunityError('Biệt danh đã được dùng hoặc thông tin chưa hợp lệ.'))}>Lưu hồ sơ</button>
+              <button type="button" className="btn-duo-secondary !px-3 !py-2 text-xs" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}>Thông báo{unread > 0 ? ` (${unread})` : ''}</button>
+            </div>
+          </div>
+          {notificationsOpen && <div className="rounded-xl bg-duo-mist p-3" aria-label="Thông báo trong ứng dụng"><div className="flex justify-between"><strong className="text-xs">Thông báo gần đây</strong><button type="button" className="text-xs font-bold text-duo-green-dark" onClick={() => api.patch('/community/notifications/read', {}).then(() => { setUnread(0); setNotifications((rows) => rows.map((row) => ({ ...row, readAt: new Date().toISOString() }))) })}>Đánh dấu đã đọc</button></div>{notifications.length ? notifications.slice(0, 10).map((item) => <div key={item.id} className={`mt-2 rounded-lg bg-white p-2 text-xs ${item.readAt ? 'opacity-60' : 'font-bold'}`}><span>{NOTIFICATION_LABEL[item.type] ?? 'Hoạt động mới trong Cộng đồng'} · {new Date(item.createdAt).toLocaleString('vi-VN')}</span>{item.conversationId && <Link className="ml-2 text-duo-green-dark underline" to={`/community/messages/${item.conversationId}`}>Mở trò chuyện</Link>}{item.post && <Link className="ml-2 text-duo-green-dark underline" to={`/community/post/${item.post.id}`}>Mở bài viết</Link>}</div>) : <p className="mt-2 text-xs">Chưa có thông báo.</p>}</div>}
+          {communityError && <p role="status" className="text-xs font-bold text-amber-800">{communityError}</p>}
+        </section>
         {/* Banner Header */}
         <div className="card-duo overflow-hidden bg-gradient-to-r from-duo-green to-emerald-700 p-6 text-white shadow-lg md:p-8">
           <div className="max-w-2xl">
@@ -190,7 +230,7 @@ export function CommunityPage() {
           {viewTab === 'feed' && (
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               {/* Category Pills */}
-              <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
+              <div className="flex flex-wrap items-center gap-1.5 pb-1">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
@@ -223,6 +263,7 @@ export function CommunityPage() {
                     </button>
                   )
                 })}
+                {selectedCategory !== 'ALL' && <button type="button" aria-pressed={followedTopics.includes(selectedCategory)} onClick={() => void toggleTopicFollow(selectedCategory as PostCategory)} className="ml-1 rounded-xl border border-duo-green/30 bg-white px-3 py-1.5 text-xs font-bold text-duo-green-dark">{followedTopics.includes(selectedCategory) ? 'Đang theo dõi chủ đề' : 'Theo dõi chủ đề này'}</button>}
               </div>
 
               {/* Search Form */}
@@ -280,16 +321,6 @@ export function CommunityPage() {
                     ? 'Bạn chưa lưu bài viết nào. Hãy bấm biểu tượng lưu ở các bài viết hay để đọc lại sau nhé.'
                     : 'Hãy là người đầu tiên chia sẻ câu chuyện hoặc đặt câu hỏi cho cộng đồng!'}
                 </p>
-                {viewTab === 'feed' && (
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(true)}
-                    className="btn-duo mt-4 text-xs"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Đăng bài đầu tiên</span>
-                  </button>
-                )}
               </div>
             )}
 

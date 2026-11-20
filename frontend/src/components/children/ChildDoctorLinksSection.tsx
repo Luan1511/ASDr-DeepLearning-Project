@@ -12,6 +12,7 @@ import {
   type DoctorLinkDto,
 } from '../../lib/doctors'
 import { formatDate, formatDateTime } from '../../lib/format'
+import { DoctorAccessHistory } from './DoctorAccessHistory'
 
 type SectionState =
   | { kind: 'loading' }
@@ -136,6 +137,7 @@ export function ChildDoctorLinksSection({ childId, childName }: { childId: strin
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-duo-mute">
               <span>Chia sẻ từ {formatDate(link.grantedAt)}</span>
+              <span>{link.expiresAt ? `Hết hạn ${formatDate(link.expiresAt)}` : 'Không thời hạn'}</span>
               <span className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
                 {viewedText(link)}
@@ -162,6 +164,7 @@ export function ChildDoctorLinksSection({ childId, childName }: { childId: strin
           </details>
         )}
 
+        <DoctorAccessHistory key={state.links.map((link) => `${link.id}:${link.revokedAt}`).join('|')} childId={childId} />
         <p className="text-xs font-semibold leading-relaxed text-duo-mute">
           Bác sĩ chỉ xem được những phần bạn đã chọn và không bao giờ thấy video của con. Xoá hồ sơ trẻ cũng xoá mọi kết nối.
         </p>

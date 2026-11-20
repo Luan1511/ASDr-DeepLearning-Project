@@ -23,19 +23,19 @@ import {
   toggleLikePost,
   toggleBookmarkPost,
   deleteCommunityPost,
-  togglePinPost,
   createComment,
   deleteComment,
+  reportCommunityComment,
 } from '../lib/community'
 import { AuthorAvatar } from '../components/community/AuthorAvatar'
+import { CommunityGallery } from '../components/community/CommunityGallery'
+import { StartConversationButton } from '../components/community/StartConversationButton'
 import { CommunityGuidelinesCard } from '../components/community/CommunityGuidelinesCard'
 import { formatDateTime } from '../lib/format'
-import { useAuth } from '../state/useAuth'
 
 export function CommunityPostDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const [post, setPost] = useState<CommunityPost | null>(null)
   const [loadedId, setLoadedId] = useState<string | null>(null)
@@ -120,16 +120,6 @@ export function CommunityPostDetailPage() {
     }
   }
 
-  async function handlePin() {
-    if (!post) return
-    try {
-      const pinned = await togglePinPost(post.id)
-      setPost((p) => p && { ...p, isPinned: pinned })
-    } catch {
-      // ignore
-    }
-  }
-
   async function handleDeletePost() {
     if (!post) return
     if (!window.confirm('Bạn có chắc chắn muốn xoá bài viết này?')) return
@@ -171,7 +161,7 @@ export function CommunityPostDetailPage() {
   }
 
   async function handleSubmitReply(parentId: string) {
-    if (!post || !replyText.trim()) return
+    if (!post || !replyText.trim() || post.comments?.find((comment) => comment.id === parentId)?.author.isSelf) return
     setReplyLoading(true)
     try {
       const newReply = await createComment(post.id, {
@@ -230,8 +220,12 @@ export function CommunityPostDetailPage() {
     }
   }
 
+  async function handleReportComment(commentId: string) {
+    try { await reportCommunityComment(commentId); window.alert('Đã gửi báo cáo để quản trị viên xem xét.') }
+    catch { window.alert('Chưa gửi được báo cáo. Có thể bình luận đã được báo cáo trước đó.') }
+  }
+
   const cat = post ? CATEGORY_INFO[post.category] ?? CATEGORY_INFO.STORY : null
-  const isAdmin = user?.role === 'ADMIN'
 
   return (
     <DashboardLayout>
@@ -286,19 +280,8 @@ export function CommunityPostDetailPage() {
                     )}
                   </div>
 
-                  {post.canManage && (
+                  {post.canDelete && (
                     <div className="flex items-center gap-1.5">
-                      {isAdmin && (
-                        <button
-                          type="button"
-                          onClick={handlePin}
-                          className="flex items-center gap-1 rounded-xl bg-duo-mist px-2.5 py-1.5 text-xs font-extrabold text-duo-ink hover:bg-duo-green-soft"
-                          title="Ghim/Bỏ ghim"
-                        >
-                          <Pin className="h-3.5 w-3.5" />
-                          <span>{post.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
-                        </button>
-                      )}
                       <button
                         type="button"
                         onClick={handleDeletePost}
@@ -314,7 +297,7 @@ export function CommunityPostDetailPage() {
 
                 {/* Author Info */}
                 <div className="flex items-center gap-3">
-                  <AuthorAvatar author={post.author} size="lg" />
+                  <AuthorAvatar author={post.author} size="lg" postId={post.id} postTitle={post.title} />
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-base font-black text-duo-ink">
@@ -334,6 +317,7 @@ export function CommunityPostDetailPage() {
                 </div>
 
                 {/* Title & Body */}
+                {!post.author.isAnonymous && post.author.role === 'USER' && <StartConversationButton recipientId={post.author.id} displayName={post.author.name} postId={post.id} postTitle={post.title} />}
                 <div className="pt-2">
                   <h1 className="text-xl font-black text-duo-ink md:text-2xl leading-snug">
                     {post.title}
@@ -341,6 +325,7 @@ export function CommunityPostDetailPage() {
                   <div className="mt-4 whitespace-pre-line text-sm font-semibold leading-relaxed text-duo-ink/90">
                     {post.content}
                   </div>
+                  {!!post.media?.length && <CommunityGallery media={post.media} />}
                 </div>
 
                 {/* Bottom Interaction Bar */}
@@ -480,7 +465,7 @@ export function CommunityPostDetailPage() {
                           </div>
                         </div>
 
-                        {comment.canManage && (
+                        <div className="flex items-center gap-1">{!comment.author.isSelf && <button type="button" onClick={() => void handleReportComment(comment.id)} className="rounded-lg px-2 py-1 text-[10px] font-bold text-amber-700 hover:bg-amber-50">Báo cáo</button>}{comment.canManage && (
                           <button
                             type="button"
                             onClick={() => handleDeleteComment(comment.id)}
@@ -489,7 +474,7 @@ export function CommunityPostDetailPage() {
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        )}
+                        )}</div>
                       </div>
 
                       {/* Comment Body */}
@@ -498,7 +483,7 @@ export function CommunityPostDetailPage() {
                       </p>
 
                       {/* Reply Button Trigger */}
-                      <div className="flex items-center gap-3 pt-1">
+                      {!comment.author.isSelf && <div className="flex items-center gap-3 pt-1">
                         <button
                           type="button"
                           onClick={() => {
@@ -514,7 +499,7 @@ export function CommunityPostDetailPage() {
                           <CornerDownRight className="h-3 w-3" />
                           <span>Trả lời</span>
                         </button>
-                      </div>
+                      </div>}
 
                       {/* Inline Reply Composer */}
                       {replyTarget?.id === comment.id && (
